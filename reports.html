@@ -60,14 +60,59 @@
 
       <div class="form" id="thread"></div>
 
+      <div class="form" id="supplyPanel" hidden style="margin-top:22px;border-left:6px solid var(--gold)">
+        <h3 style="margin:0 0 6px">Staff asked for more</h3>
+        <p class="hint" style="margin:0 0 4px">Fill in what you can and send it over.</p>
+
+        <div data-need="logs" hidden>
+          <label for="supplyLogs">Debug log</label>
+          <p class="hint" style="margin:0 0 12px">Run <span class="cmd">/fightbot debug on</span>, make it
+          happen again, then grab the file from <span class="cmd">plugins/FightBot/debug/</span>.</p>
+          <input type="file" id="supplyLogFile" accept=".log,.txt,text/plain" class="filepick">
+          <textarea id="supplyLogs" rows="6" class="mono" placeholder="Pick the file above, or paste it here"></textarea>
+        </div>
+
+        <div data-need="steps" hidden>
+          <label for="supplySteps">Steps to reproduce</label>
+          <textarea id="supplySteps" rows="4" placeholder="1. /fightbot spawn&#10;2. ..."></textarea>
+        </div>
+
+        <div data-need="plugins" hidden>
+          <label for="supplyPlugins">Your plugins</label>
+          <p class="hint" style="margin:0 0 12px">Run <span class="cmd">/plugins</span> and paste it.</p>
+          <textarea id="supplyPlugins" rows="3" class="mono"></textarea>
+        </div>
+
+        <div data-need="versions" hidden>
+          <label for="supplyVersions">Server and FightBot versions</label>
+          <input id="supplyVersions" type="text" placeholder="Paper 1.21.11, FightBot 5.15.1">
+        </div>
+
+        <button class="btn" id="sendInfo" type="button" style="margin-top:18px">Send it</button>
+        <p class="status" id="supplyNote" hidden></p>
+      </div>
+
       <div class="form" id="replyBox" hidden style="margin-top:22px">
         <label for="replyText">Reply</label>
         <textarea id="replyText" rows="5" placeholder="Write your reply"></textarea>
         <button class="btn" id="sendReply" type="button" style="margin-top:16px">Send reply</button>
         <p class="status" id="replyNote" hidden></p>
 
-        <div id="ownerTools" hidden style="margin-top:22px">
-          <label>Set status</label>
+        <div id="ownerTools" hidden style="margin-top:26px">
+          <label>Ask for more</label>
+          <p class="hint" style="margin:0 0 12px">Tick what you need. It goes on the report and into the
+          thread, and the reporter gets boxes to send it back.</p>
+          <div class="wants">
+            <label class="check"><input type="checkbox" data-want="logs"> Debug log</label>
+            <label class="check"><input type="checkbox" data-want="steps"> Steps to reproduce</label>
+            <label class="check"><input type="checkbox" data-want="plugins"> Plugin list</label>
+            <label class="check"><input type="checkbox" data-want="versions"> Server and FightBot versions</label>
+          </div>
+          <textarea id="requestWhy" rows="2" placeholder="Anything to add, optional"
+                    style="margin-top:14px"></textarea>
+          <button class="btn" id="requestInfo" type="button" style="margin-top:14px">Request this</button>
+
+          <label style="margin-top:28px">Set status</label>
           <div class="cta-row" style="margin-top:8px">
             <button class="btn ghost" data-set-status="open" type="button">Open</button>
             <button class="btn ghost" data-set-status="answered" type="button">Answered</button>

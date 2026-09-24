@@ -64,6 +64,15 @@
       <label for="console">Console output <span class="opt">optional, paste any errors</span></label>
       <textarea id="console" rows="6" class="mono" placeholder="[12:04:31 WARN]: ..."></textarea>
 
+      <label for="plugins">Your plugins <span class="opt">optional, run /plugins and paste it</span></label>
+      <textarea id="plugins" rows="3" class="mono" placeholder="FightBot, LuckPerms, WorldEdit, ViaVersion..."></textarea>
+
+      <label for="logs">Debug log <span class="opt">optional, but it is the single most useful thing</span></label>
+      <p class="hint" style="margin:0 0 12px">Run <span class="cmd">/fightbot debug on</span>, make it
+      happen again, then grab the file from <span class="cmd">plugins/FightBot/debug/</span>.</p>
+      <input type="file" id="logFile" accept=".log,.txt,text/plain" class="filepick">
+      <textarea id="logs" rows="6" class="mono" placeholder="Pick the file above, or paste the log here"></textarea>
+
       <p class="hint">Sent straight to the owner. You will see any reply on your reports page.</p>
       <button class="btn" id="sendReport" type="button">Send report</button>
       <p class="status" id="status" hidden></p>

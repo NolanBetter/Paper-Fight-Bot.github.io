@@ -52,153 +52,148 @@
 
     <div class="wiki">
       <nav class="wiki-nav" aria-label="Wiki sections">
+        <a href="#requirements">Requirements</a>
+        <a href="#getting-started">Getting started</a>
         <a href="#commands">Commands</a>
+        <a href="#bot-settings">Bot settings</a>
         <a href="#equipment">Equipment</a>
+        <a href="#saves-and-kits">Saves and kits</a>
         <a href="#groups">Groups</a>
-        <a href="#roaming">Roaming</a>
-        <a href="#patrols">Patrols</a>
         <a href="#config">Config</a>
-        <a href="#trouble">Troubleshooting</a>
+        <a href="#troubleshooting">Troubleshooting</a>
       </nav>
 
       <div class="wiki-body" id="wikiBody">
+        <h2 id="requirements">Requirements</h2>
+        <p>Which version you need depends on your server.</p>
+<div class="tw"><table><thead><tr><th>FightBot version</th><th>Minecraft</th><th>Needs</th></tr></thead><tbody><tr><td>Newer than 3.17.1</td><td>1.20.5 and up</td><td>Paper, or a fork like Purpur. Nothing else.</td></tr><tr><td>3.17.1 and older</td><td>1.16 and up</td><td>LibsDisguises</td></tr></tbody></table></div>
+<p>Newer versions make bots real server-side players, not disguised mobs. They have real hitboxes, real physics, and every other plugin sees them as players. They show up in the tab list alongside everyone else with a realistic ping. Spigot, CraftBukkit and Folia aren&#39;t supported, and FightBot tells you why in the console at startup instead of half-working.</p>
+<p>3.17.1 and older ran bots as zombies wearing a player disguise, which is why they need LibsDisguises. If your server is below 1.20.5, that&#39;s the version to use.</p>
+        <h2 id="getting-started">Getting started</h2>
+        <p>Spawn a bot, give it some gear, and set it on yourself:</p>
+<pre>/fightbot spawn
+/fightbot settings
+/fightbot fight &lt;bot&gt; &lt;you&gt;</pre>
+<p><code class="cmd">/fightbot settings</code> opens a screen of every bot&#39;s head. Click one to open its menu, then <strong>Open gear</strong> to hand it armour and a weapon. When you&#39;re done, <code class="cmd">/fightbot stop</code> calls every fight off at once.</p>
         <h2 id="commands">Commands</h2>
-        <p>Everything runs under <span class="cmd">/fightbot</span>, shortened to <span class="cmd">/fb</span>. The permission is <span class="cmd">fightbot.use</span>, which defaults to OP.</p>
-
-        <h3>Spawning</h3>
-        <div class="tw"><table>
-          <thead><tr><th>Command</th><th>What it does</th></tr></thead>
-          <tbody>
-            <tr><td><span class="cmd">/fightbot spawn &lt;name&gt;</span></td><td>Spawns one bot with the name you give it, where you're standing.</td></tr>
-            <tr><td><span class="cmd">/fightbot spawn --random [count]</span></td><td>Spawns 1 to 50 bots with random player-style names.</td></tr>
-          </tbody>
-        </table></div>
-
-        <h3>Fighting</h3>
-        <div class="tw"><table>
-          <tbody>
-            <tr><td><span class="cmd">/fightbot fight &lt;bot&gt; &lt;player...&gt;</span></td><td>Sends one bot after one or more players.</td></tr>
-            <tr><td><span class="cmd">/fightbot fight --all &lt;player...&gt;</span></td><td>Sends every bot after those players.</td></tr>
-            <tr><td><span class="cmd">/fightbot fight --group &lt;group&gt; &lt;player...&gt;</span></td><td>Sends a whole group after players.</td></tr>
-            <tr><td><span class="cmd">/fightbot fight --group &lt;A&gt; &lt;B&gt;</span></td><td>Sets two groups on each other. Good for watching.</td></tr>
-            <tr><td><span class="cmd">/fightbot stop &lt;bot|--all&gt;</span></td><td>Calls them off.</td></tr>
-          </tbody>
-        </table></div>
-
-        <h3>Managing bots</h3>
-        <div class="tw"><table>
-          <tbody>
-            <tr><td><span class="cmd">/fightbot list</span></td><td>Shows every live bot and group.</td></tr>
-            <tr><td><span class="cmd">/fightbot remove &lt;bot|--all&gt;</span></td><td>Deletes bots.</td></tr>
-            <tr><td><span class="cmd">/fightbot edit clone &lt;bot&gt; &lt;name|--random&gt;</span></td><td>Copies a bot, gear and inventory included — and it joins the fight the original is in.</td></tr>
-            <tr><td><span class="cmd">/fightbot edit change &lt;bot&gt; &lt;name|--random&gt;</span></td><td>Renames a bot.</td></tr>
-          </tbody>
-        </table></div>
-
-        <h3>Moving them</h3>
-        <div class="tw"><table>
-          <tbody>
-            <tr><td><span class="cmd">/fightbot tp &lt;bot&gt; &lt;player&gt;</span></td><td>Teleports a bot to a player.</td></tr>
-            <tr><td><span class="cmd">/fightbot tp &lt;bot&gt; &lt;x&gt; &lt;y&gt; &lt;z&gt;</span></td><td>Teleports a bot to coordinates.</td></tr>
-            <tr><td><span class="cmd">/fightbot tp --all &lt;player|x y z&gt;</span></td><td>Teleports every bot at once.</td></tr>
-            <tr><td><span class="cmd">/fightbot tp --group &lt;group&gt; &lt;player|x y z&gt;</span></td><td>Teleports a group.</td></tr>
-          </tbody>
-        </table></div>
-
+        <p>Everything runs under <code class="cmd">/fightbot</code>, shortened to <code class="cmd">/fb</code>. The permission is <code class="cmd">fightbot.use</code>, which defaults to OP. Type <code class="cmd">/fightbot help</code> in game for the full list.</p>
+<h4>Spawning</h4>
+<div class="tw"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code class="cmd">/fightbot spawn</code></td><td>Spawns one bot with a random name where you&#39;re standing, facing the way you are.</td></tr><tr><td><code class="cmd">/fightbot spawn &lt;count&gt;</code></td><td>Spawns up to 50 bots with random names.</td></tr><tr><td><code class="cmd">/fightbot spawn &lt;name&gt;</code></td><td>Spawns one bot with the name you give it.</td></tr></tbody></table></div>
+<p>A bot will never take the name of anyone who has played on your server, so nobody&#39;s player data can be overwritten. If a real player joins with a bot&#39;s name, the bot steps aside.</p>
+<h4>Fighting</h4>
+<div class="tw"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code class="cmd">/fightbot fight &lt;bot&gt; &lt;player...&gt;</code></td><td>Sends one bot after one or more players.</td></tr><tr><td><code class="cmd">/fightbot fight --all &lt;player...&gt;</code></td><td>Sends every bot after those players.</td></tr><tr><td><code class="cmd">/fightbot fight --group &lt;group&gt; &lt;player...&gt;</code></td><td>Sends a whole group after players.</td></tr><tr><td><code class="cmd">/fightbot stop</code></td><td>Calls off every fight at once.</td></tr><tr><td><code class="cmd">/fightbot stop &lt;bot&gt;</code></td><td>Calls off one bot.</td></tr></tbody></table></div>
+<p>A bot that another bot is actually attacking fights back. A bot that just gets clipped by a teammate&#39;s sword sweep doesn&#39;t, so a crowd of bots after one target stays focused on it.</p>
+<h4>Managing bots</h4>
+<div class="tw"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code class="cmd">/fightbot list</code></td><td>Shows every live bot.</td></tr><tr><td>`/fightbot remove &lt;bot\</td><td>--all&gt;`</td><td>Deletes bots.</td></tr><tr><td>`/fightbot edit clone &lt;bot&gt; &lt;name\</td><td>--random&gt;`</td><td>Copies a bot, gear and settings included.</td></tr><tr><td><code class="cmd">/fightbot edit clone &lt;bot&gt; --random &lt;count&gt;</code></td><td>Makes up to 50 copies at once.</td></tr><tr><td>`/fightbot edit change &lt;bot&gt; &lt;name\</td><td>--random&gt;`</td><td>Renames a bot.</td></tr><tr><td>`/fightbot tp &lt;bot\</td><td>--all\</td><td>--group &lt;group&gt;&gt; &lt;player\</td><td>x y z&gt;`</td><td>Teleports bots. They face the same way you are, which helps for screenshots.</td></tr><tr><td>`/fightbot look &lt;bot\</td><td>--all&gt; &lt;player\</td><td>bot\</td><td>stop&gt;`</td><td>Makes bots watch someone and keep watching until you say <code class="cmd">stop</code>.</td></tr></tbody></table></div>
+        <h2 id="bot-settings">Bot settings</h2>
+        <p>Every bot has its own settings menu. It&#39;s where you manage one bot directly, and where you can make one bot behave differently from the rest.</p>
+<h4>Opening it</h4>
+<div class="tw"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code class="cmd">/fightbot settings</code></td><td>Shows every bot&#39;s head. Click one to open its menu.</td></tr><tr><td><code class="cmd">/fightbot settings &lt;bot&gt;</code></td><td>Opens that bot&#39;s menu straight away.</td></tr><tr><td><code class="cmd">/fightbot edit</code> or <code class="cmd">/fightbot edit &lt;bot&gt;</code></td><td>The same thing.</td></tr></tbody></table></div>
+<p><code class="cmd">/fightbot edit clone</code> and <code class="cmd">/fightbot edit change</code> still work exactly as before.</p>
+<h4>The top of the menu</h4>
+<p>The bot&#39;s head sits at the top. Hover over it to see its health, its group, what it&#39;s doing right now, and how many of its settings you&#39;ve changed.</p>
+<h4>Things you can do</h4>
+<div class="tw"><table><thead><tr><th>Button</th><th>What it does</th></tr></thead><tbody><tr><td><strong>Bring here</strong></td><td>Teleports the bot to you, facing the way you are.</td></tr><tr><td><strong>Go to bot</strong></td><td>Teleports you to the bot.</td></tr><tr><td><strong>Rename</strong></td><td>Closes the menu and asks you to type the new name in chat. Type <code class="cmd">random</code> for a made-up one, or <code class="cmd">cancel</code> to leave it.</td></tr><tr><td><strong>Clone</strong></td><td>Makes a copy with a random name, the same gear and the same settings. The menu stays open, so you can keep clicking to make more.</td></tr><tr><td><strong>Change group</strong></td><td>Shows your groups. Pick one to move the bot there, or pick <strong>No group</strong> to take it out.</td></tr><tr><td><strong>Open gear</strong></td><td>Opens the bot&#39;s inventory. Not while it&#39;s fighting.</td></tr><tr><td><strong>Stop fighting</strong></td><td>Calls the bot off, whatever it&#39;s doing.</td></tr><tr><td><strong>Heal</strong></td><td>Puts the bot back on full health.</td></tr><tr><td><strong>Reset settings</strong></td><td>Puts every switch back to the server&#39;s settings.</td></tr><tr><td><strong>Remove bot</strong></td><td>Deletes the bot. You have to <strong>shift-click</strong> it, so it can&#39;t happen by accident.</td></tr></tbody></table></div>
+<p>Renaming keeps everything about the bot: its skin, gear, health, settings, group and whatever it was fighting. Minecraft doesn&#39;t let a player change their name while they&#39;re in the world, so behind the scenes the bot is swapped for an identical one under the new name. That&#39;s why you&#39;ll see the new name &quot;join the game&quot;.</p>
+<h4>Per-bot switches</h4>
+<p>The lower part of the menu holds switches. Your <code class="cmd">config.yml</code> sets how every bot behaves, and these let one bot differ. You could have a whole group that pearls and one that doesn&#39;t, or a single bot that builds while the rest walk.</p>
+<div class="tw"><table><thead><tr><th>Switch</th><th>What it controls</th></tr></thead><tbody><tr><td>Ender pearls</td><td>Throwing pearls to chase you and to escape.</td></tr><tr><td>Cobwebs</td><td>Placing cobwebs to trap and slow you.</td></tr><tr><td>Shield breaking</td><td>Switching to an axe to break a raised shield.</td></tr><tr><td>Water bucket</td><td>Washing out cobwebs and clutching big falls.</td></tr><tr><td>Potions</td><td>Splashing potions for the buff.</td></tr><tr><td>Mace combat</td><td>Pearling up and diving in with a mace.</td></tr><tr><td>Fights back</td><td>Fighting back when another bot attacks it.</td></tr><tr><td>Pillaring</td><td>Going straight up when you&#39;re above it and there&#39;s no way to walk up. On by default.</td></tr><tr><td>Bridging</td><td>Crossing gaps and water when there&#39;s no way round. Off by default.</td></tr><tr><td>Mining</td><td>Breaking blocks in its way with a pickaxe.</td></tr><tr><td>Realistic ping</td><td>Showing a wandering ping in the tab list.</td></tr></tbody></table></div>
+<p>How they work:</p>
+<ul><li><strong>A glowing switch is on.</strong> A plain one is off.</li><li><strong>Click</strong> a switch to flip it.</li><li><strong>Right-click</strong> a switch to hand it back to the server. It then follows whatever <code class="cmd">config.yml</code> says.</li><li><strong>Changes happen the moment you click.</strong> There&#39;s no save button, so pressing Esc, clicking back, or just walking away all keep what you set.</li></ul>
+<p>Every switch starts out <strong>following the server</strong>, and its description tells you the server&#39;s setting. Once you change one, it says <strong>changed for this bot</strong>. That matters when you edit your config later: a bot you&#39;ve set yourself keeps its own choice, while every switch you left alone picks up the new config. If you flip a switch and then flip it back to match the server, it goes back to following the server, rather than quietly holding onto its own copy.</p>
+<p>One catch. A bot&#39;s settings belong to that bot, so they&#39;re gone when it dies or the server restarts. To keep a setup you like, put it in a save. Saves remember settings, so every bot you spawn from it comes out the same way.</p>
         <h2 id="equipment">Equipment</h2>
-        <p>Right&#8209;click any bot <b>in creative mode</b> to open its equipment screen. Every slot maps to a behaviour: give the bot the item and it will use it.</p>
-        <div class="tw"><table>
-          <thead><tr><th>Slots</th><th>Contents</th></tr></thead>
-          <tbody>
-            <tr><td>1–4</td><td>Helmet, chestplate, leggings, boots</td></tr>
-            <tr><td>5</td><td>Offhand — totem or shield</td></tr>
-            <tr><td>6</td><td>Main hand — its weapon</td></tr>
-            <tr><td>7</td><td>Axe, used to break raised shields</td></tr>
-            <tr><td>8</td><td>Food, for eating and regen</td></tr>
-            <tr><td>9</td><td>Cobwebs</td></tr>
-            <tr><td>10</td><td>Ender pearls</td></tr>
-            <tr><td>11</td><td>Water bucket, for clutching</td></tr>
-            <tr><td>12–14</td><td>Held back for mace and crystal gear</td></tr>
-            <tr><td>15+</td><td>Storage — anything the bot picks up lands here</td></tr>
-          </tbody>
-        </table></div>
-        <p>When a hotbar slot empties mid&#8209;fight the bot refills it from storage, so stack spare pearls or totems in the back and it keeps going. Slot positions and item behaviour can all be moved around in <span class="cmd">config.yml</span>.</p>
-
+        <p>Right click any bot in creative mode to open its inventory, or use <strong>Open gear</strong> in its settings menu. You can&#39;t open it while the bot is fighting, since it&#39;s moving items between its hands the whole time.</p>
+<div class="tw"><table><thead><tr><th>Slots</th><th>Contents</th></tr></thead><tbody><tr><td>1 to 4</td><td>Helmet, chestplate, leggings, boots</td></tr><tr><td>5</td><td>Offhand, totem or shield</td></tr><tr><td>6</td><td>Main hand, its weapon</td></tr><tr><td>7 and up</td><td>Anything else</td></tr></tbody></table></div>
+<p>Only armour, the offhand and the weapon have fixed places. Everything else can go anywhere: an axe for breaking shields, food, cobwebs, ender pearls, a water bucket, a mace, wind charges, an elytra, a pickaxe. The bot finds whatever it&#39;s carrying and uses it.</p>
+<p>Mace combat is off by default while it&#39;s being finished, so a mace sits unused until you turn it on, either for every bot with <code class="cmd">mace.enabled</code> in the config or for one bot in its settings menu. Roaming, patrolling and crystal PvP are switched off in this version while they&#39;re reworked, and will return in a later update.</p>
+        <h2 id="saves-and-kits">Saves and kits</h2>
+        <p>Both keep up to five loadouts, and both survive restarts. The difference is what they do with them.</p>
+<p><strong>Saves spawn a brand new bot</strong> carrying the stored gear <strong>and settings</strong>. Fill a save from a bot and every bot you spawn from it comes out equipped and set up the same way. The new bot gets its own fresh name and skin.</p>
+<div class="tw"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code class="cmd">/fightbot saves</code></td><td>Opens the saves screen.</td></tr><tr><td><code class="cmd">/fightbot savegear &lt;bot&gt; [1-5]</code></td><td>Stores a bot&#39;s gear and settings in a save slot.</td></tr><tr><td>`/fightbot save &lt;1-5&gt; [name\</td><td>--random] [count]`</td><td>Spawns bots from a save.</td></tr><tr><td><code class="cmd">/fightbot delsave &lt;1-5&gt;</code></td><td>Deletes a save.</td></tr></tbody></table></div>
+<p>A save only remembers the settings you&#39;d changed on that bot. Anything still following the server keeps following it, so later config changes reach those switches too. Hover over a save&#39;s book to see exactly which settings its bots will spawn with.</p>
+<p><strong>Kits re-gear a bot you already have</strong>, replacing what it&#39;s carrying. They carry gear only, since the bot already has settings of its own.</p>
+<div class="tw"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code class="cmd">/fightbot kits</code> (or <code class="cmd">kit</code>, <code class="cmd">load</code>)</td><td>Opens the kits screen.</td></tr><tr><td><code class="cmd">/fightbot saveload &lt;bot&gt; [1-5]</code></td><td>Stores a bot&#39;s gear as a kit.</td></tr><tr><td><code class="cmd">/fightbot kit &lt;bot&gt; &lt;1-5&gt;</code> (or <code class="cmd">load</code>)</td><td>Gives a bot a kit.</td></tr><tr><td><code class="cmd">/fightbot delload &lt;1-5&gt;</code></td><td>Deletes a kit.</td></tr></tbody></table></div>
+<p>In the screens, a filled slot shows a glowing book with a green delete button underneath. An empty one shows a plain book and grey dye.</p>
+<ul><li><strong>Click an empty book</strong> to fill it. You&#39;ll see every bot&#39;s head; pick the one to save from.</li><li><strong>Click a filled save</strong> to spawn a bot from it. The screen stays open, so keep clicking to spawn more. Each lands a little apart from the last instead of on top of it.</li><li><strong>Click a filled kit</strong>, then pick which bot gets it.</li><li><strong>Press Esc</strong> to step back a screen.</li></ul>
         <h2 id="groups">Groups</h2>
-        <p>Groups let you command several bots at once, and make them retaliate together.</p>
-        <pre>/fightbot group create <span class="k">redteam</span>
-/fightbot group add <span class="k">redteam</span> Kade
-/fightbot group list <span class="k">redteam</span></pre>
-        <div class="tw"><table>
-          <tbody>
-            <tr><td><span class="cmd">/fightbot group create &lt;name&gt;</span></td><td>Makes a group.</td></tr>
-            <tr><td><span class="cmd">/fightbot group add &lt;group&gt; &lt;bot&gt;</span></td><td>Puts a bot in it.</td></tr>
-            <tr><td><span class="cmd">/fightbot group list [group]</span></td><td>Lists groups, or one group's members.</td></tr>
-            <tr><td><span class="cmd">/fightbot group edit remove &lt;group&gt; &lt;bot&gt;</span></td><td>Takes a bot out.</td></tr>
-            <tr><td><span class="cmd">/fightbot group edit change &lt;old&gt; &lt;new&gt;</span></td><td>Renames a group.</td></tr>
-            <tr><td><span class="cmd">/fightbot group remove &lt;group&gt;</span></td><td>Deletes it.</td></tr>
-          </tbody>
-        </table></div>
-        <p>With two groups you can set them on each other and watch, or drop yourself into the middle of one:</p>
-        <pre>/fightbot fight --group <span class="k">redteam</span> <span class="k">blueteam</span></pre>
-
-        <h2 id="roaming">Roaming</h2>
-        <p>Roaming bots wander instead of hunting. They stay peaceful until something hits them.</p>
-        <pre>/fightbot roam <span class="k">Kade</span>
-/fightbot roam --group <span class="k">redteam</span>
-/fightbot roam --all</pre>
-        <p>Hit a roaming bot and it fights back. Hit one that's in a group and <b>every bot in that group comes for you</b> — worth knowing before you punch one for fun.</p>
-
-        <h2 id="patrols">Patrols</h2>
-        <p>Waypoint loops, for bots that walk a route rather than wandering.</p>
-        <div class="tw"><table>
-          <tbody>
-            <tr><td><span class="cmd">/fightbot patrol add &lt;bot&gt;</span></td><td>Saves where you're standing as a waypoint.</td></tr>
-            <tr><td><span class="cmd">/fightbot patrol start &lt;bot&gt;</span></td><td>Starts the bot walking the loop.</td></tr>
-            <tr><td><span class="cmd">/fightbot patrol stop &lt;bot&gt;</span></td><td>Stops it.</td></tr>
-            <tr><td><span class="cmd">/fightbot patrol list &lt;bot&gt;</span></td><td>Shows the bot's waypoints.</td></tr>
-            <tr><td><span class="cmd">/fightbot patrol clear &lt;bot&gt;</span></td><td>Wipes them.</td></tr>
-          </tbody>
-        </table></div>
-
+        <p>Groups let you command several bots at once. A bot can only be in one group at a time.</p>
+<pre>/fightbot groupcreate redteam
+/fightbot groupadd redteam Kade
+/fightbot grouplist redteam</pre>
+<div class="tw"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code class="cmd">/fightbot groups</code></td><td>Opens the groups screen.</td></tr><tr><td><code class="cmd">/fightbot groupcreate &lt;name&gt;</code></td><td>Makes a group.</td></tr><tr><td><code class="cmd">/fightbot groupadd &lt;group&gt; &lt;bot&gt;</code></td><td>Puts a bot in it.</td></tr><tr><td><code class="cmd">/fightbot groupremove &lt;group&gt; &lt;bot&gt;</code></td><td>Takes a bot out.</td></tr><tr><td><code class="cmd">/fightbot groupdel &lt;group&gt;</code></td><td>Deletes a group. Its bots are freed.</td></tr><tr><td><code class="cmd">/fightbot grouplist [group]</code></td><td>Lists groups, or one group&#39;s members.</td></tr><tr><td><code class="cmd">/fightbot groupcheck &lt;bot&gt;</code></td><td>Shows which group a bot is in.</td></tr><tr><td><code class="cmd">/fightbot groupchange &lt;group&gt; &lt;new name&gt;</code></td><td>Renames a group.</td></tr></tbody></table></div>
+<p>In the groups screen, click a group to see its members. Click a head to take that bot out, or the green dye to add bots. The add screen only offers bots without a group, and it <strong>stays open</strong> after each one, so you can add a whole squad without going back each time.</p>
+<p>A group&#39;s count only includes bots that are alive. When a bot dies or is removed, it leaves its group. Groups keep their names across a restart, but start empty, since bots don&#39;t survive a restart.</p>
+<h4>Group fights</h4>
+<p>Set two groups on each other and watch:</p>
+<pre>/fightbot groupfight redteam blueteam</pre>
+<p>It plays out as one-on-one duels. The bots pair off first, and each one sticks with a single opponent until one of them falls, then picks the next. If a bot gets attacked by someone it isn&#39;t fighting, it turns to face them, unless it&#39;s already locked in a fair one-on-one. Nobody piles onto one target while the rest stand around.</p>
+<div class="tw"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><code class="cmd">/fightbot groupfight &lt;group&gt; &lt;group&gt;</code></td><td>Two groups fight as duels.</td></tr><tr><td>`/fightbot groupfight &lt;group&gt; &lt;player\</td><td>bot&gt;`</td><td>A whole group goes after one target. Drop yourself in.</td></tr><tr><td><code class="cmd">/fightbot groupstop &lt;group&gt; [group]</code></td><td>Stops one group, or both sides of a fight.</td></tr></tbody></table></div>
         <h2 id="config">Config</h2>
-        <p>Two files sit in the plugin's folder:</p>
-        <ul>
-          <li><span class="cmd">config.yml</span> — bot health, speed, damage, and which equipment slot does what.</li>
-          <li><span class="cmd">botnames.yml</span> — the pool that <span class="cmd">--random</span> pulls names from.</li>
-        </ul>
-        <p>Edit either, then reload without restarting:</p>
-        <pre>/fightbot reload</pre>
-        <div class="note">
-          <b>One catch.</b> Health, speed and damage changes only apply to bots spawned <b>after</b> the reload.
-          Bots already standing there keep the old values, so clear them if you want the new numbers.
-        </div>
-        <pre>/fightbot remove --all
-/fightbot spawn --random 1</pre>
-
-        <h2 id="trouble">Troubleshooting</h2>
-
-        <h3>The plugin won't load</h3>
-        <p>Check your server is on 1.16 or newer. If you're running a build below 4.1.0, install the free LibsDisguises alongside it — older builds rely on it. From 4.1.0 onward you don't need it.</p>
-
-        <h3>Bots look like zombies</h3>
-        <p>Same thing: an old build without LibsDisguises. Update to the newest release and it goes away.</p>
-
-        <h3>A bot just stands there</h3>
-        <p>It hasn't been told to fight anyone. Run <span class="cmd">/fightbot fight &lt;bot&gt; &lt;you&gt;</span>. If it's already fighting and still frozen, it probably can't path to you — try it on flatter ground first.</p>
-
-        <h3>Bots move slowly</h3>
-        <p>Check the speed value in <span class="cmd">config.yml</span>, and remember it only applies to newly spawned bots — clear and respawn after changing it. If it started after updating to a beta, roll back to the last full release and report it in Discord with your server version.</p>
-
-        <h3>Config changes did nothing</h3>
-        <p>Health, speed and damage only apply to newly spawned bots. Remove the existing ones and spawn fresh.</p>
-
-        <h3>Something else</h3>
-        <p>Report it in Discord with your server version, your plugin version and anything the console printed. Bug reports there are what drive most updates.</p>
-
-        <div class="cta-row">
-          <a class="btn" href="#" data-discord>Report it in Discord</a>
-        </div>
+        <p>FightBot keeps its files in <code class="cmd">plugins/FightBot/</code>:</p>
+<div class="tw"><table><thead><tr><th>File or folder</th><th>What&#39;s in it</th></tr></thead><tbody><tr><td><code class="cmd">config.yml</code></td><td>Health, speed, damage, combat, building, mining, skins, names, ping and more.</td></tr><tr><td><code class="cmd">botnames.yml</code></td><td>The name pool, if you use <code class="cmd">name-source: file</code>.</td></tr><tr><td><code class="cmd">data.yml</code></td><td>Your saves, kits and groups. Keep this one when updating.</td></tr><tr><td><code class="cmd">skins/</code></td><td>Skin images for bots, and a cache of downloaded skins.</td></tr><tr><td><code class="cmd">debug/</code></td><td>Debug logs, if you&#39;ve turned them on.</td></tr><tr><td><code class="cmd">old-configs/</code></td><td>Backups made when your config was updated.</td></tr></tbody></table></div>
+<p>Edit the config, then reload without restarting:</p>
+<pre>/fightbot reload</pre>
+<p>One catch. Some settings, like health and damage, only apply to bots spawned after the reload. Bots already standing there keep the old values, so clear them if you want the new numbers:</p>
+<pre>/fightbot remove --all
+/fightbot spawn</pre>
+<p>Remember that anything you&#39;ve changed on a single bot in its settings menu takes priority over the config for that bot.</p>
+<h4>Updating</h4>
+<p>You don&#39;t need to delete your config when you update. FightBot notices it came from an older version, builds a fresh one with any new options, carries all your settings across, and saves the old file in <code class="cmd">old-configs/</code>, named after the version it came from. The console tells you what it kept and what&#39;s new.</p>
+<h4>Building</h4>
+<p>Bots can place blocks to reach you, in two separate ways. Each has its own switch in the config, and can also be set for a single bot in its settings menu.</p>
+<pre>building:
+  pillar: true
+  bridge: false
+  blocks:
+    - COBBLESTONE</pre>
+<p><strong>Pillaring</strong> is on by default. When you&#39;re above a bot and there&#39;s no way to walk up, it goes straight up: it sizes you up once, then crouches, looks down, jumps and places a block under its feet, over and over without standing up, until it&#39;s level with you. It holds still while it climbs, so it can&#39;t drift off its own pillar. A single block is just a jump, so it only pillars for anything higher.</p>
+<p><strong>Bridging</strong> is off by default. When there&#39;s a gap or water between a bot and you, and no way round, it crouches and bridges across at its own level, staying crouched until it&#39;s over. It never bridges out from partway up a pillar.</p>
+<p>Either way, building is a last resort. A bot first looks for a way to walk or swim to you, up stairs, round a gap, along a slope, and only builds if there isn&#39;t one. List more than one block and each bot picks one when it spawns and keeps it. Only solid blocks work; anything else is skipped with a warning.</p>
+<h4>Mining</h4>
+<p>A bot carrying a pickaxe can break the block standing between it and its target. It&#39;s <strong>off by default</strong>, since, like building, it changes your world.</p>
+<pre>mining:
+  enabled: false</pre>
+<h4>Skins</h4>
+<p>Set <code class="cmd">identity.skin-source</code>:</p>
+<ul><li><code class="cmd">random</code> picks a skin from a pool of accounts built into FightBot, which grows with each update. The bot keeps its own name; only the skin is borrowed. Each skin downloads once and is cached, so right after the first start the very first bots may appear plain for a few seconds.</li><li><code class="cmd">folder</code> drops <code class="cmd">.png</code> skin images into <code class="cmd">plugins/FightBot/skins/</code>. Minecraft skins have to be signed before a player can see them, so the first time FightBot sees an image it gets signed and cached. Images need to be normal 64×64 skins.</li><li><code class="cmd">mojang</code> borrows the skins of real accounts you list under <code class="cmd">identity.skin-names</code>.</li><li><code class="cmd">none</code> uses the default skin.</li></ul>
+<h4>Names</h4>
+<p>Set <code class="cmd">identity.name-source</code>:</p>
+<ul><li><code class="cmd">random</code> makes up player style names like <code class="cmd">BlockRunner42</code>.</li><li><code class="cmd">file</code> picks from <code class="cmd">botnames.yml</code>.</li><li><code class="cmd">numbers</code> makes numbered names from <code class="cmd">identity.number-format</code>.</li></ul>
+<p>Number patterns use <code class="cmd">%&lt;digits&gt;n</code> for one random character from those digits, and you can chain them. <code class="cmd">%01n%01n%01n%01n</code> gives names like <code class="cmd">1011</code> or <code class="cmd">0000</code>. <code class="cmd">Bot%01n%01n</code> gives <code class="cmd">Bot01</code> or <code class="cmd">Bot10</code>. Watch how many names a pattern can make: <code class="cmd">%01n</code> only has two, so a third bot has nowhere to go and FightBot will tell you.</p>
+<h4>Ping</h4>
+<p>Each bot shows its own ping in the tab list instead of a giveaway 0ms. It starts somewhere inside the range, then every few seconds it moves up or down a little from where it was, the way a real connection wanders. It never leaves the range.</p>
+<pre>ping:
+  enabled: true
+  min: 15
+  max: 140
+  step: 12
+  change-every-min-seconds: 1
+  change-every-max-seconds: 4</pre>
+<p><code class="cmd">step</code> is the most it can move in one change, and it always moves by at least a little. How often it changes is picked fresh each time, between the two <code class="cmd">change-every</code> values. A freshly spawned bot&#39;s ping appears once the tab list next refreshes.</p>
+        <h2 id="troubleshooting">Troubleshooting</h2>
+        <h4>The plugin loads but bots won&#39;t spawn</h4>
+<p>Check the console at startup. FightBot says whether your server can run bots, and why not if it can&#39;t. Newer versions need Paper 1.20.5 or newer, or a fork like Purpur. If your server is older, use 3.17.1 with LibsDisguises.</p>
+<h4>The server froze for a few seconds every time a bot spawned</h4>
+<p>That was a bug before 5.12.0, along with a pair of <code class="cmd">Couldn&#39;t find profile</code> warnings on every spawn. Update to the newest release and spawning is near-instant.</p>
+<h4>Everyone got disconnected when a bot spawned</h4>
+<p>That was a bug in 5.8.0, 5.9.0 and 5.9.1. Update to 5.9.2 or newer.</p>
+<h4>Bots look like zombies</h4>
+<p>You&#39;re on 3.17.1 or older without LibsDisguises. Install LibsDisguises, or update to a newer version if your server is on 1.20.5 or above.</p>
+<h4>A bot just stands there</h4>
+<p>It hasn&#39;t been told to fight anyone. Run <code class="cmd">/fightbot fight &lt;bot&gt; &lt;you&gt;</code>. If it&#39;s already fighting and stuck, it probably can&#39;t reach you: you&#39;re behind blocks, across a gap, or up high. Pillaring is on by default, so it will climb to you if you&#39;re above it. If there&#39;s a gap or water in the way, turn on bridging, for every bot in the config or for that one in its settings menu.</p>
+<h4>A bot&#39;s settings went back to normal</h4>
+<p>Settings belong to the bot, so they&#39;re lost when it dies or the server restarts. Put the setup in a save, and every bot you spawn from it keeps those settings.</p>
+<h4>Bots move slowly</h4>
+<p>Update to the newest release. Older betas had a bug where bots hopped through grass instead of running. If it&#39;s still slow, check <code class="cmd">max-move-speed</code> in the config.</p>
+<h4>Skins don&#39;t show</h4>
+<p>Check <code class="cmd">identity.skin-source</code> is set. With <code class="cmd">random</code> or <code class="cmd">mojang</code>, skins download in the background, so give it a few seconds after the first start. With <code class="cmd">folder</code>, images must be 64×64 and FightBot needs a few seconds to sign each new one. With <code class="cmd">mojang</code>, make sure you&#39;ve listed names under <code class="cmd">identity.skin-names</code>. The console reports how many skins are ready.</p>
+<h4>Config changes did nothing</h4>
+<p>Some settings only apply to newly spawned bots, so remove the existing ones and spawn fresh. Also check the bot&#39;s settings menu: a switch you&#39;ve changed on one bot overrides the config for that bot.</p>
+<h4>Something else</h4>
+<p>Turn on debug logging, make it happen again, then send us the log:</p>
+<pre>/fightbot debug on</pre>
+<p>The log lands in <code class="cmd">plugins/FightBot/debug/</code> and records who each bot fought, where it stood, what it chose and why, including every block it placed or broke and every setting you changed. Include it along with your server version, your FightBot version and anything the console printed.</p>
       </div>
     </div>
   </div>

@@ -39,16 +39,17 @@
 <div class="phead">
   <div class="wrap">
     <h1>Install</h1>
-    <p class="lede">Paper, Bukkit, Purpur or Spigot on 1.16 or newer. Four minutes to your first fight.</p>
+    <p class="lede">Paper <span data-tested>1.20.5+</span>, or a fork like Purpur. Four minutes to your first fight.</p>
   </div>
 </div>
 
 <section class="tight">
   <div class="wrap">
     <div class="note">
-      <b>Do you need LibsDisguises?</b> Only on plugin versions <b>below 4.1.0</b>, where it is what makes the
-      bots look like players. From <b>4.1.0 onward the plugin stands alone</b> and you can skip it entirely.
-      If you are installing fresh today, you only need one jar.
+      <b>Which version do you need?</b> Anything newer than <b>3.17.1</b> needs <b>Paper 1.20.5 or newer</b>,
+      or a fork like Purpur, and nothing else installed. If your server is below 1.20.5, use <b>3.17.1</b>
+      with the free <a href="#" data-libs style="color:var(--iron)">LibsDisguises</a> instead.
+      Spigot, CraftBukkit and Folia are not supported either way.
     </div>
 
     <div class="steps">
@@ -65,23 +66,26 @@
         <div>
           <h3>Drop it in and restart</h3>
           <p>Put the jar in your server's <span class="cmd">plugins</span> folder and do a full restart, not a reload. The plugin writes its <span class="cmd">config.yml</span> and <span class="cmd">botnames.yml</span> on first boot.</p>
-          <p>On an older build, install <a href="#" data-libs style="color:var(--iron)">the free LibsDisguises</a> alongside it before restarting.</p>
+          <p>On 3.17.1 or older, install <a href="#" data-libs style="color:var(--iron)">the free LibsDisguises</a> alongside it before restarting.</p>
         </div>
       </div>
       <div class="step">
         <div>
           <h3>Spawn a bot</h3>
           <p>Join the server and run this. You get a bot with a random player&#8209;style name at your feet.</p>
-          <pre>/fightbot spawn --random 1
+          <pre>/fightbot spawn
 
 <span class="c"># or name it yourself</span>
-/fightbot spawn <span class="k">Kade</span></pre>
+/fightbot spawn <span class="k">Kade</span>
+
+<span class="c"># or a whole crowd, up to 50</span>
+/fightbot spawn <span class="k">10</span></pre>
         </div>
       </div>
       <div class="step">
         <div>
           <h3>Gear it up</h3>
-          <p>Switch to creative and right&#8209;click the bot to open its equipment screen. Fill the slots with whatever you want it fighting you with — armour, sword, totem, axe, food, pearls, webs, water bucket. Or skip this and fight it bare&#8209;handed.</p>
+          <p>Run <span class="cmd">/fightbot settings</span> for a screen of every bot's head, click one, then <b>Open gear</b>. Or switch to creative and right&#8209;click the bot. Give it armour, a weapon, and anything else you want it using. Or skip this and fight it bare&#8209;handed.</p>
           <p>Full slot list is in the <a href="wiki.html#equipment" style="color:var(--iron)">wiki</a>.</p>
         </div>
       </div>
@@ -92,7 +96,7 @@
           <pre>/fightbot fight <span class="k">Kade</span> <span class="k">YourUsername</span>
 
 <span class="c"># had enough</span>
-/fightbot stop --all</pre>
+/fightbot stop</pre>
         </div>
       </div>
     </div>
