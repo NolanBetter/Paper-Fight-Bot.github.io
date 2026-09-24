@@ -1,9 +1,9 @@
 /* Paper Fight Bot. Change CONFIG and every page follows. */
 
 const CONFIG = {
-  version:  "4.9.0-beta",
+  version:  "5.15.1",
   downloads: "1.2K",
-  tested:   "1.21.11",
+  minecraft: "1.20.5+",
   modrinth: "https://modrinth.com/plugin/paper-fight-bot",
   discord:  "https://discord.gg/Gc3TDyFup5",
   libs:     "https://www.spigotmc.org/resources/libs-disguises-free.81/"
@@ -12,7 +12,7 @@ const CONFIG = {
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-version]").forEach(el => el.textContent = CONFIG.version);
   document.querySelectorAll("[data-downloads]").forEach(el => el.textContent = CONFIG.downloads);
-  document.querySelectorAll("[data-tested]").forEach(el => el.textContent = CONFIG.tested);
+  document.querySelectorAll("[data-tested]").forEach(el => el.textContent = CONFIG.minecraft);
 
   document.querySelectorAll("[data-modrinth]").forEach(el => el.href = CONFIG.modrinth);
   document.querySelectorAll("[data-discord]").forEach(el => el.href = CONFIG.discord);

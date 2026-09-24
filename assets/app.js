@@ -275,7 +275,19 @@ async function ensureProfile(user) {
 
 // ------------------------------------------------------------ report form
 
-const FIELDS = ["mcname", "pluginver", "server", "what", "steps", "console"];
+const FIELDS = ["mcname", "pluginver", "server", "what", "steps", "console", "plugins", "logs"];
+
+/* Debug logs go in the Firestore document as text rather than into Storage,
+   which would need a billing account. A document can hold 1MB, so the log is
+   capped well under that to leave room for everything else. */
+const LOG_CAP = 150000;
+
+const NEEDS = {
+  logs:    "a debug log",
+  steps:   "steps to reproduce it",
+  plugins: "your plugin list",
+  versions:"your server and FightBot versions"
+};
 const val = id => { const el = document.getElementById(id); return el ? el.value.trim() : ""; };
 
 function mountReportForm() {
@@ -293,6 +305,24 @@ function mountReportForm() {
     if (ver && !ver.value && typeof CONFIG !== "undefined") ver.value = CONFIG.version || "";
   });
 
+  const fileInput = $("#logFile");
+  if (fileInput) {
+    fileInput.addEventListener("change", async () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (!f) return;
+      try {
+        const text = await f.text();
+        const box = document.getElementById("logs");
+        box.value = text.length > LOG_CAP ? text.slice(-LOG_CAP) : text;
+        when(status, text.length > LOG_CAP
+          ? "Log is long, so the last " + Math.round(LOG_CAP / 1000) + "KB was kept. That is usually the useful end."
+          : "Loaded " + f.name + ".");
+      } catch (e) {
+        when(status, "Could not read that file.", true);
+      }
+    });
+  }
+
   $("#sendReport") && $("#sendReport").addEventListener("click", async () => {
     const gaps = [];
     if (!val("mcname")) gaps.push("your Minecraft name");
@@ -302,8 +332,11 @@ function mountReportForm() {
     if (gaps.length) return when(status, "Still need " + gaps.join(", ") + ".", true);
 
     try {
-      const payload = { uid: state.user.uid, status: "open", createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
-      FIELDS.forEach(f => payload[f] = val(f));
+      const payload = {
+        uid: state.user.uid, status: "open", needs: [],
+        createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      };
+      FIELDS.forEach(f => payload[f] = val(f).slice(0, f === "logs" ? LOG_CAP : 20000));
       const ref = await addDoc(collection(db, "reports"), payload);
       location.href = "reports.html?id=" + ref.id;
     } catch (e) {
@@ -337,7 +370,7 @@ async function loadReports() {
 
     list.innerHTML = rows.map(r => `
       <a class="rep" href="reports.html?id=${r.id}">
-        <span class="rep-status ${r.status || "open"}">${r.status || "open"}</span>
+        <span class="rep-status ${r.status || "open"}">${(r.status || "open").replace("-", " ")}</span>
         <span class="rep-what">${(r.what || "").slice(0, 90)}</span>
         <span class="rep-meta">${r.mcname || "someone"} &middot; ${r.pluginver || "?"} &middot; ${stamp(r.createdAt)}</span>
       </a>`).join("");
@@ -345,6 +378,8 @@ async function loadReports() {
     list.innerHTML = `<p class="lede" style="color:var(--ember)">${friendly(e)}</p>`;
   }
 }
+
+const esc = s => String(s || "").replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
 
 async function loadThread(id) {
   const wrap = $("#thread");
@@ -362,13 +397,18 @@ async function loadThread(id) {
 
     wrap.innerHTML = `
       <div class="rep-head">
-        <span class="rep-status ${r.status || "open"}">${r.status || "open"}</span>
+        <span class="rep-status ${r.status || "open"}">${(r.status || "open").replace("-", " ")}</span>
         <div class="rep-meta">${r.mcname || "someone"} &middot; ${r.pluginver || "?"} on ${r.server || "?"} &middot; ${stamp(r.createdAt)}</div>
       </div>
       <h2>What went wrong</h2>
       <p>${(r.what || "").replace(/\n/g, "<br>")}</p>
       ${r.steps ? `<h2>Steps to reproduce</h2><p>${r.steps.replace(/\n/g, "<br>")}</p>` : ""}
-      ${r.console ? `<h2>Console output</h2><pre>${r.console.replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]))}</pre>` : ""}
+      ${r.console ? `<h2>Console output</h2><pre>${esc(r.console)}</pre>` : ""}
+      ${r.plugins ? `<h2>Plugins</h2><pre>${esc(r.plugins)}</pre>` : ""}
+      ${r.logs ? `<details class="port"><summary>Debug log (${Math.round(r.logs.length / 1000)}KB)</summary>
+        <div class="port-body"><pre style="max-height:420px;overflow:auto">${esc(r.logs)}</pre></div></details>` : ""}
+      ${Array.isArray(r.needs) && r.needs.length ? `<div class="note gold"><b>Waiting on you.</b> Staff asked for ${
+        r.needs.map(n => NEEDS[n] || n).join(", ")}.</div>` : ""}
       <h2>Replies</h2>
       <div class="msgs">${msgs.length ? msgs.map(x => `
         <div class="msg ${x.isStaff ? "staff" : ""}">
@@ -381,6 +421,26 @@ async function loadThread(id) {
     const owner = isOwner();
     const tools = $("#ownerTools");
     if (tools) tools.hidden = !owner;
+
+    // staff asked for something, and this is the person who can supply it
+    const supply = $("#supplyPanel");
+    const mine = r.uid === state.user.uid;
+    const wanted = Array.isArray(r.needs) ? r.needs : [];
+    if (supply) {
+      supply.hidden = !(mine && wanted.length);
+      Object.keys(NEEDS).forEach(k => {
+        const row = supply.querySelector('[data-need="' + k + '"]');
+        if (row) row.hidden = wanted.indexOf(k) < 0;
+      });
+      const pre = supply.querySelector("#supplyLogs");
+      if (pre && !pre.value && r.logs) pre.value = r.logs;
+      const pl = supply.querySelector("#supplyPlugins");
+      if (pl && !pl.value && r.plugins) pl.value = r.plugins;
+      const st = supply.querySelector("#supplySteps");
+      if (st && !st.value && r.steps) st.value = r.steps;
+      const vs = supply.querySelector("#supplyVersions");
+      if (vs && !vs.value) vs.value = [r.pluginver, r.server].filter(Boolean).join(" on ");
+    }
   } catch (e) {
     wrap.innerHTML = `<p class="lede" style="color:var(--ember)">${friendly(e)}</p>`;
   }
@@ -409,6 +469,77 @@ function mountReports() {
       loadThread(id);
     } catch (e) { when(note, friendly(e), true); }
   });
+
+  // staff asking for more. Sets what is wanted on the report and says so in
+  // the thread, so the reporter sees it both places.
+  $("#requestInfo") && $("#requestInfo").addEventListener("click", async () => {
+    const wanted = $$("[data-want]:checked").map(c => c.getAttribute("data-want"));
+    const note = $("#replyNote");
+    if (!wanted.length) return when(note, "Tick what you need first.", true);
+    const extra = ($("#requestWhy") && $("#requestWhy").value || "").trim();
+    try {
+      await updateDoc(doc(db, "reports", id), {
+        needs: wanted, status: "needs-info", updatedAt: serverTimestamp()
+      });
+      await addDoc(collection(db, "reports", id, "messages"), {
+        uid: state.user.uid,
+        name: displayName() || "staff",
+        body: "Could you send " + wanted.map(w => NEEDS[w] || w).join(", ") + "?"
+              + (extra ? "\n\n" + extra : ""),
+        isStaff: true,
+        createdAt: serverTimestamp()
+      });
+      $$("[data-want]").forEach(c => { c.checked = false; });
+      if ($("#requestWhy")) $("#requestWhy").value = "";
+      when(note, "Asked for it.");
+      loadThread(id);
+    } catch (e) { when(note, friendly(e), true); }
+  });
+
+  // the reporter sending back whatever was asked for
+  $("#sendInfo") && $("#sendInfo").addEventListener("click", async () => {
+    const note = $("#supplyNote");
+    const patch = { needs: [], status: "open", updatedAt: serverTimestamp() };
+    const given = [];
+
+    const logs = $("#supplyLogs") && $("#supplyLogs").value.trim();
+    const plugins = $("#supplyPlugins") && $("#supplyPlugins").value.trim();
+    const steps = $("#supplySteps") && $("#supplySteps").value.trim();
+    const versions = $("#supplyVersions") && $("#supplyVersions").value.trim();
+
+    if (logs) { patch.logs = logs.slice(0, LOG_CAP); given.push("a debug log"); }
+    if (plugins) { patch.plugins = plugins.slice(0, 20000); given.push("my plugin list"); }
+    if (steps) { patch.steps = steps.slice(0, 20000); given.push("steps to reproduce"); }
+    if (versions) { patch.server = versions.slice(0, 500); given.push("versions"); }
+
+    if (!given.length) return when(note, "Fill in at least one of the boxes.", true);
+
+    try {
+      await updateDoc(doc(db, "reports", id), patch);
+      await addDoc(collection(db, "reports", id, "messages"), {
+        uid: state.user.uid,
+        name: displayName() || "someone",
+        body: "Sent " + given.join(", ") + ".",
+        isStaff: false,
+        createdAt: serverTimestamp()
+      });
+      when(note, "Sent, thanks.");
+      loadThread(id);
+    } catch (e) { when(note, friendly(e), true); }
+  });
+
+  const supplyFile = $("#supplyLogFile");
+  if (supplyFile) {
+    supplyFile.addEventListener("change", async () => {
+      const f = supplyFile.files && supplyFile.files[0];
+      if (!f) return;
+      try {
+        const text = await f.text();
+        $("#supplyLogs").value = text.length > LOG_CAP ? text.slice(-LOG_CAP) : text;
+        when($("#supplyNote"), "Loaded " + f.name + ".");
+      } catch (e) { when($("#supplyNote"), "Could not read that file.", true); }
+    });
+  }
 
   $$("[data-set-status]").forEach(btn => btn.addEventListener("click", async () => {
     try {

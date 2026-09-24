@@ -268,6 +268,26 @@ td code,td .cmd{white-space:nowrap}
 textarea.ed-input{resize:vertical;font-size:15px}
 .ed-body .hint{color:var(--ash);font-size:14.5px;margin:10px 0 0}
 
+/* ---------- import and export ---------- */
+.port{background:var(--pit);border:3px solid #000;margin-top:26px}
+.port summary{cursor:pointer;padding:18px 20px;font-family:var(--display);font-size:18px;color:#fff;
+  list-style:none;display:flex;align-items:center;gap:12px}
+.port summary::-webkit-details-marker{display:none}
+.port summary::before{content:"+";color:var(--blood);font-size:21px;width:14px}
+.port[open] summary::before{content:"3"}
+.port-body{padding:0 20px 22px}
+.check{display:flex;align-items:center;gap:10px;color:var(--ash);font-size:15px;margin-top:14px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--blood)}
+.wants{display:grid;gap:10px}
+.rep-status.needs-info{background:var(--gold)}
+.filepick{display:block;width:100%;background:#000;color:var(--ash);border:0;padding:12px 14px;
+  margin-bottom:12px;font-family:var(--body);font-size:15px;
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.08),inset -2px -2px 0 rgba(0,0,0,.9)}
+.filepick::file-selector-button{font-family:var(--display);font-size:15px;background:var(--stone);
+  color:var(--iron);border:0;padding:8px 16px;margin-right:14px;cursor:pointer;
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.09),inset -2px -2px 0 rgba(0,0,0,.65)}
+.filepick::file-selector-button:hover{background:#242226;color:#fff}
+
 .qa{border-top:3px solid #000}
 .qa details{border-bottom:3px solid #000}
 .qa summary{cursor:pointer;padding:20px 0;font-family:var(--display);font-size:19px;color:#fff;
