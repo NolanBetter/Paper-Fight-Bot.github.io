@@ -1,0 +1,132 @@
+/* The server editor's own styles. The site's style.css does the rest:
+   colours, type, the header, .btn, .note, tables.
+
+   Type stays at the site's 17px or larger and click targets stay big — this
+   is a page people use on a second monitor while the server is running. */
+
+/* Several things here are hidden with the hidden attribute, and a class that
+   sets display (.btn is inline-flex, .ed-tabs is flex) would otherwise beat
+   the browser's own [hidden] rule and show them anyway. */
+[hidden]{display:none !important}
+
+/* ---------- a smaller button, for dense rows ---------- */
+.btn.sm{font-size:16px;padding:10px 18px;letter-spacing:.4px}
+.btn.sm:focus-visible{outline:3px solid var(--ember);outline-offset:3px}
+
+/* ---------- the connection strip and tabs ----------
+   Both stick together, as one block, so nothing scrolls out from under them. */
+.ed-sticky{position:sticky;top:68px;z-index:30;background:var(--void)}
+.ed-strip .strip-in{padding-top:11px;padding-bottom:11px;gap:14px}
+.ed-pill{font-family:var(--display);font-size:16px;letter-spacing:.5px;padding:6px 16px;
+  border:2px solid #2a272b;border-radius:999px;white-space:nowrap;flex:none}
+.ed-pill.ok{border-color:var(--grass);color:#b5e48c}
+.ed-pill.bad{border-color:var(--ember);color:#ff9a92}
+.ed-pill.wait{border-color:var(--gold);color:var(--gold)}
+.ed-server{color:var(--ash);font-size:15px;flex:1 1 300px;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ed-ends{color:var(--ash);font-size:15px;flex:none;white-space:nowrap}
+.ed-strip .btn{flex:none}
+
+/* ---------- tabs ---------- */
+.ed-tabs{display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
+.ed-main{padding:26px 0 140px}
+
+/* ---------- cards ---------- */
+.ed-card{background:var(--pit);border:3px solid #000;padding:clamp(20px,3vw,28px);margin:0 0 20px}
+.ed-card h2{font-size:clamp(22px,3vw,28px);color:#fff;margin-bottom:12px}
+.ed-card .lede{margin-bottom:16px}
+.ed-card .lede:last-child,.ed-card .note:last-child{margin-bottom:0}
+.ed-card code,.ed-steps code{background:#000;padding:1px 6px;color:var(--gold)}
+.ed-steps{color:var(--ash);font-size:17px;padding-left:24px;margin:0 0 16px}
+.ed-steps li{margin:0 0 8px}
+
+.ed-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 4px}
+.ed-row .ed-input{flex:1;min-width:180px;width:auto}
+.ed-row .btn{flex:none}
+.ed-lab{font-family:var(--display);font-size:16px;color:#fff;flex:none}
+.ed-find{margin-bottom:20px}
+.ed-head2{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 16px}
+.ed-head2 h2{font-size:clamp(22px,3vw,28px);color:#fff}
+.ed-count{color:var(--ash);font-size:15.5px}
+.ed-state{font-size:17px;color:#fff}
+.ed-check{display:flex;align-items:center;gap:10px;color:var(--iron);font-size:16px;cursor:pointer}
+.ed-check input{width:20px;height:20px;accent-color:var(--blood)}
+
+/* ---------- settings ---------- */
+.ed-sec{background:var(--pit);border:3px solid #000;margin:0 0 14px}
+.ed-sec>summary{cursor:pointer;padding:18px 20px;font-family:var(--display);font-size:20px;color:#fff;
+  list-style:none;display:flex;align-items:center;gap:14px}
+.ed-sec>summary::-webkit-details-marker{display:none}
+.ed-sec>summary::before{content:"+";color:var(--blood);font-size:22px;width:14px;flex:none}
+.ed-sec[open]>summary::before{content:"\2013"}
+.ed-sec>.body{padding:0 20px 18px}
+.ed-sechelp{color:var(--ash);font-size:15.5px;white-space:pre-wrap;margin:0 0 10px}
+
+.setting{display:grid;grid-template-columns:minmax(220px,1fr) minmax(190px,330px);
+  gap:8px 24px;padding:16px 0;border-top:2px solid #000}
+.setting:first-of-type{border-top:0}
+.setting .name{font-family:var(--display);font-size:17.5px;color:#fff}
+.setting .key{color:var(--ash);font-size:14.5px;word-break:break-all}
+.setting .help{grid-column:1/-1;color:var(--ash);font-size:15.5px;white-space:pre-wrap;margin:0}
+.setting .ed-input{width:100%}
+.setting input[type=checkbox]{width:26px;height:26px;accent-color:var(--blood);margin:4px 0}
+.setting.changed{background:#14120f}
+.setting.changed .name::after{content:" \2022 changed";color:var(--gold);font-family:var(--body);font-size:14px}
+.setting.bad{background:#19100f}
+.setting.bad .why{grid-column:1/-1;color:#ff9a92;font-size:15.5px;margin:0}
+.setting input:disabled,.setting select:disabled,.setting textarea:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:620px){.setting{grid-template-columns:1fr}}
+
+.ed-savebar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--stone);
+  border-top:3px solid #000;box-shadow:0 -4px 0 rgba(0,0,0,.4)}
+.ed-savebar .strip-in{padding-top:14px;padding-bottom:14px;gap:16px}
+.ed-savebar span{font-family:var(--display);font-size:18px;color:var(--gold)}
+.ed-savebar .btn{margin-left:0}
+.ed-savebar .btn:first-of-type{margin-left:auto}
+
+/* ---------- bots ---------- */
+.ed-bots{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.ed-bot{background:var(--pit);border:3px solid #000;padding:16px;
+  display:grid;grid-template-columns:56px 1fr;gap:4px 16px;align-content:start}
+/* a bot's face, cut straight out of its skin image - no canvas needed */
+.ed-face{width:56px;height:56px;background:#2a272b;grid-row:span 3;image-rendering:pixelated;
+  background-size:448px 448px;background-position:-56px -56px}
+.ed-bot .nm{font-family:var(--display);font-size:19px;color:#fff;word-break:break-all}
+.ed-bot .nm small{font-family:var(--body);font-size:14px;color:var(--ash);letter-spacing:0}
+.ed-hp{height:12px;background:#2b0f0e;border:2px solid #000;margin:2px 0}
+.ed-hp>i{display:block;height:100%;background:var(--ember)}
+.ed-bot .what{color:var(--ash);font-size:15px;line-height:1.5}
+.ed-bot .acts{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.ed-bot .acts .ed-input{flex:none;width:auto;min-width:150px}
+
+/* ---------- tables ---------- */
+.ed-table{width:100%;border-collapse:collapse;margin:8px 0 0;font-size:16px}
+.ed-table th,.ed-table td{text-align:left;padding:12px 10px;border-top:2px solid #000;vertical-align:middle}
+.ed-table th{color:var(--ash);font-weight:400;font-size:14.5px;text-transform:uppercase;letter-spacing:.6px}
+.ed-table tr:first-child td{border-top:0}
+.ed-table b{color:#fff;font-weight:500}
+.ed-table .muted{color:var(--ash);font-size:15px}
+.ed-table .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:620px){
+  .ed-table th{display:none}
+  .ed-table td{display:block;border-top:0;padding:4px 0}
+  .ed-table tr{display:block;border-top:2px solid #000;padding:12px 0}
+  .ed-table .acts{justify-content:flex-start;margin-top:8px}
+}
+
+/* ---------- the log viewer ---------- */
+.ed-log{background:#000;border:3px solid #000;padding:14px 16px;margin:0;
+  max-height:62vh;overflow:auto;white-space:pre;font-size:14px;line-height:1.5;color:#cfcdce}
+.ed-log:focus-visible{outline:3px solid var(--ember);outline-offset:2px}
+
+/* ---------- toast ---------- */
+.ed-toast{position:fixed;right:18px;bottom:96px;z-index:60;max-width:min(540px,calc(100vw - 36px));
+  background:var(--stone);border:3px solid #000;border-left:4px solid var(--grass);
+  padding:14px 18px;font-size:16px;line-height:1.5;box-shadow:0 6px 0 rgba(0,0,0,.45)}
+.ed-toast.err{border-left-color:var(--ember)}
+
+/* on a phone the header block would eat the screen, so let it scroll away */
+@media(max-width:860px){
+  .ed-sticky{position:static}
+  .ed-server{white-space:normal;flex:1 1 100%}
+}

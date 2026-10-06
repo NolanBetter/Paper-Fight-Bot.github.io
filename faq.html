@@ -45,21 +45,74 @@
 
 <section class="tight">
   <div class="wrap">
-    <div id="faqBody"><div class="qa">
-      <details open><summary>Does it need any other plugins?</summary><p>Not on 4.1.0 or later — it's one jar with nothing else to install. On builds below 4.1.0 you want the free version of <a href="#" data-libs style="color:var(--iron)">LibsDisguises</a> alongside it, because that's what makes the bots look like players.</p></details>
-      <details><summary>What can I run it on?</summary><p>Paper, Bukkit, Purpur and Spigot, on Minecraft 1.16 and up. It's tested on <span data-tested>1.21.11</span>.</p></details>
-      <details><summary>Does it cost anything?</summary><p>No. It's free on Modrinth.</p></details>
-      <details><summary>How many bots can I run at once?</summary><p>One command spawns up to 50. Whether your server enjoys 50 of them is another matter — they path, fight and place blocks the way players do, so scale up gradually and watch your TPS.</p></details>
-      <details><summary>Can bots fight each other?</summary><p>Yes. Put them in two groups and set the groups on each other with <span class="cmd">/fightbot fight --group A B</span>. Good for watching what a loadout actually does.</p></details>
-      <details><summary>Can I change their gear while they're fighting?</summary><p>Not mid-fight. Stop the bot first with <span class="cmd">/fightbot stop &lt;bot&gt;</span>, then right-click it in creative to open the equipment screen. Once it's fighting again the screen is off limits until you stop it.</p></details>
-      <details><summary>Do bots drop their gear when they die?</summary><p>Yes, they drop what they were carrying. Sweep the floor between fights, or gear them with things you don't mind picking up again.</p></details>
-      <details><summary>Why do the bots have player names?</summary><p>They're pulled from <span class="cmd">botnames.yml</span>, and they show in the tab list, so a bot reads like a real player joining. Edit that file to change the pool.</p></details>
-      <details><summary>Is there a permission node?</summary><p><span class="cmd">fightbot.use</span>, default OP. Grant it to let other people spawn and command bots.</p></details>
-      <details><summary>Should I use the beta builds?</summary><p>Only if you're chasing a specific fix or happy to report bugs. Stick to the newest full release for anything you care about, and always back up first.</p></details>
-      <details><summary>What's coming next?</summary><p>Mace and crystal gear support in the reserved equipment slots, bots potting themselves mid-fight, and a proper GUI for the commands. Discord gets the details first.</p></details>
-      <details><summary>Can I use it in a video?</summary><p>Go ahead. A link back is appreciated but not required.</p></details>
-      <details><summary>How do I report a bug?</summary><p>Discord, with your server version, your plugin version, and whatever the console printed. Most updates come straight out of those reports.</p></details>
-    </div></div>
+    <div id="faqBody"><!-- faq:start -->
+<div class="qa">
+      <details>
+        <summary>Does it need any other plugins?</summary>
+        <p>No, on anything newer than 3.17.1. It is one jar.</p>
+<p>3.17.1 and older ran bots as disguised zombies, so those need <a href="https://www.spigotmc.org/resources/libs-disguises-free.81/" rel="noopener">LibsDisguises</a>. That is the version to use if your server is below 1.20.5.</p>
+      </details>
+      <details>
+        <summary>What can I run it on?</summary>
+        <p><strong>Paper 1.20.5 or newer, or a fork like Purpur.</strong> Nothing else.</p>
+<p>Spigot, CraftBukkit and Folia are not supported. FightBot checks at startup and says so in the console rather than half working.</p>
+      </details>
+      <details>
+        <summary>Why Paper and not Spigot?</summary>
+        <p>Bots are real server side players now, not mobs wearing a disguise. They have real hitboxes, real physics, and every other plugin on your server sees them as players. They even show in the tab list with a realistic ping. That needs Paper&#39;s API.</p>
+      </details>
+      <details>
+        <summary>Does it cost anything?</summary>
+        <p>No. It is free on Modrinth.</p>
+      </details>
+      <details>
+        <summary>How many bots can I run at once?</summary>
+        <p>Up to 200 from one command, with <code class="cmd">/fightbot spawn &lt;count&gt;</code>. Whether your server enjoys 200 is another matter, since they path, fight and place blocks the way players do. Scale up gradually and watch your TPS.</p>
+      </details>
+      <details>
+        <summary>Can bots fight each other?</summary>
+        <p>Yes. Put them in groups and use <code class="cmd">/fightbot groupfight &lt;group&gt; &lt;target&gt;</code>, or set two groups on one another. Good for watching what a loadout actually does.</p>
+      </details>
+      <details>
+        <summary>Can I change their gear while they are fighting?</summary>
+        <p>No. The bot is moving items between its hands the whole time, so its inventory is closed while it fights. Run <code class="cmd">/fightbot stop &lt;bot&gt;</code> first, then right click it in creative or use <strong>Open gear</strong> in its settings menu.</p>
+      </details>
+      <details>
+        <summary>Where did crystal PvP go?</summary>
+        <p>It is switched off while it is reworked, and comes back in a later update. Roaming and patrolling are back as of 5.17.0 — see <a href="wiki.html" rel="noopener">the wiki</a>.</p>
+      </details>
+      <details>
+        <summary>Does the mace work?</summary>
+        <p>Yes. It is off by default, so turn it on with <code class="cmd">mace.enabled</code> in the config, or for one bot in its settings menu.</p>
+<p>A bot with a mace and wind charges wind-jumps and smashes you on the way down. With an elytra and rockets it takes off, flies over you and dives. If you dive on a bot, it sidesteps or gets its shield up.</p>
+      </details>
+      <details>
+        <summary>Is there a permission node?</summary>
+        <p><code class="cmd">fightbot.use</code>, default OP. Grant it to let other people spawn and command bots. <code class="cmd">/fightbot help</code> in game lists everything.</p>
+      </details>
+      <details>
+        <summary>Should I use the beta builds?</summary>
+        <p>Only if you are chasing a specific fix or happy to report bugs. Stick to the newest full release for anything you care about, and back up first.</p>
+      </details>
+      <details>
+        <summary>Can I use it in a video?</summary>
+        <p>Go ahead. A link back is appreciated but not required.</p>
+      </details>
+      <details>
+        <summary>How do I report a bug?</summary>
+        <p>Use the <a href="report.html" rel="noopener">report form</a>. It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.</p>
+      </details>
+      <details>
+        <summary>Can I change settings without opening server files?</summary>
+        <p>Yes, from 5.17.0. Type <code class="cmd">/fightbot web</code> in game and open the link it gives you. It opens the <a href="#" rel="noopener">editor</a> on this site, where you can change any setting, watch the bots that are on, upload skins and voice lines, and read the debug logs.</p>
+<p>The link is the key, so do not share it. It stops working after 30 minutes unused, after 4 hours, or when you type <code class="cmd">/fightbot web stop</code>. Nothing on your server has to be opened up, and everything between your server and the page is encrypted with a key that is only in the link.</p>
+      </details>
+      <details>
+        <summary>Do the bots talk?</summary>
+        <p>With <a href="https://modrinth.com/plugin/simple-voice-chat" rel="noopener">Simple Voice Chat</a> on the server, yes. Bots show up in voice chat like players, and the ones that &quot;talk&quot; say lines by themselves when they join, start a fight, win one, get low or die.</p>
+<p>You can add your own <code class="cmd">.mp3</code> or <code class="cmd">.wav</code> files too. Those are <strong>never</strong> said by a bot on its own — only when someone types <code class="cmd">/fightbot vc &lt;name&gt;</code> — everyone nearby is told it is a file added by that server and who played it, and every play is logged.</p>
+      </details></div>
+      <!-- faq:end --></div>
 
     <div class="cta-row">
       <a class="btn" href="#" data-discord>Ask in Discord</a>

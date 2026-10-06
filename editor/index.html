@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Server editor — Paper Fight Bot</title>
+
+<!-- The link's secret lives in this page, so nothing else gets to run here:
+     no analytics, no chat widget, and none of the site's own scripts. Only
+     editor.js and ../assets/fightbot-web.js, both from this domain.
+     Testing against a local relay? Add it to connect-src. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app; img-src 'self' data: https://textures.minecraft.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#060506">
+<link rel="icon" href="../assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="../index.html"><img src="../assets/logo.png" alt=""><span><span class="p">PAPER </span>FIGHT <b>BOT</b></span></a>
+    <nav>
+      <a href="../wiki.html">Wiki</a>
+      <a href="../faq.html">FAQ</a>
+      <a href="../index.html">Back to site</a>
+    </nav>
+  </div>
+</header>
+
+<!-- connection state and tabs, stuck together under the site header so they
+     stay reachable while a long settings list scrolls -->
+<div class="ed-sticky">
+  <div class="strip ed-strip">
+    <div class="wrap strip-in">
+      <span id="conn" class="ed-pill wait">Connecting&hellip;</span>
+      <span id="server" class="ed-server"></span>
+      <span id="ends" class="ed-ends"></span>
+      <button class="btn ghost sm" id="finish" hidden>Close</button>
+    </div>
+  </div>
+
+  <nav class="wrap ed-tabs" id="tabs" role="tablist" hidden>
+    <button class="btn ghost tab sm on" role="tab" data-tab="settings" aria-selected="true">Settings</button>
+    <button class="btn ghost tab sm" role="tab" data-tab="bots" aria-selected="false">Bots</button>
+    <button class="btn ghost tab sm" role="tab" data-tab="skins" aria-selected="false">Skins</button>
+    <button class="btn ghost tab sm" role="tab" data-tab="voice" aria-selected="false">Voice lines</button>
+    <button class="btn ghost tab sm" role="tab" data-tab="debug" aria-selected="false">Debug logs</button>
+  </nav>
+</div>
+
+<main id="main" class="wrap ed-main">
+
+  <!-- before it is connected, and if it never connects -->
+  <section class="ed-card" id="start">
+    <h2 id="startTitle">Opening the editor&hellip;</h2>
+    <p class="lede" id="startMsg">Finding your server.</p>
+    <div id="howTo" hidden>
+      <h3>Getting a link</h3>
+      <ol class="ed-steps">
+        <li>Join your server, or open its console.</li>
+        <li>Run <code>/fightbot web</code>.</li>
+        <li>Open the link it gives you. It works for 30 minutes unused, 4 hours in all.</li>
+      </ol>
+      <p class="lede">You need FightBot <b>5.17.0</b> or newer and the <code>fightbot.admin</code> permission.
+        <a href="../install.html">How to install it</a>.</p>
+    </div>
+  </section>
+
+  <div class="note gold" id="readonly" hidden><b>Read&nbsp;only.</b> This server has
+    <code>web.read-only</code> switched on, so you can look but not change anything.</div>
+
+  <!-- ---------------------------------------------------------- settings -->
+  <section id="tab-settings" hidden>
+    <div class="ed-row ed-find">
+      <label class="ed-lab" for="find">Find a setting</label>
+      <input type="text" id="find" class="ed-input" placeholder="crit, mace, skin&hellip;">
+      <button class="btn sm ghost" id="openAll">Open all</button>
+    </div>
+    <div id="sections"></div>
+  </section>
+
+  <!-- ------------------------------------------------------------- bots -->
+  <section id="tab-bots" hidden>
+    <div class="ed-head2">
+      <h2>Bots on the server</h2>
+      <span class="ed-count" id="botCount"></span>
+    </div>
+    <div id="bots" class="ed-bots"></div>
+  </section>
+
+  <!-- ------------------------------------------------------------ skins -->
+  <section id="tab-skins" hidden>
+    <div class="ed-card">
+      <h2>Add a skin</h2>
+      <p class="lede">A Minecraft skin image: a 64&times;64 PNG, or an old 64&times;32 one. New images are
+        signed automatically, which takes a few seconds each. Bots only wear this folder while
+        <code>identity.skin-source</code> is <code>folder</code>.</p>
+      <div class="ed-row">
+        <input type="file" id="skinFile" accept="image/png" class="ed-input">
+        <input type="text" id="skinName" class="ed-input" placeholder="name" aria-label="skin name">
+        <button class="btn sm" id="skinUpload">Upload</button>
+      </div>
+    </div>
+    <div class="ed-card">
+      <h2>Skins folder</h2>
+      <p class="lede" id="skinStatus"></p>
+      <table class="ed-table"><tbody id="skins"></tbody></table>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------ voice -->
+  <section id="tab-voice" hidden>
+    <div class="ed-card">
+      <h2>Voice lines</h2>
+      <p class="lede" id="voiceStatus"></p>
+      <div class="note gold">Files added here are only ever played when someone asks &mdash; never by a bot
+        on its own. Everyone near the bot sees that it&rsquo;s a sound file added by this server,
+        and who played it.</div>
+    </div>
+    <div class="ed-card">
+      <h2>Add a line</h2>
+      <p class="lede">MP3 or WAV. Anything else &mdash; a phone&rsquo;s .m4a, an .ogg, a .webm &mdash; is
+        converted in your browser first. The name you give it is what you type in game:
+        <code>/fightbot vc &lt;name&gt;</code>.</p>
+      <div class="ed-row">
+        <input type="file" id="voiceFile" accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm,.flac" class="ed-input">
+        <input type="text" id="voiceName" class="ed-input" placeholder="name" aria-label="line name">
+        <button class="btn sm" id="voiceUpload">Upload</button>
+      </div>
+    </div>
+    <div class="ed-card">
+      <h2>Lines</h2>
+      <div class="ed-row">
+        <label class="ed-lab" for="voiceBot">Play on</label>
+        <select id="voiceBot" class="ed-input"></select>
+      </div>
+      <table class="ed-table"><tbody id="lines"></tbody></table>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------ debug -->
+  <section id="tab-debug" hidden>
+    <div class="ed-card">
+      <h2>Debug logging</h2>
+      <p class="lede">Every decision the bots make, written to <code>plugins/FightBot/debug/</code>.
+        Leave it off unless you are chasing a bug &mdash; then turn it on, make the bug happen, and
+        attach the log to a <a href="../report.html">report</a>.</p>
+      <div class="ed-row">
+        <span id="debugState" class="ed-state"></span>
+        <button class="btn sm" id="debugToggle">Turn on</button>
+      </div>
+    </div>
+    <div class="ed-card">
+      <h2>Log files</h2>
+      <table class="ed-table">
+        <thead><tr><th>File</th><th>Size</th><th>Last written</th><th></th></tr></thead>
+        <tbody id="logs"></tbody>
+      </table>
+    </div>
+    <div class="ed-card" id="viewer" hidden>
+      <div class="ed-head2">
+        <h2 id="viewName"></h2>
+        <label class="ed-check"><input type="checkbox" id="liveTail"> Follow live</label>
+        <button class="btn sm ghost" id="loadMore">Load earlier</button>
+      </div>
+      <pre class="ed-log" id="logText" tabindex="0"></pre>
+    </div>
+  </section>
+</main>
+
+<!-- unsaved settings -->
+<div class="ed-savebar" id="savebar" hidden>
+  <div class="wrap strip-in">
+    <span id="saveCount"></span>
+    <button class="btn sm" id="save">Save and reload FightBot</button>
+    <button class="btn sm ghost" id="undo">Undo all</button>
+  </div>
+</div>
+
+<div class="ed-toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="editor.js"></script>
+</body>
+</html>

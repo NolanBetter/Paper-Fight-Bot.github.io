@@ -34,8 +34,15 @@ function inline(text) {
   return out;
 }
 
+/** Splits a table row into cells. A \| is a pipe *inside* a cell, not a
+    column break — command tables are full of them (`<bot\|--all>`). */
 function tableRow(line) {
-  return line.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+  const HELD = "\u0000";
+  return line.trim()
+    .replace(/^\||\|$/g, "")
+    .replace(/\\\|/g, HELD)
+    .split("|")
+    .map(c => c.trim().split(HELD).join("|"));
 }
 
 /**

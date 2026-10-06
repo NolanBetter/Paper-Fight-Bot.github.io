@@ -45,7 +45,22 @@ service cloud.firestore {
     match /reports/{id} {
       allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
       allow read:   if signedIn() && (resource.data.uid == request.auth.uid || isOwner());
-      allow update: if isOwner();
+
+      // Staff can change anything on a report. The person who filed it can only
+      // change the fields staff might ask them for, so they cannot reassign a
+      // report to someone else or rewrite what they originally said went wrong.
+      allow update: if isOwner()
+        || (signedIn()
+            && resource.data.uid == request.auth.uid
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['logs', 'plugins', 'steps', 'server', 'console',
+                           'needs', 'status', 'updatedAt', 'lastAt', 'lastBy'])
+            // lastBy is what puts the red dot on staff's Reports link, so the
+            // reporter may only ever say the last word was theirs
+            && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastBy'])
+                || request.resource.data.lastBy == 'reporter'));
+
       allow delete: if isOwner();
 
       // replies. Either side of a report may post, nobody else may read it.

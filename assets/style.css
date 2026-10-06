@@ -59,6 +59,17 @@ section{padding:var(--gap) 0}
 .bar nav a:hover{color:var(--iron);border-color:var(--blood)}
 .bar nav a[aria-current="page"]{color:#fff;border-color:var(--blood)}
 
+/* the red dot on Reports: how many reports are waiting on you. JS sets the
+   size inline as well, so a cached stylesheet cannot lose it. */
+.bar nav a .dot{display:none;min-width:19px;height:19px;margin-left:7px;padding:0 5px;
+  box-sizing:border-box;border-radius:10px;background:#e0443e;color:#fff;text-align:center;
+  font:700 12px/19px system-ui,-apple-system,"Segoe UI",sans-serif;vertical-align:middle;
+  box-shadow:0 0 0 2px rgba(10,10,12,.55)}
+@media (prefers-reduced-motion:no-preference){
+  .bar nav a .dot{animation:dot-in .22s ease-out}
+}
+@keyframes dot-in{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+
 /* ---------- buttons ---------- */
 .btn{font-family:var(--display);font-size:19px;letter-spacing:.6px;padding:15px 28px;border:0;cursor:pointer;
   text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;color:#fff;
@@ -204,6 +215,11 @@ td code,td .cmd{white-space:nowrap}
 
 /* ---------- report list ---------- */
 .rep-list{display:grid;gap:3px;background:#000;border:3px solid #000}
+/* the status and, when it is waiting on you, a "new" chip */
+.rep-top{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.rep-new{display:none;background:#e0443e;color:#fff;flex:none;
+  font-family:var(--display);font-size:12.5px;letter-spacing:.6px;text-transform:uppercase;
+  padding:3px 10px;border-radius:3px}
 .rep{background:var(--pit);padding:20px 22px;display:grid;gap:8px;text-decoration:none;
   transition:background .12s}
 .rep:hover{background:#151418}

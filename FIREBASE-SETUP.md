@@ -8,19 +8,22 @@ site works without any of it — the docs, FAQ and wiki all render on their own.
 
 ---
 
-## 1. Email and password sign in
+## 1. Sign in methods
 
 1. Firebase console -> **Authentication** -> **Get started**.
 2. **Sign-in method** -> **Email/Password** -> enable -> **Save**.
    Leave "Email link" off, it is not used.
-3. **Settings** -> **Authorized domains** -> **Add domain** -> `fightmc.xyz`.
+3. Still on **Sign-in method** -> **Google** -> enable -> pick a support email
+   -> **Save**.
+4. **Settings** -> **Authorized domains** -> **Add domain** -> `fightmc.xyz`.
 
 `localhost` is usually there already, which is what lets you test locally.
 
-**Discord is not here on purpose.** It needs OpenID Connect, which Firebase
-only offers on Identity Platform, and that is the paid tier. Email and password
-does the same job for what this site needs. If you upgrade later, the hook goes
-in `app.js` next to the email sign in.
+Both methods land in the same place. Someone who signs up with Google has no
+Minecraft name yet, so the account page nudges them to add one.
+
+**Discord is still not here.** It needs OpenID Connect, which Firebase only
+offers on Identity Platform, and that is the paid tier.
 
 ---
 
@@ -66,6 +69,50 @@ set it back to `user`.
 
 ---
 
+## 4. The Realtime Database, for the in-game editor
+
+This is the one that makes `/fightbot web` work. Without it the rest of the
+site is fine — only `/editor/` stops working.
+
+It is a **different database** from Firestore, in the same project. Firestore
+and sign in are untouched by this step.
+
+1. Firebase console -> project **pfbwebsite-45ce2** -> **Build** ->
+   **Realtime Database** -> **Create database**.
+2. Location: **United States (us-central1)**.
+3. Start in **locked mode**. The rules below replace that straight away.
+4. **Rules** tab -> select everything -> paste the contents of
+   **`realtime-database.rules.json`** (next to this file) -> **Publish**.
+
+That is it. `editor/relay.json` already names the us-central1 database. If you
+pick a different location, the console shows a different URL — put that one in
+`relay.json` instead, and the plugin and the page both follow it.
+
+**Test it:** on a server running FightBot 5.17.0 or newer, type `/fightbot web`
+and open the link. The page should say **Connected** and show your server's
+version within a second or two.
+
+### What is actually stored there
+
+Nothing readable. Your server and the editor page agree on a key that only
+exists in the link, and everything between them is encrypted with it. The
+database only ever holds scrambled bytes and a timestamp saying when the
+session runs out. Sessions cannot be listed either — you have to already know
+a session's id, which comes from the secret in the link.
+
+This is why nobody has to sign in to use the editor, and why the Minecraft
+server does not need a single port opened.
+
+### What it costs
+
+Nothing, on the free plan. One limit worth knowing: the free plan allows **100
+database connections at once**, and each open editor uses two (the page and the
+server). That is 50 editors open at the same moment across every server running
+FightBot. If that ever becomes a problem, the Blaze plan lifts it to 200,000
+and costs pennies at this size.
+
+---
+
 ## How the pieces behave
 
 ### Reports
@@ -79,25 +126,44 @@ hand.
 A reporter can only ever see their own reports. That is enforced by the rules,
 not by the page hiding things.
 
+**Debug logs and plugin lists** come in with the report. The log is read in the
+browser and stored as text on the report document, not in Cloud Storage, which
+would need a billing account. A Firestore document holds 1MB, so the log is
+capped at 150KB and the **last** 150KB is kept when a file is longer than that,
+since the end is normally the useful part.
+
+**Asking for more.** Open a report and tick what you need: a debug log, steps
+to reproduce, a plugin list, or versions. That marks the report **needs info**,
+posts the request into the thread, and gives the reporter boxes for exactly
+those things on their own copy. When they send it back the report goes to
+**open** again.
+
+The rules let a reporter change only the fields you might ask them for. They
+cannot rewrite what they originally said went wrong, or move a report to
+somebody else.
+
 ### Editing the FAQ and wiki
 
-**Edit** gives you a Markdown box with a live preview, the same format as the
-Modrinth description. Save and it is live immediately.
+**Edit** gives you a list of entries with Edit, Delete and up/down arrows on
+each, and an Add button underneath. Every change saves as you make it.
 
-What is supported: headings, `**bold**`, `*italic*`, `` `code` ``, fenced code
-blocks, links, images, bullet and numbered lists, tables, `> quotes` and `---`
-rules.
+**FAQ** entries are a question and an answer. Headings are switched off inside
+an answer, because the question is already the heading.
 
-Two things worth knowing:
+**Wiki** entries are a section title and its text. Headings are on, so `#`
+gives you sub headings inside a section, and each section title becomes its own
+button in the sidebar. The order you put them in is the order they appear.
 
-- **Empty means built in.** Clear a page and the text that ships in the HTML
-  comes back. Nothing is ever lost by experimenting.
-- **The wiki sidebar disappears** once you write your own wiki text, because
-  its links point at the built in headings. Put your own contents list at the
-  top if you want one.
+Markdown in both: `**bold**`, `*italic*`, `` `code` ``, fenced code blocks,
+links, images, bullet and numbered lists, tables, `> quotes` and `---` rules.
 
-Content is stored in **content/faq** and **content/wiki**. Editing those
-documents in the console works too, if you would rather.
+**Delete everything on a page and the built in text comes back**, so you can
+experiment without losing anything.
+
+Stored in **content/faq** as an `items` array, and **content/wiki** as a
+`sections` array. If you had already saved a page with the older single box,
+it is brought in as one entry the first time you open the editor, so nothing
+you wrote is lost.
 
 ### Minecraft names
 

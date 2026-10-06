@@ -21,14 +21,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
   doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs,
-  query, where, orderBy, serverTimestamp
+  query, where, orderBy, limit, onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const HEAD_PX = 24;
 const head = (name, px) => "https://mc-heads.net/avatar/" + encodeURIComponent(name) + "/" + px;
 const headAlt = (name, px) => "https://minotar.net/helm/" + encodeURIComponent(name) + "/" + px + ".png";
 
-const state = { user: null, profile: null, ready: false };
+const state = { user: null, profile: null, ready: false, unread: new Set() };
 
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -88,6 +88,120 @@ const stamp = value => {
   return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 };
 
+// ------------------------------------------------- the red dot on Reports
+// A report counts as new to you when the last thing that happened on it was
+// not yours: a staff reply if you filed it, your reporter's reply (or a brand
+// new report) if you are staff. What you have already read is remembered on
+// your own user document, so the dot follows you between your phone and your
+// computer instead of living in one browser.
+
+const SEEN_CAP = 300;
+let navDot = null;
+let unreadStop = null;
+
+function seenMap() {
+  const s = state.profile && state.profile.seenReports;
+  return (s && typeof s === "object") ? s : {};
+}
+
+/** Firestore timestamps, plain numbers and dates all come out as milliseconds. */
+function msOf(t) {
+  if (!t) return 0;
+  if (typeof t === "number") return t;
+  if (typeof t.seconds === "number") return t.seconds * 1000 + Math.round((t.nanoseconds || 0) / 1e6);
+  if (t.toDate) return t.toDate().getTime();
+  return 0;
+}
+
+/** When something last happened on a report. Reports filed before this
+    existed only have updatedAt, so fall back through to createdAt. */
+const touched = r => msOf(r.lastAt) || msOf(r.updatedAt) || msOf(r.createdAt);
+
+function isNew(id, r) {
+  const mine = r.uid === (state.user && state.user.uid);
+  const staffSpoke = r.lastBy === "staff";
+  // whoever spoke last does not need telling about it
+  if (mine ? !staffSpoke : staffSpoke) return false;
+  return touched(r) > (seenMap()[id] || 0);
+}
+
+function paintUnread() {
+  const n = state.unread.size;
+  const label = n > 9 ? "9+" : String(n);
+
+  if (navDot) {
+    navDot.textContent = label;
+    navDot.style.display = n ? "inline-block" : "none";
+    navDot.title = n === 1 ? "1 report is waiting on you" : n + " reports are waiting on you";
+  }
+
+  // the matching "new" chips on the reports list, when that is the page
+  $$(".rep[data-id]").forEach(row => {
+    const chip = row.querySelector(".rep-new");
+    if (chip) chip.style.display = state.unread.has(row.getAttribute("data-id")) ? "inline-block" : "none";
+  });
+
+  // and in the tab title, for anyone who leaves the site open
+  const bare = document.title.replace(/^\(\d+\+?\)\s+/, "");
+  document.title = n ? "(" + label + ") " + bare : bare;
+}
+
+/** Follow the reports that concern you, live. */
+function watchUnread() {
+  if (unreadStop) { unreadStop(); unreadStop = null; }
+  state.unread = new Set();
+  paintUnread();
+  if (!state.user) return;
+
+  const q = isOwner()
+    ? query(collection(db, "reports"), orderBy("createdAt", "desc"), limit(60))
+    : query(collection(db, "reports"), where("uid", "==", state.user.uid), limit(60));
+
+  // live, so the dot turns up while the page is open, and clears itself when
+  // the same person reads the report in another tab
+  unreadStop = onSnapshot(q, snap => {
+    const fresh = new Set();
+    snap.forEach(d => { if (isNew(d.id, d.data())) fresh.add(d.id); });
+    state.unread = fresh;
+    paintUnread();
+  }, () => { /* offline, or no reports to list: no dot, and no noise about it */ });
+}
+
+/** Remember that a report has been read. at is when it was last touched. */
+async function markRead(id, at) {
+  if (!state.user || !id) return;
+  const was = seenMap();
+  const now = at || Date.now();
+  if ((was[id] || 0) >= now) return;
+
+  const seen = Object.assign({}, was, { [id]: now });
+  let pruned = false;
+  const keys = Object.keys(seen);
+  if (keys.length > SEEN_CAP) {
+    pruned = true;
+    keys.sort((a, b) => seen[a] - seen[b])
+        .slice(0, keys.length - SEEN_CAP)
+        .forEach(k => { delete seen[k]; });
+  }
+
+  if (state.profile) state.profile.seenReports = seen;
+  state.unread.delete(id);
+  paintUnread();
+
+  try {
+    const ref = doc(db, "users", state.user.uid);
+    if (pruned) await updateDoc(ref, { seenReports: seen });
+    else await setDoc(ref, { seenReports: { [id]: now } }, { merge: true });
+  } catch (e) { /* the dot is a nicety, not worth interrupting anyone over */ }
+}
+
+/** What to stamp on a report when you act on it, so the other side gets a dot. */
+const touch = () => ({
+  lastAt: serverTimestamp(),
+  lastBy: isOwner() ? "staff" : "reporter",
+  updatedAt: serverTimestamp()
+});
+
 // --------------------------------------------------------------- the nav
 
 function mountNav() {
@@ -98,6 +212,15 @@ function mountNav() {
   reports.href = "reports.html";
   reports.textContent = "Reports";
   reports.hidden = true;
+  // the dot is sized here as well as in the stylesheet, so a cached
+  // style.css cannot leave it invisible or the wrong shape
+  navDot = document.createElement("span");
+  navDot.className = "dot";
+  navDot.style.cssText = "display:none;min-width:19px;height:19px;margin-left:7px;padding:0 5px;"
+    + "box-sizing:border-box;border-radius:10px;background:#e0443e;color:#fff;"
+    + "font:700 12px/19px system-ui,-apple-system,Segoe UI,sans-serif;text-align:center;"
+    + "vertical-align:middle;box-shadow:0 0 0 2px rgba(10,10,12,.55)";
+  reports.appendChild(navDot);
   nav.appendChild(reports);
 
   const admin = document.createElement("a");
@@ -136,6 +259,8 @@ function mountNav() {
     who.style.cssText = "max-width:13ch;overflow:hidden;text-overflow:ellipsis";
     who.textContent = name;
     pill.appendChild(who);
+
+    paintUnread();   // in case the count arrived before the nav existed
   });
 }
 
@@ -334,7 +459,8 @@ function mountReportForm() {
     try {
       const payload = {
         uid: state.user.uid, status: "open", needs: [],
-        createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+        createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+        lastAt: serverTimestamp(), lastBy: "reporter"   // so staff see a dot
       };
       FIELDS.forEach(f => payload[f] = val(f).slice(0, f === "logs" ? LOG_CAP : 20000));
       const ref = await addDoc(collection(db, "reports"), payload);
@@ -369,11 +495,15 @@ async function loadReports() {
     }
 
     list.innerHTML = rows.map(r => `
-      <a class="rep" href="reports.html?id=${r.id}">
-        <span class="rep-status ${r.status || "open"}">${(r.status || "open").replace("-", " ")}</span>
-        <span class="rep-what">${(r.what || "").slice(0, 90)}</span>
-        <span class="rep-meta">${r.mcname || "someone"} &middot; ${r.pluginver || "?"} &middot; ${stamp(r.createdAt)}</span>
+      <a class="rep" data-id="${r.id}" href="reports.html?id=${r.id}">
+        <span class="rep-top">
+          <span class="rep-status ${r.status || "open"}">${(r.status || "open").replace("-", " ")}</span>
+          <span class="rep-new" style="display:none">new</span>
+        </span>
+        <span class="rep-what">${esc((r.what || "").slice(0, 90))}</span>
+        <span class="rep-meta">${esc(r.mcname || "someone")} &middot; ${esc(r.pluginver || "?")} &middot; ${stamp(r.createdAt)}</span>
       </a>`).join("");
+    paintUnread();   // light up the ones waiting on you
   } catch (e) {
     list.innerHTML = `<p class="lede" style="color:var(--ember)">${friendly(e)}</p>`;
   }
@@ -394,6 +524,8 @@ async function loadThread(id) {
     const msgs = [];
     const m = await getDocs(query(collection(db, "reports", id, "messages"), orderBy("createdAt", "asc")));
     m.forEach(d => msgs.push(d.data()));
+
+    markRead(id, touched(r));   // reading it is what clears the dot
 
     wrap.innerHTML = `
       <div class="rep-head">
@@ -461,9 +593,9 @@ function mountReports() {
         isStaff: isOwner(),
         createdAt: serverTimestamp()
       });
-      if (isOwner()) {
-        await updateDoc(doc(db, "reports", id), { status: "answered", updatedAt: serverTimestamp() });
-      }
+      // tell the report who spoke last, so the other side gets the red dot
+      await updateDoc(doc(db, "reports", id),
+        isOwner() ? Object.assign({ status: "answered" }, touch()) : touch());
       $("#replyText").value = "";
       when(note, "");
       loadThread(id);
@@ -478,9 +610,8 @@ function mountReports() {
     if (!wanted.length) return when(note, "Tick what you need first.", true);
     const extra = ($("#requestWhy") && $("#requestWhy").value || "").trim();
     try {
-      await updateDoc(doc(db, "reports", id), {
-        needs: wanted, status: "needs-info", updatedAt: serverTimestamp()
-      });
+      await updateDoc(doc(db, "reports", id),
+        Object.assign({ needs: wanted, status: "needs-info" }, touch()));
       await addDoc(collection(db, "reports", id, "messages"), {
         uid: state.user.uid,
         name: displayName() || "staff",
@@ -499,7 +630,7 @@ function mountReports() {
   // the reporter sending back whatever was asked for
   $("#sendInfo") && $("#sendInfo").addEventListener("click", async () => {
     const note = $("#supplyNote");
-    const patch = { needs: [], status: "open", updatedAt: serverTimestamp() };
+    const patch = Object.assign({ needs: [], status: "open" }, touch());
     const given = [];
 
     const logs = $("#supplyLogs") && $("#supplyLogs").value.trim();
@@ -543,9 +674,8 @@ function mountReports() {
 
   $$("[data-set-status]").forEach(btn => btn.addEventListener("click", async () => {
     try {
-      await updateDoc(doc(db, "reports", id), {
-        status: btn.getAttribute("data-set-status"), updatedAt: serverTimestamp()
-      });
+      await updateDoc(doc(db, "reports", id),
+        Object.assign({ status: btn.getAttribute("data-set-status") }, touch()));
       loadThread(id);
     } catch (e) { when($("#replyNote"), friendly(e), true); }
   }));
@@ -947,6 +1077,7 @@ onAuthStateChanged(auth, async user => {
   }
   state.ready = true;
   rerender();
+  watchUnread();
 });
 
 if (document.readyState === "loading") {

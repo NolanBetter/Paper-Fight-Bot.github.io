@@ -4,7 +4,7 @@
    editor starts from. Editing in the browser copies them into Firestore, so
    you are always adding to the real list rather than replacing it.
 
-   The wiki sections are the FightBot wiki, kept word for word.
+   The wiki sections are the FightBot wiki for 5.17.0, kept word for word.
    "Restore built in text" in the editor puts these back. */
 
 export const DEFAULT_FAQ = [
@@ -21,15 +21,17 @@ Spigot, CraftBukkit and Folia are not supported. FightBot checks at startup and 
   { id: "cost", q: "Does it cost anything?",
     a: `No. It is free on Modrinth.` },
   { id: "howmany", q: "How many bots can I run at once?",
-    a: `Up to 50 from one command, with \`/fightbot spawn <count>\`. Whether your server enjoys 50 is another matter, since they path, fight and place blocks the way players do. Scale up gradually and watch your TPS.` },
+    a: `Up to 200 from one command, with \`/fightbot spawn <count>\`. Whether your server enjoys 200 is another matter, since they path, fight and place blocks the way players do. Scale up gradually and watch your TPS.` },
   { id: "botvbot", q: "Can bots fight each other?",
     a: `Yes. Put them in groups and use \`/fightbot groupfight <group> <target>\`, or set two groups on one another. Good for watching what a loadout actually does.` },
   { id: "gearmid", q: "Can I change their gear while they are fighting?",
     a: `No. The bot is moving items between its hands the whole time, so its inventory is closed while it fights. Run \`/fightbot stop <bot>\` first, then right click it in creative or use **Open gear** in its settings menu.` },
-  { id: "missing", q: "Where did roaming, patrols and crystal PvP go?",
-    a: `They are switched off in this version while they are reworked, and come back in a later update.` },
+  { id: "missing", q: "Where did crystal PvP go?",
+    a: `It is switched off while it is reworked, and comes back in a later update. Roaming and patrolling are back as of 5.17.0 \u2014 see [the wiki](wiki.html).` },
   { id: "mace", q: "Does the mace work?",
-    a: `It is there but off by default while it is being finished. Turn it on for every bot with \`mace.enabled\` in the config, or for one bot in its settings menu.` },
+    a: `Yes. It is off by default, so turn it on with \`mace.enabled\` in the config, or for one bot in its settings menu.
+
+A bot with a mace and wind charges wind-jumps and smashes you on the way down. With an elytra and rockets it takes off, flies over you and dives. If you dive on a bot, it sidesteps or gets its shield up.` },
   { id: "perm", q: "Is there a permission node?",
     a: `\`fightbot.use\`, default OP. Grant it to let other people spawn and command bots. \`/fightbot help\` in game lists everything.` },
   { id: "beta", q: "Should I use the beta builds?",
@@ -37,346 +39,622 @@ Spigot, CraftBukkit and Folia are not supported. FightBot checks at startup and 
   { id: "video", q: "Can I use it in a video?",
     a: `Go ahead. A link back is appreciated but not required.` },
   { id: "bug", q: "How do I report a bug?",
-    a: `Use the [report form](report.html). It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.` }
+    a: `Use the [report form](report.html). It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.` },
+  { id: "webeditor", q: "Can I change settings without opening server files?",
+    a: `Yes, from 5.17.0. Type \`/fightbot web\` in game and open the link it gives you. It opens the
+[editor](editor/) on this site, where you can change any setting, watch the bots that are on, upload skins and
+voice lines, and read the debug logs.
+
+The link is the key, so do not share it. It stops working after 30 minutes unused, after 4 hours, or when you
+type \`/fightbot web stop\`. Nothing on your server has to be opened up, and everything between your server
+and the page is encrypted with a key that is only in the link.` },
+  { id: "voice", q: "Do the bots talk?",
+    a: `With [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) on the server, yes. Bots show up
+in voice chat like players, and the ones that "talk" say lines by themselves when they join, start a fight, win
+one, get low or die.
+
+You can add your own \`.mp3\` or \`.wav\` files too. Those are **never** said by a bot on its own \u2014 only when
+someone types \`/fightbot vc <name>\` \u2014 everyone nearby is told it is a file added by that server and who
+played it, and every play is logged.` },
 ];
 
 export const DEFAULT_WIKI = [
   { id: "requirements", title: "Requirements", body:
-`Which version you need depends on your server.
+`FightBot adds PvP bots to your Paper server. Each bot is a real server-side player: it has a real hitbox, real physics and a spot in the tab list, and every other plugin sees it as a player. Bots fight with swords, axes, shields, totems, pearls, cobwebs, water buckets and potions. They can also walk routes, patrol an area and fight in teams.
+
+> **New here? In game, type \`/fb guide\`.** It walks you through everything below, one short step at a time.
 
 | FightBot version | Minecraft | Needs |
 |---|---|---|
 | Newer than 3.17.1 | 1.20.5 and up | Paper, or a fork like Purpur. Nothing else. |
 | 3.17.1 and older | 1.16 and up | LibsDisguises |
 
-Newer versions make bots real server-side players, not disguised mobs. They have real hitboxes, real physics, and every other plugin sees them as players. They show up in the tab list alongside everyone else with a realistic ping. Spigot, CraftBukkit and Folia aren't supported, and FightBot tells you why in the console at startup instead of half-working.
+Optional: **Simple Voice Chat**, for bots that talk (5.17.0 and up). See Voice lines.
 
-3.17.1 and older ran bots as zombies wearing a player disguise, which is why they need LibsDisguises. If your server is below 1.20.5, that's the version to use.` },
-  { id: "getting-started", title: "Getting started", body:
-`Spawn a bot, give it some gear, and set it on yourself:
+Spigot, CraftBukkit and Folia aren't supported. If one of those is your server, FightBot says so in the console at startup instead of half-working. If your server is older than 1.20.5, use 3.17.1 with LibsDisguises.` },
+  { id: "quick-start", title: "Quick start", body:
+`1. Put the jar in \`plugins/\` and start the server.
+2. In game, type \`/fb spawn\`. A bot appears where you're standing.
+3. Hit it. It fights back. Or send it after someone with \`/fb fight <bot> <player>\`.
+4. Right-click it in creative mode to give it armour and a weapon.
+5. \`/fb stop\` calls every bot off, and \`/fb remove <bot>\` gets rid of one.
 
-\`\`\`
-/fightbot spawn
-/fightbot settings
-/fightbot fight <bot> <you>
-\`\`\`
+Every command works as \`/fightbot\` or \`/fb\`. The permission is \`fightbot.use\`, which only OPs have by default.
 
-\`/fightbot settings\` opens a screen of every bot's head. Click one to open its menu, then **Open gear** to hand it armour and a weapon. When you're done, \`/fightbot stop\` calls every fight off at once.` },
-  { id: "commands", title: "Commands", body:
-`Everything runs under \`/fightbot\`, shortened to \`/fb\`. The permission is \`fightbot.use\`, which defaults to OP. Type \`/fightbot help\` in game for the full list.
+Rather click than type? \`/fb web\` gives you a link to change FightBot from your browser. See The web editor.
 
-### Spawning
+## Help inside the game
 
-| Command | What it does |
+| Command | What it shows |
 |---|---|
-| \`/fightbot spawn\` | Spawns one bot with a random name where you're standing, facing the way you are. |
-| \`/fightbot spawn <count>\` | Spawns up to 50 bots with random names. |
-| \`/fightbot spawn <name>\` | Spawns one bot with the name you give it. |
+| \`/fb guide\` | A short walkthrough. Pick a topic: \`start\`, \`skins\`, \`names\`, \`gear\`, \`groups\`, \`routes\`, \`voice\`, \`web\` or \`problems\`. |
+| \`/fb skins\` | Where your skins stand right now, and how to set them up. |
+| \`/fb help\` | Every command. |
 
-A bot will never take the name of anyone who has played on your server, so nobody's player data can be overwritten. If a real player joins with a bot's name, the bot steps aside.
-
-### Fighting
-
-| Command | What it does |
+\`/fb start\` jumps straight to the getting-started page. On a brand-new server, anyone who can use FightBot gets a one-time "type /fb guide" message when they join, until the first bot is spawned.` },
+  { id: "spawning-and-managing-bots", title: "Spawning and managing bots", body:
+`| Command | What it does |
 |---|---|
-| \`/fightbot fight <bot> <player...>\` | Sends one bot after one or more players. |
-| \`/fightbot fight --all <player...>\` | Sends every bot after those players. |
-| \`/fightbot fight --group <group> <player...>\` | Sends a whole group after players. |
-| \`/fightbot stop\` | Calls off every fight at once. |
-| \`/fightbot stop <bot>\` | Calls off one bot. |
+| \`/fb spawn\` | One bot with a random name, where you stand, facing the way you face. |
+| \`/fb spawn <count>\` | Up to 200 bots with random names, spread out a little. More than 20 arrive over a few ticks, 20 a tick, so the server keeps up. |
+| \`/fb spawn <name>\` | One bot with the name you give it. |
+| \`/fb spawn --random [count]\` | The long way of writing \`/fb spawn <count>\`. |
+| \`/fb spawn [name\\|count] --location <x> <y> <z> [world] [yaw pitch]\` | Spawns them somewhere else. See Spawning somewhere else. |
+| \`/fb list\` | Every bot's head. Click one to open its menu. |
+| \`/fb remove <bot\\|--all>\` | Removes bots. \`/kick\` and \`/ban\` work too. |
+| \`/fb edit clone <bot> <name>\` | Copies a bot, gear and settings included. |
+| \`/fb edit clone <bot> --random [count]\` | Up to 200 copies at once, with random names. |
+| \`/fb edit change <bot> <name\\|--random>\` | Renames a bot. |
+| \`/fb tp <bot\\|--all\\|--group <group>> <player\\|x y z>\` | Teleports bots. Sent to a player, they face the way that player faces. Sent to x y z, they face south. |
+| \`/fb look <bot\\|--all> <player\\|bot\\|stop>\` | Bots watch someone until you say \`stop\`, or until that player leaves or dies. A busy bot won't watch, so stop it first. |
 
-A bot that another bot is actually attacking fights back. A bot that just gets clipped by a teammate's sword sweep doesn't, so a crowd of bots after one target stays focused on it.
+A bot never takes a name that belongs to someone else:
 
-### Managing bots
+- nobody who has played on your server (unless \`identity.protect-real-names\` is off)
+- no AuthMe account
+- no banned name
 
-| Command | What it does |
+Player data is safe either way, because bots have IDs of their own. If a real player joins using a bot's name, the bot steps aside.
+
+## Spawning somewhere else
+
+Add \`--location\` to the end of a spawn command. It works the way \`/tp\` does:
+
+| You type | Where the bot goes |
 |---|---|
-| \`/fightbot list\` | Shows every live bot. |
-| \`/fightbot remove <bot\\|--all>\` | Deletes bots. |
-| \`/fightbot edit clone <bot> <name\\|--random>\` | Copies a bot, gear and settings included. |
-| \`/fightbot edit clone <bot> --random <count>\` | Makes up to 50 copies at once. |
-| \`/fightbot edit change <bot> <name\\|--random>\` | Renames a bot. |
-| \`/fightbot tp <bot\\|--all\\|--group <group>> <player\\|x y z>\` | Teleports bots. They face the same way you are, which helps for screenshots. |
-| \`/fightbot look <bot\\|--all> <player\\|bot\\|stop>\` | Makes bots watch someone and keep watching until you say \`stop\`. |` },
-  { id: "bot-settings", title: "Bot settings", body:
-`Every bot has its own settings menu. It's where you manage one bot directly, and where you can make one bot behave differently from the rest.
+| \`--location 100 64 -20\` | Exactly there. A whole number puts it in the middle of the block, so this is 100.5 64 -19.5. |
+| \`--location ~ ~ ~5\` | Where you are, 5 blocks further along z. \`~\` on its own means "the same as mine", and \`~-2\` means 2 less. |
+| \`--location ^ ^ ^3\` | 3 blocks straight ahead of where you're looking. The three numbers are left, up and forward. |
+| \`--location 0 70 0 world_nether\` | In another world. |
+| \`--location ~ ~ ~ 90 0\` | Facing a direction: yaw, then pitch, like \`/tp\`. \`~\` keeps your own. |
 
-### Opening it
+The world, yaw and pitch are optional. \`--location\` always goes last, for example \`/fb spawn 10 --location ~ ~ ~10\` or \`/fb save 2 --random 5 --location 0 64 0\`. From the console, use plain numbers, or \`~\` counts from the main world's spawn.
 
-| Command | What it does |
+## Command blocks
+
+Command blocks and command minecarts can run FightBot commands, \`/fb spawn\` included (menus need a player). \`~\` counts from the command block itself.
+
+To keep a server safe, FightBot stops a command block when it:
+
+- spawns more than 200 bots within 20 ticks (one second), or
+- would have more than 200 of its bots in the game at once.
+
+A stopped command block can't spawn bots again until \`/fb reload\`. Ops are told which one it was and where it is.` },
+  { id: "fighting", title: "Fighting", body:
+`| Command | What it does |
 |---|---|
-| \`/fightbot settings\` | Shows every bot's head. Click one to open its menu. |
-| \`/fightbot settings <bot>\` | Opens that bot's menu straight away. |
-| \`/fightbot edit\` or \`/fightbot edit <bot>\` | The same thing. |
+| \`/fb fight <bot> <player...>\` | One bot goes after one or more players. |
+| \`/fb fight --all <player...>\` | Every bot goes after them. |
+| \`/fb fight --group <group> <player...>\` | A whole group goes after them. Several groups work too: \`--group red blue <player...>\`. |
+| \`/fb fight --group <group> <group>\` | Two groups fight each other, as one-on-one duels. |
+| \`/fb stop\` (or \`/fb stop --all\`) | Every bot stops, whether it's fighting, roaming or patrolling. |
+| \`/fb stop <bot>\` | One bot stops, whatever it's doing. |
 
-\`/fightbot edit clone\` and \`/fightbot edit change\` still work exactly as before.
+## How bots swing
 
-### The top of the menu
+Bots fight like a person, not a machine:
 
-The bot's head sits at the top. Hover over it to see its health, its group, what it's doing right now, and how many of its settings you've changed.
+- **A moment to react.** Someone stepping into reach gets hit after a few ticks, not the very tick they arrive (\`combat.reaction.min-ticks\` and \`max-ticks\`).
+- **Not like clockwork.** Swings come a little early or late (\`combat.swing-jitter-ticks\`), and now and then one misses, mostly at the edge of reach (\`combat.miss-chance\`).
+- **Real critical hits only.** A bot jumps and swings on the way down, and the game decides if it's a crit. It never crits walking along, and its reach is a player's, whatever weapon you hold.
+- **Hit them straight away.** A bot can be hit the moment it joins, teleports, pearls or changes world, like a player.
 
-### Things you can do
+## Mace
+
+Turn mace combat on with \`mace.enabled: true\` (or for one bot, with **Mace** in its settings menu). The bot uses the game's own mace, wind charges, elytra and fireworks, so damage, Density, Breach and Wind Burst all work as they do for you.
+
+- **Wind jump** (mace + wind charges): close in, it throws a wind charge at its feet, flies up and smashes you on the way down. With Wind Burst it can bounce up and smash again (\`mace.wind-chain-max\`).
+- **Elytra dive** (mace + elytra + firework rockets): from further away, it takes off, climbs and flies over you, swaps the elytra for its chestplate and drops onto you from about \`mace.dive-height\` blocks.
+- **After a miss** it saves itself the way you would: a wind charge just before it lands, a water bucket, or the elytra again.
+- **Against you:** if you dive on a bot with a mace, it sidesteps, or raises its shield in time.
+
+\`mace.wind-jump\` and \`mace.elytra\` turn each move off, and \`mace.cooldown-seconds\` is the least time between mace attacks.
+
+## Fighting back
+
+Bots fight back:
+
+- **Players:** when a player hits a bot, it hits back. This works whether the bot is standing about, roaming or patrolling. It never chases players in creative or spectator.
+- **Bots:** when another bot hits it **on purpose**, it hits back. A stray sword sweep meant for someone else doesn't count, so a crowd of bots stays on its target.
+
+Once that fight is over, the bot goes back to what it was doing. Turn either kind off in the config (\`combat.fight-back.players\` and \`combat.fight-back.bots\`), or for one bot in its settings menu. For practice dummies that just take hits, turn off \`players\`.
+
+A bot does one job at a time: fighting, roaming or patrolling. To give a busy bot a new job, or to open its gear, stop it first. FightBot tells you when, and what it's busy with, for example "Rd1 is fighting Blu".
+
+## When a fight ends
+
+A fight is over when there's nobody left in it, and the bot is free again straight away:
+
+- In a group fight, a bot moves on to the next opponent until the other side is beaten.
+- A target who dies, leaves the server or is removed is dropped.
+- A target who goes to another world, through a portal say, gets 30 seconds to come back. After that the bot gives up on them.
+
+## When hits don't land
+
+If a bot keeps swinging but can't hurt anyone, FightBot tells you why, in chat and in the console:
+
+- **PvP is off in that world.** On 1.21.9 and newer, run \`/gamerule pvp true\` in that world. On older versions, set \`pvp=true\` in \`server.properties\` and restart. FightBot's message tells you which.
+- **The target is in creative or spectator.**
+- **Another plugin is blocking the hits**, such as a no-PvP area, spawn protection or a login plugin. FightBot names the plugin it suspects.
+- **Something else**, such as a scoreboard team with friendly fire off, god mode, spawn protection, or AuthMe holding a player who hasn't logged in.
+
+It says so once, then waits longer and longer before repeating itself, so chat doesn't fill up.
+
+## Shields
+
+A bot with a shield in its offhand raises it when you're close, facing it and ready to swing, or falling on it with a mace. Once you've swung, it drops the shield to hit back.
+
+The shield works exactly like a player's:
+
+- It only blocks from the front.
+- It only blocks once it's been up for a quarter of a second.
+- An axe knocks it out for 5 seconds, so axes and stun slams work on bots.
+
+Like a person, it reacts a moment late, and now and then it misses one. While it holds the shield up, it moves slowly and can't attack.
+
+## Knockback
+
+Bots take knockback exactly like players. They fly the same distance, and sprint hits, Knockback enchantments and knockback resistance (netherite armour) all count. A bot knocked into the air can only steer a little, just like you.
+
+## Water and rivers
+
+Bots swim. A bot going after someone across a river swims over and climbs out on the far side.
+
+- Like a player, a swimming bot can only climb out where the land is level with the water. It swims along the bank to a place where it can.
+- A path, a bridge or a low spot a few blocks along beats a long swim, so bots take it.
+- Shallow water is waded through.
+- A drop into water is only jumped when the water is deep enough to land in safely. A shallow stream at the bottom of a drop is treated like any other drop.
+- A target right beside the water, close enough to hit, is fought from the bank.
+- Free roamers stay on dry land. One that ends up in the water anyway, knocked in say, swims to the nearest place it can get out.
+- With building on, a bot may put a block down to climb out of a river with steep banks. It only does this when it's after a target, or on a route it's allowed to build along.` },
+  { id: "the-bot-settings-menu", title: "The bot settings menu", body:
+`Every bot has its own menu. Open it with \`/fb settings\` (then pick a head), \`/fb settings <bot>\`, or \`/fb edit <bot>\`.
+
+Hover over the head at the top to see the bot's health, group, what it's doing and how many settings you've changed.
 
 | Button | What it does |
 |---|---|
 | **Bring here** | Teleports the bot to you, facing the way you are. |
 | **Go to bot** | Teleports you to the bot. |
-| **Rename** | Closes the menu and asks you to type the new name in chat. Type \`random\` for a made-up one, or \`cancel\` to leave it. |
-| **Clone** | Makes a copy with a random name, the same gear and the same settings. The menu stays open, so you can keep clicking to make more. |
-| **Change group** | Shows your groups. Pick one to move the bot there, or pick **No group** to take it out. |
-| **Open gear** | Opens the bot's inventory. Not while it's fighting. |
-| **Stop fighting** | Calls the bot off, whatever it's doing. |
-| **Heal** | Puts the bot back on full health. |
-| **Reset settings** | Puts every switch back to the server's settings. |
-| **Remove bot** | Deletes the bot. You have to **shift-click** it, so it can't happen by accident. |
+| **Rename** | You type the new name in chat. Type \`random\` for a made-up one, or \`cancel\`. |
+| **Clone** | A copy with a random name, the same gear and the same settings. Stays open, so you can keep clicking. |
+| **Change group** | Moves it to another group, or **No group**. |
+| **Open gear** | Its inventory. Stop it first if it's busy. |
+| **Stop** | Stops whatever it's doing. |
+| **Heal** | Back to full health. |
+| **Roam** / **Patrol** | Sets it roaming or patrolling. |
+| **Reset settings** | Every switch goes back to the server's settings. |
+| **Remove bot** | **Shift-click** to remove it, so it can't happen by accident. |
 
-Renaming keeps everything about the bot: its skin, gear, health, settings, group and whatever it was fighting. Minecraft doesn't let a player change their name while they're in the world, so behind the scenes the bot is swapped for an identical one under the new name. That's why you'll see the new name "join the game".
+Renaming keeps everything: skin, gear, health, settings, group and fight. Minecraft doesn't let a player change their name while they're in the world, so behind the scenes the bot is swapped for an identical one with the new name. That's why you see it "join the game".
 
-### Per-bot switches
+## Per-bot switches
 
-The lower part of the menu holds switches. Your \`config.yml\` sets how every bot behaves, and these let one bot differ. You could have a whole group that pearls and one that doesn't, or a single bot that builds while the rest walk.
+Your \`config.yml\` sets how every bot behaves. These switches let one bot be different from the rest.
 
 | Switch | What it controls |
 |---|---|
-| Ender pearls | Throwing pearls to chase you and to escape. |
-| Cobwebs | Placing cobwebs to trap and slow you. |
+| Ender pearls | Throwing pearls to chase and to escape. |
+| Cobwebs | Placing cobwebs to trap and slow players. |
 | Shield breaking | Switching to an axe to break a raised shield. |
 | Water bucket | Washing out cobwebs and clutching big falls. |
 | Potions | Splashing potions for the buff. |
 | Mace combat | Pearling up and diving in with a mace. |
-| Fights back | Fighting back when another bot attacks it. |
-| Pillaring | Going straight up when you're above it and there's no way to walk up. On by default. |
-| Bridging | Crossing gaps and water when there's no way round. Off by default. |
+| Fights back: players | Hitting back when a player hits it. |
+| Fights back: bots | Hitting back when another bot hits it on purpose. |
+| Pillaring | Going straight up when you're above it. |
+| Bridging | Crossing gaps and water when there's no way round. |
 | Mining | Breaking blocks in its way with a pickaxe. |
-| Realistic ping | Showing a wandering ping in the tab list. |
+| Realistic ping | A wandering ping in the tab list. |
 
-How they work:
+- **Glowing means on.** Click to flip a switch.
+- **Right-click** hands a switch back to the server, so it follows \`config.yml\` again.
+- Changes apply the moment you click. There's no save button.
 
-- **A glowing switch is on.** A plain one is off.
-- **Click** a switch to flip it.
-- **Right-click** a switch to hand it back to the server. It then follows whatever \`config.yml\` says.
-- **Changes happen the moment you click.** There's no save button, so pressing Esc, clicking back, or just walking away all keep what you set.
-
-Every switch starts out **following the server**, and its description tells you the server's setting. Once you change one, it says **changed for this bot**. That matters when you edit your config later: a bot you've set yourself keeps its own choice, while every switch you left alone picks up the new config. If you flip a switch and then flip it back to match the server, it goes back to following the server, rather than quietly holding onto its own copy.
-
-One catch. A bot's settings belong to that bot, so they're gone when it dies or the server restarts. To keep a setup you like, put it in a save. Saves remember settings, so every bot you spawn from it comes out the same way.` },
+A bot's settings belong to that bot. They're gone when it dies or the server restarts. To keep a setup, put it in a save.` },
   { id: "equipment", title: "Equipment", body:
-`Right click any bot in creative mode to open its inventory, or use **Open gear** in its settings menu. You can't open it while the bot is fighting, since it's moving items between its hands the whole time.
+`Right-click a bot **in creative mode**, or use **Open gear** in its menu.
 
 | Slots | Contents |
 |---|---|
 | 1 to 4 | Helmet, chestplate, leggings, boots |
-| 5 | Offhand, totem or shield |
-| 6 | Main hand, its weapon |
+| 5 | Offhand: a totem or shield |
+| 6 | Main hand: its weapon |
 | 7 and up | Anything else |
 
-Only armour, the offhand and the weapon have fixed places. Everything else can go anywhere: an axe for breaking shields, food, cobwebs, ender pearls, a water bucket, a mace, wind charges, an elytra, a pickaxe. The bot finds whatever it's carrying and uses it.
+Only armour, the offhand and the weapon have fixed slots. Everything else can go **anywhere**, and the bot finds and uses what it carries:
 
-Mace combat is off by default while it's being finished, so a mace sits unused until you turn it on, either for every bot with \`mace.enabled\` in the config or for one bot in its settings menu. Roaming, patrolling and crystal PvP are switched off in this version while they're reworked, and will return in a later update.` },
-  { id: "saves-and-kits", title: "Saves and kits", body:
-`Both keep up to five loadouts, and both survive restarts. The difference is what they do with them.
+- an axe
+- food
+- cobwebs
+- ender pearls
+- a water bucket
+- a mace and wind charges
+- an elytra
+- a pickaxe` },
+  { id: "kits-and-saves", title: "Kits and saves", body:
+`\`/fb kits\` (or \`/fb saves\`) opens one screen, with **Kits** on one side and **Saves** on the other. Both hold up to five loadouts and survive restarts.
 
-**Saves spawn a brand new bot** carrying the stored gear **and settings**. Fill a save from a bot and every bot you spawn from it comes out equipped and set up the same way. The new bot gets its own fresh name and skin.
-
-| Command | What it does |
-|---|---|
-| \`/fightbot saves\` | Opens the saves screen. |
-| \`/fightbot savegear <bot> [1-5]\` | Stores a bot's gear and settings in a save slot. |
-| \`/fightbot save <1-5> [name\\|--random] [count]\` | Spawns bots from a save. |
-| \`/fightbot delsave <1-5>\` | Deletes a save. |
-
-A save only remembers the settings you'd changed on that bot. Anything still following the server keeps following it, so later config changes reach those switches too. Hover over a save's book to see exactly which settings its bots will spawn with.
-
-**Kits re-gear a bot you already have**, replacing what it's carrying. They carry gear only, since the bot already has settings of its own.
+## Kits: re-gear bots you already have
 
 | Command | What it does |
 |---|---|
-| \`/fightbot kits\` (or \`kit\`, \`load\`) | Opens the kits screen. |
-| \`/fightbot saveload <bot> [1-5]\` | Stores a bot's gear as a kit. |
-| \`/fightbot kit <bot> <1-5>\` (or \`load\`) | Gives a bot a kit. |
-| \`/fightbot delload <1-5>\` | Deletes a kit. |
+| \`/fb saveload <bot> [1-5]\` | Stores a bot's gear as a kit. Leave out the number to use the first free slot. |
+| \`/fb kit <bot> <1-5>\` (or \`load\`) | Gives one bot the kit, replacing what it carries. |
+| \`/fb kit --all <1-5>\` | Gives every bot the kit. Busy bots are skipped, and FightBot tells you how many. |
+| \`/fb kit --group <group> <1-5>\` | Gives a whole group the kit. |
+| \`/fb delload <1-5>\` | Deletes a kit. |
 
-In the screens, a filled slot shows a glowing book with a green delete button underneath. An empty one shows a plain book and grey dye.
+In the screen, click a kit, then click as many bots as you like. Each one drops off the list once it has the kit. Close the screen when you're finished.
 
-- **Click an empty book** to fill it. You'll see every bot's head; pick the one to save from.
-- **Click a filled save** to spawn a bot from it. The screen stays open, so keep clicking to spawn more. Each lands a little apart from the last instead of on top of it.
-- **Click a filled kit**, then pick which bot gets it.
-- **Press Esc** to step back a screen.` },
+## Saves: spawn new bots already set up
+
+| Command | What it does |
+|---|---|
+| \`/fb savegear <bot> [1-5]\` | Stores a bot's gear **and settings**. Leave out the number to use the first free slot. |
+| \`/fb save <1-5> [name\\|--random] [count]\` | Spawns bots from a save. |
+| \`/fb delsave <1-5>\` | Deletes a save. |
+
+A save only remembers the settings you changed on that bot, so later config changes still reach everything else. Hover over a save to see which settings its bots spawn with.` },
   { id: "groups", title: "Groups", body:
-`Groups let you command several bots at once. A bot can only be in one group at a time.
-
-\`\`\`
-/fightbot groupcreate redteam
-/fightbot groupadd redteam Kade
-/fightbot grouplist redteam
-\`\`\`
+`A bot can be in one group at a time.
 
 | Command | What it does |
 |---|---|
-| \`/fightbot groups\` | Opens the groups screen. |
-| \`/fightbot groupcreate <name>\` | Makes a group. |
-| \`/fightbot groupadd <group> <bot>\` | Puts a bot in it. |
-| \`/fightbot groupremove <group> <bot>\` | Takes a bot out. |
-| \`/fightbot groupdel <group>\` | Deletes a group. Its bots are freed. |
-| \`/fightbot grouplist [group]\` | Lists groups, or one group's members. |
-| \`/fightbot groupcheck <bot>\` | Shows which group a bot is in. |
-| \`/fightbot groupchange <group> <new name>\` | Renames a group. |
+| \`/fb groups\` | Opens the groups screen. |
+| \`/fb groupcreate <name>\` | Makes a group. |
+| \`/fb groupadd <group> <bot>\` | Puts a bot in it. |
+| \`/fb groupremove <group> <bot>\` | Takes a bot out. |
+| \`/fb groupdel <group>\` | Deletes a group. Its bots are freed. |
+| \`/fb grouplist [group]\` | Lists groups, or one group's members. In game, this opens the screen. |
+| \`/fb groupcheck <bot>\` | Which group a bot is in. |
+| \`/fb groupchange <group> <new name>\` | Renames a group. |
 
-In the groups screen, click a group to see its members. Click a head to take that bot out, or the green dye to add bots. The add screen only offers bots without a group, and it **stays open** after each one, so you can add a whole squad without going back each time.
+Groups keep their names across restarts, but they start empty, because bots don't survive a restart.
 
-A group's count only includes bots that are alive. When a bot dies or is removed, it leaves its group. Groups keep their names across a restart, but start empty, since bots don't survive a restart.
-
-### Group fights
-
-Set two groups on each other and watch:
-
-\`\`\`
-/fightbot groupfight redteam blueteam
-\`\`\`
-
-It plays out as one-on-one duels. The bots pair off first, and each one sticks with a single opponent until one of them falls, then picks the next. If a bot gets attacked by someone it isn't fighting, it turns to face them, unless it's already locked in a fair one-on-one. Nobody piles onto one target while the rest stand around.
+## Group fights
 
 | Command | What it does |
 |---|---|
-| \`/fightbot groupfight <group> <group>\` | Two groups fight as duels. |
-| \`/fightbot groupfight <group> <player\\|bot>\` | A whole group goes after one target. Drop yourself in. |
-| \`/fightbot groupstop <group> [group]\` | Stops one group, or both sides of a fight. |` },
-  { id: "config", title: "Config", body:
+| \`/fb groupfight <group> <group>\` | Two groups fight as one-on-one duels. Each bot takes one opponent until one falls, then picks the next. |
+| \`/fb groupfight <group> <player\\|bot>\` | The whole group goes after one target. |
+| \`/fb groupstop <group> [group]\` | Stops one group, or both sides of a fight. |` },
+  { id: "roaming-and-patrolling", title: "Roaming and patrolling", body:
+`Bots can walk a **route**, or wander about **freely**, when they aren't fighting. Routes are shared between roaming and patrolling. The route and point commands work with either prefix (\`roaming…\` or \`patrolling…\`).
+
+## Making a route
+
+1. \`/fb roamingroutecreate park\` makes a route called \`park\`.
+2. Stand on each spot and run \`/fb roamingpointset park\`. Each run adds the next point.
+3. To move a point to where you're standing, use \`/fb roamingpointset park <number>\`. To delete one, use \`/fb roamingpointdel park <number>\`.
+
+\`/fb roaming\` or \`/fb patrolling\` opens the same things as screens.
+
+## Roaming
+
+| Command | What it does |
+|---|---|
+| \`/fb roamingstart <bot\\|--all\\|--group <group>> <route> [loop\\|back\\|stop]\` | Walks the route. At the end it loops, walks back, or stops. |
+| \`/fb roamingfree <bot\\|--all\\|--group <group>>\` | Wanders about near where it is, pausing now and then. |
+| \`/fb roamingstop <bot\\|--all\\|--group <group>>\` | Stops roaming. |
+
+A group sent on a route walks it together, as a squad. If a roaming bot is attacked, it fights back, then goes back to its walk.
+
+Free roamers now and then stop to look at a bit of grass. With Mining on, they sometimes pull it up. They don't go swimming. In the config:
+
+- \`roaming.free-radius\` sets how far a free roamer strays.
+- \`pause-min-seconds\` and \`pause-max-seconds\` set how long it stands about between strolls.
+- \`point-pause-seconds\` sets how long a route walker waits at each point.
+
+## Patrolling
+
+A patrol walks a route and goes after **that route's targets**, and only those. After the fight it goes back to its route.
+
+| Command | What it does |
+|---|---|
+| \`/fb patrollingtargetadd <route> <player\\|bot\\|group>\` | Gives the route's patrols a target. |
+| \`/fb patrollingtargetdel <route> <name>\` | Removes a target. |
+| \`/fb patrollingtargetlist <route>\` | Who the route's patrols hunt. |
+| \`/fb patrollingstart <bot\\|--all\\|--group <group>> <route> [loop\\|back\\|stop]\` | Patrols the route. |
+| \`/fb patrollingstop <bot\\|--all\\|--group <group>>\` | Stops patrolling. |
+
+\`patrolling.spot-range\` sets how close, and in sight, a target has to be before it's spotted. \`patrolling.give-up-seconds\` sets how long a target can stay out of reach before the patrol goes back to its route.` },
+  { id: "skins", title: "Skins", body:
+`Choose where skins come from with \`identity.skin-source\` in \`config.yml\`, then run \`/fb reload\`:
+
+| Setting | What bots wear |
+|---|---|
+| \`random\` | Skins from a list of accounts built into FightBot, downloaded from Mojang, so the server needs internet. There's nothing else to do. The bot keeps its own name. |
+| \`folder\` | Your own skin images. Put skin \`.png\` files (64×64, or old-style 64×32) in \`plugins/FightBot/skins/\`. |
+| \`mojang\` | The skins of real accounts. List their usernames under \`identity.skin-names\`. |
+| \`none\` | Plain Steve and Alex. This is the default. |
+
+**Type \`/fb skins\` in game at any time.** It shows your current setting, how many skins are ready, what's still in progress, and anything that went wrong.
+
+## About signing (the "wait" messages)
+
+Minecraft only shows a skin that Mojang has signed. In \`folder\` mode, FightBot sends each image to a free signing service (MineSkin) the first time it sees it. It keeps the result, so each image is only ever signed once.
+
+The free service takes a few images at a time. **When the console says the service asked FightBot to wait, that's normal.** Nothing is broken and there's nothing to do. FightBot waits for as long as it's asked, then carries on by itself until every image is signed, with a line like \`Signed skin 4 of 12\` for each one. If the service stays busy for a very long time, FightBot takes a break and signs the rest on the next restart or \`/fb reload\`.
+
+- Until the first image is signed, new bots look like Steve or Alex. After that, each new bot wears one of the images signed so far.
+- A bot keeps the skin it spawned with.
+- Want it faster? Get a free API key at [mineskin.org](https://mineskin.org) and put it in \`identity.skin-api-key\`.
+- If an image can't be signed, FightBot names it and says why. The usual reason is that it isn't a real 64×64 skin. Fix or remove the image, then \`/fb reload\`.
+- Added images while the server is running? Run \`/fb reload\`.
+
+Already have signed skin data? Save it as a small \`.yml\` file in the skins folder, with a \`value:\` line and a \`signature:\` line. The \`README.txt\` in that folder explains how.
+
+\`mojang\` and \`random\` mode download skins in the background the same way. The first bots after a fresh start may look plain for a moment. Mojang also asks for a short wait sometimes, and that's normal too.` },
+  { id: "names", title: "Names", body:
+`Choose how \`--random\` names are made with \`identity.name-source\`:
+
+| Setting | Names |
+|---|---|
+| \`random\` | Made-up, player-style names, like \`BlockRunner42\`. This is the default. |
+| \`file\` | Picked from \`botnames.yml\`. |
+| \`numbers\` | Numbered names, from \`identity.number-format\`. |
+
+Number patterns use \`%<digits>n\` for one random character from those digits, and you can chain them. For example, \`Bot%01n%01n\` gives \`Bot00\`, \`Bot01\`, \`Bot10\` or \`Bot11\`. Watch how many names a pattern can make: \`%01n\` only has two, so a third bot gets a made-up name instead, and FightBot tells you why. The older style also works: \`%03d\` gives a random number padded to three digits, like \`042\` or \`517\`.
+
+With \`file\`, if \`botnames.yml\` is empty or every name in it is taken, bots get made-up names, and FightBot says so in chat.
+
+\`identity.protect-real-names\` (on by default) stops bots taking the name of anyone who has played on your server. Turn it off to let bots use those names too, for example on a scripted server. Online players, AuthMe accounts and banned names are still off-limits.` },
+  { id: "kicks-and-bans", title: "Kicks and bans", body:
+`Bots are players, so they can be kicked and banned like players.
+
+- **\`/kick <bot>\`** removes the bot, the same as \`/fb remove\`.
+- **\`/ban <bot>\`** removes it, and the name can't be spawned again until you run **\`/pardon <bot>\`**. FightBot tells you this if you try.
+- Bans from plugins that keep their own ban list, like LiteBans, still remove the bot. Only the server's own list stops the name being spawned again.
+- **Ban plugins** work too. This includes death-ban plugins like the Unstable SMP ones, which kick and then ban a player who dies. The bot is removed, and its name stays banned until it's pardoned.
+- Random names skip banned names.
+
+Some kicks are ignored for bots, because they can only be about a real player's game:
+
+- flying, lag and odd packets
+- idling
+- turning down the resource pack
+- the whitelist (bots skip it)
+- IP bans (every bot shares one address, so one IP ban would take them all)
+
+FightBot notes this in the console the first time it happens.` },
+  { id: "other-plugins", title: "Other plugins", body:
+`FightBot checks what's installed at startup and says, in the console, anything that affects bots.
+
+- **AuthMe:** bots can't type a password, so FightBot logs its own bots in as they join. It only does this for bots, and no AuthMe accounts are made. A name that has an AuthMe account belongs to a real player, so it can't be used for a bot.
+- **Other login plugins** (nLogin, LoginSecurity, and others): these hold players who haven't logged in, and bots can't log in. If bots won't fight, that's why.
+- **PacketEvents** (on its own or inside GrimAC): it tries to kick players whose connection it can't hook, and bots have none. FightBot stops that kick, for bots only.
+- **ViaVersion:** its "Could not find UserConnection" warning when a bot joins is harmless.
+- **ProtocolLib:** plugins built on it expect every player to have a network connection. Bots don't, so if one logs errors naming a bot, that's why.
+- **Anticheats:** they judge players by what their game sends, and bots have no game. If one kicks a bot, FightBot says why.
+- **PvP turned off** in a world: FightBot warns at startup and when a bot's hits don't land.
+- **Simple Voice Chat:** bots can talk. See Voice lines.
+- **PlugManX** and \`/reload\`: see Reloading FightBot.
+
+## LuckPerms
+
+With LuckPerms on the server, each bot gets its LuckPerms data as it joins, just like a player:
+
+- **Groups, permissions, prefix and suffix.** Tab list, name tag and chat plugins show a bot's prefix like anyone else's.
+- **Permission checks.** LuckPerms answers every permission check on a bot. If a bot isn't allowed to do something, it can't do it.
+- **\`/lp user <bot>\` works.** Give a bot a rank with \`/lp user <bot> parent add vip\`, and every bot with that name has it from then on.
+
+Settings:
+
+- \`luckperms.group\` puts every bot in a LuckPerms group while it's here, on top of its own groups. Use it for a \`[Bot]\` prefix, or for permissions only bots should have. Make the group first with \`/lp creategroup bot\`. It's kept in memory only, never saved.
+- \`luckperms.enabled: false\` turns all of this off.
+
+If a bot is spawned with the name of someone LuckPerms already knows, \`/lp user <name>\` still means that player, not the bot.` },
+  { id: "voice-lines", title: "Voice lines", body:
+`With the **Simple Voice Chat** plugin on the server, bots show up in voice chat like players, and they talk. Players hear them with the voice chat mod, coming from the bot, and can turn bots up or down with the **FightBot** slider in voice chat's volume settings. Without Simple Voice Chat, nothing changes. \`/fb vc\` shows whether it's working.
+
+**How bots show up.** Each bot gets one of these when it joins, like real players (\`voice.presence\` sets the chances):
+
+| | In voice chat | Says lines? |
+|---|---|---|
+| \`talks\` | Connected | Yes |
+| \`muted\` | Voice chat turned off (the crossed-out icon) | No |
+| \`no-mod\` | Doesn't have the mod (the disconnected icon) | No |
+
+Change one bot with \`/fb vc presence <bot> <talks\\|muted\\|no-mod>\`. Telling a bot to say something turns its voice chat on.
+
+**FightBot's own lines.** Recorded lines come with FightBot updates (the first ones are on their way), and bots say them by themselves: when they join, see someone walk up, start a fight, beat someone, get low, pop a totem, die, and now and then while idle. Each bot speaks in one voice, so it always sounds like the same person. Each of those has a chance and a cooldown in \`voice.triggers\`, and \`voice.min-gap-seconds\` and \`voice.max-talking\` stop bots talking over each other.
+
+**Your own lines.** Put \`.mp3\` or \`.wav\` files in \`plugins/FightBot/voice/\`, then \`/fb vc reload\`. The file's name is the line's name: \`plotvoiceline.mp3\` is \`/fb vc plotvoiceline\`. Lines are cut off after \`voice.custom.max-seconds\` (15 by default). You can also add them in the web editor, which converts other kinds of sound file, like a phone's \`.m4a\`, for you.
+
+**Nobody can pass off a file as FightBot's.** A file added to a server is **never** said by a bot on its own, only when someone types \`/fb vc <name>\` (that needs \`fightbot.voice.custom\`, which ops have). Everyone near the bot sees a note in chat that it's *a sound file added by this server*, and who played it. Every play, and every file added through the web editor, is written to \`voice/plays.log\` with the file's fingerprint (SHA-256).
+
+| Setting | Default | What it does |
+|---|---|---|
+| \`voice.enabled\` | \`true\` | Bots in voice chat at all. |
+| \`voice.presence.talks\` / \`muted\` / \`no-mod\` | \`50\` / \`20\` / \`30\` | How bots show up, as chances. |
+| \`voice.distance\` | \`0\` | How far away bots are heard, in blocks. 0 is voice chat's own distance. |
+| \`voice.volume\` | \`1.0\` | How loud lines are. Never louder than clipping. |
+| \`voice.triggers.<what>\` | | \`enabled\`, \`chance\` (out of 100) and \`cooldown\` (seconds) for each thing a bot talks about. |
+| \`voice.custom.enabled\` | \`true\` | Whether files added to the server can be played at all. |` },
+  { id: "the-web-editor", title: "The web editor", body:
+`Change FightBot from your browser instead of the server files. Type \`/fb web\` in game (or the console) and click the link. The editor at fightmc.xyz lets you:
+
+- **change any setting**, with each one explained, and saves and reloads it for you
+- **see the bots that are on**, with their health, what they're doing and where, and stop or remove them
+- **upload skins** and **voice lines**
+- **read the debug logs**, follow one live, or download it
+
+| Command | What it does |
+|---|---|
+| \`/fb web\` | A link to the editor. Clicking it in chat opens it. |
+| \`/fb web new\` | A fresh link. The old one stops working. |
+| \`/fb web stop\` | Closes it now. |
+
+How it stays safe:
+
+- **The link is the key.** Anyone with it can change FightBot on your server, so don't share it. It stops working after \`web.idle-minutes\` unused (30), after \`web.max-hours\` (4), or when you type \`/fb web stop\`.
+- **Nothing to open up on your server.** Your server and the page both connect out to a relay, and everything between them is encrypted with a key that's only in your link. The relay can't read any of it.
+- **Only FightBot's own things.** The editor can't run commands or touch other files, and every change is checked like a config edit. Everyone with \`fightbot.use\` is told in chat what was changed from the web, and by whose link.
+- \`web.read-only: true\` lets the editor look at everything but change nothing. \`web.enabled: false\` turns it off. It needs the \`fightbot.web\` permission (ops have it).` },
+  { id: "reloading-fightbot", title: "Reloading FightBot", body:
+`You can reload FightBot while the server keeps running, with PlugManX (\`/plugman reload FightBot\`) or \`/reload\`. Turning it off and on again with \`/plugman disable\` and \`/plugman enable\` works too.
+
+- Every bot is written down first and comes straight back afterwards, in the same place, with the same skin, gear, health, settings and group.
+- Bots carry on with what they were doing: roaming, patrolling, fighting and group fights.
+- Any bot body an older copy of FightBot left behind is removed first, so its name is free again.
+- \`reload.keep-bots: false\` removes the bots on a reload instead.
+
+A server restart still starts with no bots, as always.` },
+  { id: "updates", title: "Updates", body:
+`When the server starts, and twice a day after, FightBot looks on Modrinth for the newest release made for your Minecraft version.
+
+- A newer one is downloaded into the server's update folder (\`plugins/update\`). FightBot checks it against Modrinth's checksum and makes sure it really is FightBot.
+- It goes in by itself the next time the server starts, or when FightBot is reloaded. Nothing changes while the server is running.
+- Admins (anyone with \`fightbot.use\`) are told in chat when they join, and the console says so too.
+- \`/fb update\` looks right away.
+- A release that's taken back down on Modrinth is removed from the update folder again, if FightBot downloaded it.
+
+| Setting | Default | What it does |
+|---|---|---|
+| \`updates.check\` | \`true\` | \`false\`: FightBot never looks by itself. \`/fb update\` still looks when you ask. |
+| \`updates.download\` | \`true\` | \`false\`: only tell admins, and download it yourself. |
+| \`updates.betas\` | \`false\` | \`true\`: beta versions count as updates too. |` },
+  { id: "the-config", title: "The config", body:
 `FightBot keeps its files in \`plugins/FightBot/\`:
 
 | File or folder | What's in it |
 |---|---|
-| \`config.yml\` | Health, speed, damage, combat, building, mining, skins, names, ping and more. |
-| \`botnames.yml\` | The name pool, if you use \`name-source: file\`. |
-| \`data.yml\` | Your saves, kits and groups. Keep this one when updating. |
-| \`skins/\` | Skin images for bots, and a cache of downloaded skins. |
-| \`debug/\` | Debug logs, if you've turned them on. |
+| \`config.yml\` | Everything you can change: health, speed, damage, combat, building, mining, skins, names, ping and more. Every option is explained inside. |
+| \`botnames.yml\` | The name list, for \`name-source: file\`. |
+| \`data.yml\` | Your saves, kits, groups and routes. Keep it when you update. |
+| \`skins/\` | Your skin images, and a cache of signed and downloaded skins. |
+| \`voice/\` | Your own voice lines (\`.mp3\`, \`.wav\`), and \`plays.log\`. |
+| \`debug/\` | Debug logs, if you turn them on. |
+| \`reload-bots.yml\` | The bots, written down during a plugin reload. It's gone again once they're all back. |
 | \`old-configs/\` | Backups made when your config was updated. |
 
-Edit the config, then reload without restarting:
+Edit the config, then run \`/fb reload\`. Health, speed and damage only apply to bots spawned after the reload. A switch you've changed on one bot in its menu beats the config for that bot.
 
-\`\`\`
-/fightbot reload
-\`\`\`
+## Updating
 
-One catch. Some settings, like health and damage, only apply to bots spawned after the reload. Bots already standing there keep the old values, so clear them if you want the new numbers:
+Don't delete your config when you update. FightBot notices it came from an older version and builds a fresh one with any new options. It carries across every setting that still exists, and keeps the old file in \`old-configs/\`. The console says how many settings it kept, and lists new options and any it left out.
 
-\`\`\`
-/fightbot remove --all
-/fightbot spawn
-\`\`\`
+## Handy settings
 
-Remember that anything you've changed on a single bot in its settings menu takes priority over the config for that bot.
+| Setting | Default | What it does |
+|---|---|---|
+| \`max-health\` | \`20.0\` | Bot health in HP. 20 is a real player's 10 hearts. |
+| \`max-move-speed\` | \`0.28\` | Top speed. |
+| \`crit-chance\` | \`0.30\` | Chance of a critical hit. |
+| \`combat.fight-back.players\` / \`.bots\` | \`true\` | Fighting back, as above. |
+| \`combat.use-pearls\`, \`use-cobwebs\`, \`use-axe-swap\`, \`use-water-bucket\` | \`true\` | Which tricks bots use. |
+| \`combat.miss-chance\` | \`0.08\` | How often a swing misses, mostly at the edge of reach. |
+| \`combat.reaction.min-ticks\` / \`max-ticks\` | \`3\` / \`7\` | How long a bot takes to react to someone stepping into reach. |
+| \`mace.enabled\` | \`false\` | Mace combat: wind jumps and elytra dives. |
+| \`death.drop-items\` | \`auto\` | What a bot drops when it dies: \`auto\` (like a player), \`always\` or \`never\`. |
+| \`voice.enabled\` | \`true\` | Bots in voice chat, when Simple Voice Chat is on the server. |
+| \`web.enabled\` | \`true\` | The web editor (\`/fb web\`). |
+| \`building.pillar\` | \`true\` | Pillaring up to reach you. |
+| \`building.bridge\` | \`false\` | Bridging gaps and water. |
+| \`mining.enabled\` | \`false\` | Breaking blocks in the way with a pickaxe. |
+| \`head-movement.natural\` | \`false\` | \`true\` turns the head at a person's pace, with a little aim drift. |
+| \`ping.enabled\` | \`true\` | A realistic, wandering ping in the tab list. |
+| \`death.leave-message\` / \`sound\` | \`true\` | The "left the game" line and the death boom. |
+| \`reload.keep-bots\` | \`true\` | Bots come back after a plugin reload, doing what they were. |
+| \`luckperms.enabled\` / \`group\` | \`true\` / \`""\` | LuckPerms data for bots, and a group for every bot. |
+| \`updates.check\` / \`download\` / \`betas\` | \`true\` / \`true\` / \`false\` | Update checks, as above. |
 
-### Updating
+## Building
 
-You don't need to delete your config when you update. FightBot notices it came from an older version, builds a fresh one with any new options, carries all your settings across, and saves the old file in \`old-configs/\`, named after the version it came from. The console tells you what it kept and what's new.
+Building is always a last resort. A bot looks for stairs, slopes and ways round first.
 
-### Building
+- **Pillaring** (on by default): when you're above it and there's no way up, it crouches, jumps and places blocks under itself until it's level with you.
+- **Bridging** (off by default): when there's a gap or water in the way and no way round, it bridges across.
 
-Bots can place blocks to reach you, in two separate ways. Each has its own switch in the config, and can also be set for a single bot in its settings menu.
-
-\`\`\`yaml
-building:
-  pillar: true
-  bridge: false
-  blocks:
-    - COBBLESTONE
-\`\`\`
-
-**Pillaring** is on by default. When you're above a bot and there's no way to walk up, it goes straight up: it sizes you up once, then crouches, looks down, jumps and places a block under its feet, over and over without standing up, until it's level with you. It holds still while it climbs, so it can't drift off its own pillar. A single block is just a jump, so it only pillars for anything higher.
-
-**Bridging** is off by default. When there's a gap or water between a bot and you, and no way round, it crouches and bridges across at its own level, staying crouched until it's over. It never bridges out from partway up a pillar.
-
-Either way, building is a last resort. A bot first looks for a way to walk or swim to you, up stairs, round a gap, along a slope, and only builds if there isn't one. List more than one block and each bot picks one when it spawns and keeps it. Only solid blocks work; anything else is skipped with a warning.
-
-### Mining
-
-A bot carrying a pickaxe can break the block standing between it and its target. It's **off by default**, since, like building, it changes your world.
-
-\`\`\`yaml
-mining:
-  enabled: false
-\`\`\`
-
-### Skins
-
-Set \`identity.skin-source\`:
-
-- \`random\` picks a skin from a pool of accounts built into FightBot, which grows with each update. The bot keeps its own name; only the skin is borrowed. Each skin downloads once and is cached, so right after the first start the very first bots may appear plain for a few seconds.
-- \`folder\` drops \`.png\` skin images into \`plugins/FightBot/skins/\`. Minecraft skins have to be signed before a player can see them, so the first time FightBot sees an image it gets signed and cached. Images need to be normal 64×64 skins.
-- \`mojang\` borrows the skins of real accounts you list under \`identity.skin-names\`.
-- \`none\` uses the default skin.
-
-### Names
-
-Set \`identity.name-source\`:
-
-- \`random\` makes up player style names like \`BlockRunner42\`.
-- \`file\` picks from \`botnames.yml\`.
-- \`numbers\` makes numbered names from \`identity.number-format\`.
-
-Number patterns use \`%<digits>n\` for one random character from those digits, and you can chain them. \`%01n%01n%01n%01n\` gives names like \`1011\` or \`0000\`. \`Bot%01n%01n\` gives \`Bot01\` or \`Bot10\`. Watch how many names a pattern can make: \`%01n\` only has two, so a third bot has nowhere to go and FightBot will tell you.
-
-### Ping
-
-Each bot shows its own ping in the tab list instead of a giveaway 0ms. It starts somewhere inside the range, then every few seconds it moves up or down a little from where it was, the way a real connection wanders. It never leaves the range.
-
-\`\`\`yaml
-ping:
-  enabled: true
-  min: 15
-  max: 140
-  step: 12
-  change-every-min-seconds: 1
-  change-every-max-seconds: 4
-\`\`\`
-
-\`step\` is the most it can move in one change, and it always moves by at least a little. How often it changes is picked fresh each time, between the two \`change-every\` values. A freshly spawned bot's ping appears once the tab list next refreshes.` },
+\`building.blocks\` lists what they build with. Each bot picks one when it spawns.` },
   { id: "troubleshooting", title: "Troubleshooting", body:
-`### The plugin loads but bots won't spawn
+`**The skin signing service is "busy", or asked FightBot to wait.**
+That's normal. FightBot waits and carries on by itself. \`/fb skins\` shows progress.
 
-Check the console at startup. FightBot says whether your server can run bots, and why not if it can't. Newer versions need Paper 1.20.5 or newer, or a fork like Purpur. If your server is older, use 3.17.1 with LibsDisguises.
+**Bots look like Steve.**
+Type \`/fb skins\`. It tells you what's missing. The usual causes:
 
-### The server froze for a few seconds every time a bot spawned
+- \`skin-source\` is still \`none\`
+- the skins folder is empty
+- \`skin-names\` is empty
+- the skins are still signing
 
-That was a bug before 5.12.0, along with a pair of \`Couldn't find profile\` warnings on every spawn. Update to the newest release and spawning is near-instant.
+**A command block stopped spawning bots.**
+FightBot stopped it for spawning too many bots too fast. Ops were told which one. Run \`/fb reload\` to let it spawn again.
 
-### Everyone got disconnected when a bot spawned
+**I can't hit a bot right after it teleports or pearls.**
+Fixed in 5.17.0: bots can be hit the moment they arrive, like players.
 
-That was a bug in 5.8.0, 5.9.0 and 5.9.1. Update to 5.9.2 or newer.
+**Bots crit me while walking, or hit me the instant I'm in reach.**
+Fixed in 5.17.0: bots only crit when they jump and fall, like you, and take a moment to react.
 
-### Bots look like zombies
+**A dead bot didn't drop its armour.**
+Fixed in 5.17.0: bots drop everything they had, like a player, unless the world keeps inventories (\`death.drop-items\` changes that).
 
-You're on 3.17.1 or older without LibsDisguises. Install LibsDisguises, or update to a newer version if your server is on 1.20.5 or above.
+**Bots don't talk.**
+Type \`/fb vc\`. Simple Voice Chat has to be on the server, and only bots that "talk" say anything. FightBot's own lines come with updates; your own files only play when someone types \`/fb vc <name>\`.
 
-### A bot just stands there
+**Bots won't hurt anyone.**
+FightBot tells you why in chat, and how to fix it on your version. Usually PvP is off, you're in creative, or a plugin such as WorldGuard blocks PvP there.
 
-It hasn't been told to fight anyone. Run \`/fightbot fight <bot> <you>\`. If it's already fighting and stuck, it probably can't reach you: you're behind blocks, across a gap, or up high. Pillaring is on by default, so it will climb to you if you're above it. If there's a gap or water in the way, turn on bridging, for every bot in the config or for that one in its settings menu.
+**"X left the game" shows twice (or more) when a bot dies.**
+Fixed in 5.16.8: a bot that dies shows one "left the game" line, or none with \`death.leave-message: false\`.
 
-### A bot's settings went back to normal
+**Bots stop at a river.**
+Fixed in 5.16.8: bots going after someone swim across. Free roamers stay on dry land on purpose.
 
-Settings belong to the bot, so they're lost when it dies or the server restarts. Put the setup in a save, and every bot you spawn from it keeps those settings.
+**After a plugin reload, bots stood about doing nothing, or "name is already taken".**
+Fixed in 5.16.8: see Reloading FightBot.
 
-### Bots move slowly
+**A bot disappeared.**
+It was killed, kicked or banned, and FightBot says which in chat. A name banned with \`/ban\` can't be spawned until \`/pardon <name>\`.
 
-Update to the newest release. Older betas had a bug where bots hopped through grass instead of running. If it's still slow, check \`max-move-speed\` in the config.
+**"'Name' is banned on this server."**
+That name was banned, perhaps by a death-ban plugin. Run \`/pardon <name>\`, or use another name.
 
-### Skins don't show
+**The plugin loads, but bots won't spawn.**
+Check the console at startup. FightBot says whether your server can run bots and, if not, why. You need Paper 1.20.5 or newer.
 
-Check \`identity.skin-source\` is set. With \`random\` or \`mojang\`, skins download in the background, so give it a few seconds after the first start. With \`folder\`, images must be 64×64 and FightBot needs a few seconds to sign each new one. With \`mojang\`, make sure you've listed names under \`identity.skin-names\`. The console reports how many skins are ready.
+**A bot just stands there.**
+It hasn't been told to fight anyone. Try \`/fb fight <bot> <you>\`, or hit it. If it's chasing but stuck, it can't reach you. Pillaring gets it up to you. For gaps and water, turn on bridging.
 
-### Config changes did nothing
+**Bots fight each other when I don't want them to.**
+Set \`combat.fight-back.bots: false\`, or switch **Fights back: bots** off in a bot's menu.
 
-Some settings only apply to newly spawned bots, so remove the existing ones and spawn fresh. Also check the bot's settings menu: a switch you've changed on one bot overrides the config for that bot.
+**A bot's settings went back to normal.**
+Settings belong to the bot, so they're lost when it dies or the server restarts. Put the setup in a save.
 
-### Something else
+**Config changes did nothing.**
+Run \`/fb reload\`. Health, speed and damage only apply to bots spawned after that. Also check the bot's own menu, because a changed switch there beats the config.
 
-Turn on debug logging, make it happen again, then send us the log:
+## Still stuck? Send a debug log
 
 \`\`\`
-/fightbot debug on
+/fb debug on
 \`\`\`
 
-The log lands in \`plugins/FightBot/debug/\` and records who each bot fought, where it stood, what it chose and why, including every block it placed or broke and every setting you changed. Include it along with your server version, your FightBot version and anything the console printed.` }
+Make the problem happen, then run \`/fb debug off\`. (\`/fb debug\` on its own shows whether it's on.) The log is in \`plugins/FightBot/debug/\`. It records what each bot saw, chose and did, and why. Send the newest file along with your server version, your FightBot version and anything the console printed.
+
+You can also read and download the logs in the web editor, and attach one to a [bug report](report.html) on this site.` }
 ];
