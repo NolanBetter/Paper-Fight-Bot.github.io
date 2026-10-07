@@ -4,7 +4,7 @@
    editor starts from. Editing in the browser copies them into Firestore, so
    you are always adding to the real list rather than replacing it.
 
-   The wiki sections are the FightBot wiki for 5.17.0, kept word for word.
+   The wiki sections are the FightBot wiki, kept word for word.
    "Restore built in text" in the editor puts these back. */
 
 export const DEFAULT_FAQ = [
@@ -42,9 +42,11 @@ A bot with a mace and wind charges wind-jumps and smashes you on the way down. W
     a: `Use the [report form](report.html). It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.` },
   { id: "webeditor", q: "Can I change settings without opening server files?",
     a: `Yes, from 5.17.0. Type \`/fightbot web\` in game and open the link it gives you. It opens the
-[editor](editor/) on this site, where you can change any setting, run the bots \u2014 spawn them, send them after
-someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot's own switches \u2014
-upload skins and voice lines, and read the debug logs.
+[editor](editor/) on this site, where you can change any setting, run the bots that are already there \u2014 send
+them after someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot's own
+switches \u2014 upload skins and voice lines, and read the debug logs.
+
+Making bots stays in game on purpose \u2014 FightBot refuses spawning, saves and renaming or cloning from the web.
 
 The link is the key, so do not share it. It stops working after 30 minutes unused, after 4 hours, or when you
 type \`/fightbot web stop\`. Nothing on your server has to be opened up, and everything between your server
@@ -511,7 +513,9 @@ More come with updates. Each bot speaks in one voice, so it always sounds like t
 
 - **change any setting**, with each one explained, saved and reloaded for you. Every true-or-false one is a switch you flip
 - **see the bots that are on**, with their health, what they're doing, their group and where, and stop or remove them
-- **run the bots**: spawn them, send them after someone, set them roaming or patrolling, make groups and set two on each other, hand out kits, and flip any one bot's own switches
+- **run the bots that are already there**: send them after someone, set them roaming or patrolling, make
+  groups and set two on each other, hand out kits, and flip any one bot's own switches. Making bots stays in
+  game: FightBot refuses \`spawn\`, \`save\` and \`edit\` (renaming and cloning) from the web
 - **upload skins** and **voice lines**
 - **read the debug logs**, follow one live, or download it
 

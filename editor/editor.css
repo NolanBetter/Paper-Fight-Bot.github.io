@@ -141,6 +141,9 @@
 /* a bot's face, cut straight out of its skin image - no canvas needed */
 .ed-face{width:56px;height:56px;background:#2a272b;grid-row:span 3;image-rendering:pixelated;
   background-size:448px 448px;background-position:-56px -56px}
+/* the same trick at list size: 8x the box, offset by one box */
+.ed-face.sm{width:36px;height:36px;grid-row:auto;flex:none;
+  background-size:288px 288px;background-position:-36px -36px}
 .ed-bot .nm{font-family:var(--display);font-size:19px;color:#fff;word-break:break-all}
 .ed-bot .nm small{font-family:var(--body);font-size:14px;color:var(--ash);letter-spacing:0}
 .ed-hp{height:12px;background:#2b0f0e;border:2px solid #000;margin:2px 0}
@@ -148,6 +151,34 @@
 .ed-bot .what{color:var(--ash);font-size:15px;line-height:1.5}
 .ed-bot .acts{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
 .ed-bot .acts .ed-input{flex:none;width:auto;min-width:150px}
+
+/* ---------- lists you pick from ----------
+   The groups, routes, kits and saves screens are built out of these: a short
+   list of rows, one of which you click to open its own screen. */
+.ed-rows{display:grid;gap:3px;background:#000;border:3px solid #000;margin:0 0 6px}
+.ed-empty{background:var(--pit);padding:18px 18px;color:var(--ash);font-size:16px}
+
+.ed-pickrow{display:flex;align-items:center;gap:18px;width:100%;text-align:left;
+  background:var(--pit);color:inherit;border:0;padding:16px 18px;cursor:pointer;
+  font:inherit;transition:background .12s}
+.ed-pickrow:hover{background:#1b1a1f}
+.ed-pickrow:focus-visible{outline:3px solid var(--ember);outline-offset:-3px}
+.ed-pickrow .nm{font-family:var(--display);font-size:19px;color:#fff}
+.ed-pickrow .sub{color:var(--ash);font-size:15.5px;margin-left:auto;text-align:right;flex:none}
+.ed-pickrow::after{content:"\203A";color:var(--blood);font-size:24px;line-height:1;flex:none}
+
+/* a bot (or target) inside one of those screens, with its head and one button */
+.ed-memrow{display:flex;align-items:center;gap:16px;background:var(--pit);padding:12px 18px}
+.ed-memrow .nm{font-family:var(--display);font-size:18px;color:#fff;min-width:0}
+.ed-memrow .sub{font-family:var(--body);font-size:14.5px;color:var(--ash);
+  letter-spacing:0;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-memrow .btn{margin-left:auto;flex:none}
+/* a patrol target that is not on the server at the moment */
+.ed-memrow.gone{box-shadow:inset 4px 0 0 var(--gold)}
+.ed-memrow.gone .ed-face{opacity:.4}
+.ed-memrow.gone .sub{color:var(--gold)}
+
+.ed-danger{margin-top:30px;padding-top:20px;border-top:2px solid #000}
 
 /* ---------- tables ---------- */
 .ed-table{width:100%;border-collapse:collapse;margin:8px 0 0;font-size:16px}
@@ -180,3 +211,20 @@
   .ed-sticky{position:static}
   .ed-server{white-space:normal;flex:1 1 100%}
 }
+
+/* a whole group, where a bot would have its head */
+.ed-face.tile{display:flex;align-items:center;justify-content:center;background:var(--stone);
+  font-family:var(--display);font-size:20px;color:var(--iron);
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.1),inset -2px -2px 0 rgba(0,0,0,.8)}
+
+/* the opening card, while it is still looking for the server */
+.ed-starting{display:flex;align-items:center;gap:16px;margin:0 0 12px}
+.ed-starting h2{margin:0}
+.ed-pill{display:inline-flex;align-items:center;gap:9px}
+.ed-pill .sword{width:18px;height:18px}
+
+/* a row that is only there to be read, not opened */
+.ed-memrow.read{justify-content:space-between}
+.ed-memrow.read .sub{font-family:var(--body);font-size:14.5px;color:var(--ash);
+  letter-spacing:0;margin-top:3px}
+.ed-memrow.read > .sub{margin-top:0;flex:none}

@@ -39,7 +39,7 @@
 <div class="ed-sticky">
   <div class="strip ed-strip">
     <div class="wrap strip-in">
-      <span id="conn" class="ed-pill wait">Connecting&hellip;</span>
+      <span id="conn" class="ed-pill wait"><span class="sword" aria-hidden="true"></span>Connecting&hellip;</span>
       <span id="server" class="ed-server"></span>
       <span id="ends" class="ed-ends"></span>
       <button class="btn ghost sm" id="finish" hidden>Close</button>
@@ -60,8 +60,11 @@
 
   <!-- before it is connected, and if it never connects -->
   <section class="ed-card" id="start">
-    <h2 id="startTitle">Opening the editor&hellip;</h2>
-    <p class="lede" id="startMsg">Finding your server.</p>
+    <div class="ed-starting">
+      <span class="sword big" id="startSpin" aria-hidden="true"></span>
+      <h2 id="startTitle">Opening the editor&hellip;</h2>
+    </div>
+    <p class="lede" id="startMsg">Finding your server. This takes a few seconds.</p>
     <div id="howTo" hidden>
       <h3>Getting a link</h3>
       <ol class="ed-steps">
@@ -69,7 +72,7 @@
         <li>Run <code>/fightbot web</code>. It takes a few seconds to make.</li>
         <li>Open the link it gives you. It works for 30 minutes unused, 4 hours in all.</li>
       </ol>
-      <p class="lede">You need FightBot <b>5.17.0</b> or newer and the <code>fightbot.web</code> permission.
+      <p class="lede">You need FightBot <b>5.17.2</b> or newer and the <code>fightbot.web</code> permission.
         <a href="../install.html">How to install it</a>.</p>
     </div>
   </section>
@@ -103,7 +106,6 @@
         <select id="botTarget" class="ed-input" aria-label="who to fight"></select>
         <button class="btn sm" id="botFight">Fight them</button>
         <button class="btn ghost sm" id="botStop">Stop</button>
-        <button class="btn ghost sm" id="botHeal">Bring to full health</button>
       </div>
       <div class="ed-row">
         <select id="botRoute" class="ed-input" aria-label="route"></select>
@@ -117,9 +119,11 @@
         <button class="btn ghost sm" id="botFree">Wander freely</button>
       </div>
       <div class="ed-row">
-        <select id="botKit" class="ed-input" aria-label="kit"></select>
+        <select id="botKit" class="ed-input" aria-label="kit slot"></select>
         <button class="btn sm" id="botGiveKit">Give it this kit</button>
-        <button class="btn ghost sm" id="botStoreKit">Store its gear in this slot</button>
+        <button class="btn ghost sm" id="botStoreKit">Store its gear in this kit slot</button>
+      </div>
+      <div class="ed-row">
         <button class="btn sm danger" id="botRemove">Remove bot</button>
       </div>
 
@@ -131,25 +135,8 @@
 
     <!-- all of them -->
     <div id="botsAll">
-      <div class="ed-card" id="spawnCard">
-        <h2>Spawn bots</h2>
-        <p class="lede">Leave the name blank for a made-up one. Leave the place blank to put them where
-          the person who opened this editor is standing.</p>
-        <div class="ed-row">
-          <input type="text" id="spawnName" class="ed-input" placeholder="name (blank = random)" aria-label="bot name">
-          <label class="ed-lab" for="spawnCount">How many</label>
-          <input type="number" id="spawnCount" class="ed-input" value="1" min="1" max="200" aria-label="how many">
-          <select id="spawnSave" class="ed-input" aria-label="from a save"></select>
-        </div>
-        <div class="ed-row">
-          <label class="ed-lab">Place</label>
-          <input type="text" id="spawnX" class="ed-input" placeholder="x" aria-label="x">
-          <input type="text" id="spawnY" class="ed-input" placeholder="y" aria-label="y">
-          <input type="text" id="spawnZ" class="ed-input" placeholder="z" aria-label="z">
-          <select id="spawnWorld" class="ed-input" aria-label="world"></select>
-          <button class="btn sm" id="spawnGo">Spawn</button>
-        </div>
-      </div>
+      <div class="note" id="spawnNote">Bots are spawned in game, by someone with
+        <code>fightbot.use</code>, not from here. Type <code>/fightbot spawn</code> on the server.</div>
 
       <div class="ed-head2">
         <h2>Bots on the server</h2>
@@ -162,91 +149,53 @@
   </section>
 
   <!-- --------------------------------------------------- groups and kits -->
+  <!-- Four short lists. Click one and it gets a screen of its own, the way the
+       in-game menus work, instead of every control being on show at once. -->
   <section id="tab-teams" hidden>
-    <div class="ed-card">
-      <h2>Groups</h2>
-      <p class="lede">A bot is in one group at a time. Groups keep their names across a restart,
-        but they start empty, because bots do not survive one.</p>
-      <table class="ed-table"><tbody id="groups"></tbody></table>
-      <div class="ed-row">
-        <input type="text" id="groupNew" class="ed-input" placeholder="new group name" aria-label="new group name">
-        <button class="btn sm" id="groupCreate">Make a group</button>
+    <div id="teamsAll">
+      <div class="ed-card">
+        <div class="ed-head2"><h2>Groups</h2><span class="ed-count" id="groupCount"></span></div>
+        <p class="lede">A bot is in one group at a time. Click a group to see who is in it.
+          Groups keep their names across a restart, but they start empty, because bots do not survive one.</p>
+        <div class="ed-rows" id="groups"></div>
+        <div class="ed-row" style="margin-top:14px">
+          <input type="text" id="groupNew" class="ed-input" placeholder="new group name" aria-label="new group name">
+          <button class="btn sm" id="groupCreate">Make a group</button>
+        </div>
       </div>
 
-      <h3 class="ed-sub">Put a bot in a group</h3>
-      <div class="ed-row">
-        <select id="groupBot" class="ed-input" aria-label="bot"></select>
-        <select id="groupPick" class="ed-input" aria-label="group"></select>
-        <button class="btn sm" id="groupAdd">Add it</button>
-        <button class="btn ghost sm" id="groupTake">Take it out</button>
+      <div class="ed-card">
+        <div class="ed-head2"><h2>Routes</h2><span class="ed-count" id="routeCount"></span></div>
+        <p class="lede">Routes are laid out in game, where you can stand on each point:
+          <code>/fightbot roamingroutecreate &lt;name&gt;</code>, then
+          <code>/fightbot roamingpointset &lt;name&gt;</code> on every spot. Click one to send bots along it.</p>
+        <div class="ed-rows" id="routes"></div>
       </div>
 
-      <h3 class="ed-sub">Set two sides on each other</h3>
-      <p class="lede">Two groups fight as one-on-one duels: each bot takes an opponent until one falls,
-        then picks the next.</p>
-      <div class="ed-row">
-        <select id="fightA" class="ed-input" aria-label="group"></select>
-        <span class="ed-lab">against</span>
-        <select id="fightB" class="ed-input" aria-label="the other side"></select>
-        <button class="btn sm" id="groupFight">Fight</button>
-        <button class="btn ghost sm" id="groupStop">Stop that group</button>
-      </div>
-    </div>
-
-    <div class="ed-card">
-      <h2>Routes</h2>
-      <p class="lede">Routes are laid out in game, where you can stand on each point:
-        <code>/fb roamingroutecreate &lt;name&gt;</code>, then <code>/fb roamingpointset &lt;name&gt;</code>
-        on every spot. From here you can send bots along them and say who patrols go after.</p>
-      <table class="ed-table"><tbody id="routes"></tbody></table>
-
-      <h3 class="ed-sub">Send bots out</h3>
-      <div class="ed-row">
-        <select id="routeWho" class="ed-input" aria-label="which bots"></select>
-        <select id="routePick" class="ed-input" aria-label="route"></select>
-        <select id="routeEnd" class="ed-input" aria-label="at the end of the route">
-          <option value="loop">then loop</option>
-          <option value="back">then walk back</option>
-          <option value="stop">then stop</option>
-        </select>
-      </div>
-      <div class="ed-row">
-        <button class="btn sm" id="routeRoam">Walk the route</button>
-        <button class="btn sm" id="routePatrol">Patrol the route</button>
-        <button class="btn ghost sm" id="routeFree">Wander freely</button>
-        <button class="btn ghost sm" id="routeStop">Stop</button>
+      <div class="ed-card">
+        <h2>Kits</h2>
+        <p class="lede">A kit re-gears bots you already have. Click one, then click the bots to give it to.</p>
+        <div class="ed-rows" id="kits"></div>
       </div>
 
-      <h3 class="ed-sub">Who patrols go after</h3>
-      <div class="ed-row">
-        <select id="targetRoute" class="ed-input" aria-label="route"></select>
-        <select id="targetWho" class="ed-input" aria-label="target"></select>
-        <button class="btn sm" id="targetAdd">Add</button>
-        <button class="btn ghost sm" id="targetDel">Remove</button>
+      <div class="ed-card">
+        <h2>Saves</h2>
+        <p class="lede">A save keeps a bot&rsquo;s gear <i>and</i> its settings. Because a save spawns
+          bots, FightBot only lets you make, use and delete one in game:
+          <code>/fightbot savegear &lt;bot&gt; &lt;slot&gt;</code> and
+          <code>/fightbot save &lt;slot&gt;</code>. Here they are, so you know what is stored.</p>
+        <div class="ed-rows" id="saves"></div>
       </div>
     </div>
 
-    <div class="ed-card">
-      <h2>Kits and saves</h2>
-      <p class="lede">A <b>kit</b> re-gears bots you already have. A <b>save</b> keeps gear
-        <i>and</i> settings, so new bots spawn ready. Five slots each.</p>
-
-      <h3 class="ed-sub">Kits</h3>
-      <table class="ed-table"><tbody id="kits"></tbody></table>
-      <div class="ed-row">
-        <select id="kitWho" class="ed-input" aria-label="which bots"></select>
-        <select id="kitSlot" class="ed-input" aria-label="kit slot"></select>
-        <button class="btn sm" id="kitGive">Give them this kit</button>
+    <!-- one group, route, kit or save at a time -->
+    <div class="ed-card" id="teamPanel" hidden>
+      <div class="ed-head2">
+        <button class="btn ghost sm" id="teamBack">&larr; Back</button>
+        <h2 id="teamTitle"></h2>
       </div>
-
-      <h3 class="ed-sub">Saves</h3>
-      <table class="ed-table"><tbody id="saves"></tbody></table>
-      <div class="ed-row">
-        <select id="saveSlot" class="ed-input" aria-label="save slot"></select>
-        <input type="text" id="saveName" class="ed-input" placeholder="name (blank = random)" aria-label="name">
-        <input type="number" id="saveCount" class="ed-input" value="1" min="1" max="200" aria-label="how many">
-        <button class="btn sm" id="saveSpawn">Spawn from this save</button>
-      </div>
+      <p class="lede" id="teamInfo"></p>
+      <div id="teamBody"></div>
     </div>
   </section>
 

@@ -44,6 +44,22 @@ function displayName() {
   return null;
 }
 
+/** The little spinning pixel sword, for anything that is still loading. */
+function sword(big) {
+  const s = document.createElement("span");
+  s.className = "sword" + (big ? " big" : "");
+  s.setAttribute("aria-hidden", "true");
+  return s;
+}
+
+/** A "working on it" line: the sword, then what is being waited for. */
+function loading(what) {
+  const p = document.createElement("p");
+  p.className = "loading";
+  p.append(sword(), Object.assign(document.createElement("span"), { textContent: what }));
+  return p;
+}
+
 function paintHead(img, name, px) {
   if (!img || !name) return;
   img.alt = name + "'s Minecraft head";
@@ -239,6 +255,18 @@ function mountNav() {
   nav.appendChild(pill);
 
   refresh.push(() => {
+    // Until Firebase has said who you are, show a spinning sword rather than
+    // "Sign in" followed by the Reports and Edit links popping in behind it.
+    if (!state.ready) {
+      reports.hidden = true;
+      admin.hidden = true;
+      pill.className = "auth loading";
+      pill.replaceChildren(sword(), Object.assign(document.createElement("span"),
+        { className: "who", textContent: "Loading" }));
+      return;
+    }
+
+    pill.className = "auth";
     reports.hidden = !state.user;
     admin.hidden = !isOwner();
     pill.textContent = "";
@@ -476,7 +504,7 @@ function mountReportForm() {
 async function loadReports() {
   const list = $("#reportList");
   if (!list) return;
-  list.textContent = "Loading...";
+  list.replaceChildren(loading("Fetching your reports"));
 
   try {
     const q = isOwner()
@@ -514,7 +542,7 @@ const esc = s => String(s || "").replace(/[<>&]/g, c => ({ "<": "&lt;", ">": "&g
 async function loadThread(id) {
   const wrap = $("#thread");
   if (!wrap) return;
-  wrap.textContent = "Loading...";
+  wrap.replaceChildren(loading("Opening the report"));
 
   try {
     const snap = await getDoc(doc(db, "reports", id));

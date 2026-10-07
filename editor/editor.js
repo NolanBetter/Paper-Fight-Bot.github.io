@@ -86,9 +86,11 @@ let botList = [];                 // the last bots we were sent
 const tabs = ["settings", "bots", "teams", "skins", "voice", "debug"];
 let current = "settings";
 
-function setConn(text, kind) {
+function setConn(text, kind, busy) {
   const c = $("conn");
-  c.textContent = text;
+  c.replaceChildren();
+  if (busy) c.append(el("span", { class: "sword", "aria-hidden": "true" }));
+  c.append(document.createTextNode(text));
   c.className = "ed-pill " + kind;
 }
 
@@ -117,6 +119,7 @@ async function start() {
     $("startMsg").textContent = "The editor only opens with the one-off link FightBot gives you, "
       + "so nobody else can reach your server.";
     $("howTo").hidden = false;
+    $("startSpin").hidden = true;
     setConn("No link", "bad");
     return;
   }
@@ -139,6 +142,7 @@ async function start() {
         $("savebar").hidden = true;
         $("cmdCard").hidden = true;
         $("start").hidden = false;
+        $("startSpin").hidden = true;
         $("startTitle").textContent = "The editor closed";
         $("startMsg").textContent = "It closed because " + why + ".";
         $("howTo").hidden = false;
@@ -151,6 +155,7 @@ async function start() {
       }
     });
   } catch (e) {
+    $("startSpin").hidden = true;
     setConn("Not connected", "bad");
     $("startTitle").textContent = "Could not open the editor";
     $("startMsg").textContent = e.message;
@@ -177,6 +182,7 @@ async function start() {
   endsTimer = setInterval(showEnds, 30000);
   $("finish").hidden = false;
   $("readonly").hidden = !readOnly;
+  $("startSpin").hidden = true;
   $("start").hidden = true;
   $("tabs").hidden = false;
 
@@ -330,39 +336,47 @@ function targetList(exclude) {
 const slotList = rows => (rows || []).map(k =>
   ({ value: String(k.slot), label: k.slot + (k.label ? ": " + k.label : "") }));
 
+/** Only the fixed selects live here. The group, route, kit and save screens
+    build their own as they are drawn, so they are never stale. */
 function fillPickers() {
-  const routes = routeNames().map(r => ({ value: r, label: r }));
-  const kits = slotList(lists && lists.kits);
-  const saves = slotList(lists && lists.saves);
-  const groups = groupNames().map(g => ({ value: g, label: g }));
-
   options("botTarget", targetList(viewingBot));
-  options("botRoute", routes);
-  options("botKit", kits);
-
-  options("spawnSave", saves, { blank: "a plain bot" });
-  options("spawnWorld", ((lists && lists.worlds) || []).map(w => ({ value: w, label: w })),
-    { blank: "where you are" });
-
-  options("groupBot", botList.map(b => ({ value: b.name, label: b.name })));
-  options("groupPick", groups);
-  options("fightA", groups);
-  options("fightB", groups.map(g => ({ value: g.value, label: g.label + " (group)" })).concat(targetList()));
-
-  options("routeWho", whoList());
-  options("routePick", routes);
-  options("targetRoute", routes);
-  options("targetWho", targetList());
-
-  options("kitWho", whoList());
-  options("kitSlot", kits);
-  options("saveSlot", saves);
-
-  // the voice tab's "play on"
+  options("botRoute", routeNames().map(r => ({ value: r, label: r })));
+  options("botKit", slotList(lists && lists.kits));
   options("voiceBot", botList.map(b => ({ value: b.name, label: b.name }))
     .concat([{ value: "--all", label: "every bot" }]));
-  if ($("voiceBot")) $("voiceBot").disabled = false;   // playing is allowed read-only? no — but listing is
 }
+
+// ---- the little pieces the screens are built from ---------------------
+
+/** What you last chose in each picker. Running a command redraws the screen it
+    was on, and without this your choice would be thrown away every time. */
+const chosen = new Map();
+
+const picker = (items, label, key) => {
+  const s = el("select", { class: "ed-input", disabled: readOnly || !items.length, "aria-label": label });
+  s.replaceChildren(...items.map(o => el("option", { value: o.value, text: o.label })));
+  if (key) {
+    const was = chosen.get(key);
+    if (was && items.some(o => o.value === was)) s.value = was;
+    s.addEventListener("change", () => chosen.set(key, s.value));
+  }
+  return s;
+};
+
+const endPicker = key => picker(
+  [{ value: "loop", label: "then loop" },
+   { value: "back", label: "then walk back" },
+   { value: "stop", label: "then stop" }],
+  "at the end of the route", key);
+const btn = (text, onclick) => el("button", { class: "btn sm", disabled: readOnly, text, onclick });
+const ghost = (text, onclick) => el("button", { class: "btn ghost sm", disabled: readOnly, text, onclick });
+const empty = text => el("div", { class: "ed-empty", text });
+
+/** A row you click to open that thing's own screen. */
+const pickRow = (title, sub, onClick) =>
+  el("button", { class: "ed-pickrow", type: "button", onclick: onClick },
+    el("span", { class: "nm", text: title }),
+    el("span", { class: "sub", text: sub }));
 
 // ============================================================== settings
 
@@ -380,8 +394,20 @@ async function loadSettings() {
   renderSettings();
 }
 
-function renderSettings() {
+/** Which sections you had open. Saving rebuilds the whole list, and without
+    this every one of them would snap shut — which also made the page shorter,
+    so the browser dropped you at the bottom of it. */
+const openSections = new Set();
+
+function renderSettings({ keepPlace = false } = {}) {
   const box = $("sections");
+  const y = window.scrollY;
+
+  for (const d of document.querySelectorAll("details.ed-sec")) {
+    const name = d.querySelector("summary span").textContent;
+    if (d.open) openSections.add(name); else openSections.delete(name);
+  }
+
   box.replaceChildren();
   const find = $("find").value.trim().toLowerCase();
 
@@ -399,14 +425,18 @@ function renderSettings() {
     const help = entries[0].sectionHelp;
     if (help && !find) body.append(el("p", { class: "ed-sechelp", text: help }));
     for (const e of entries) body.append(settingRow(e));
-    box.append(el("details", { class: "ed-sec", open: find ? true : undefined },
-      el("summary", {}, el("span", { text: section || "Settings" })), body));
+    const title = section || "Settings";
+    box.append(el("details", { class: "ed-sec", open: (find || openSections.has(title)) ? true : undefined },
+      el("summary", {}, el("span", { text: title })), body));
   }
 
   if (!groups.size) {
     box.append(el("p", { class: "lede", text: find ? "No setting matches that." : "This server sent no settings." }));
   }
   updateSavebar();
+  // Stay where you were reading. "instant" matters: the site sets
+  // scroll-behavior:smooth, so without it the page glides off after a save.
+  if (keepPlace) requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" }));
 }
 
 function settingRow(e) {
@@ -481,7 +511,7 @@ $("find").addEventListener("input", renderSettings);
 $("openAll").addEventListener("click", () => {
   document.querySelectorAll("details.ed-sec").forEach(d => { d.open = true; });
 });
-$("undo").addEventListener("click", () => { edits = {}; renderSettings(); });
+$("undo").addEventListener("click", () => { edits = {}; renderSettings({ keepPlace: true }); });
 
 $("save").addEventListener("click", async () => {
   $("save").disabled = true;
@@ -500,7 +530,7 @@ $("save").addEventListener("click", async () => {
     } else {
       cfg = r;
       edits = {};
-      renderSettings();
+      renderSettings({ keepPlace: true });
       toast(r.changed
         ? "Saved " + r.changed + (r.changed === 1 ? " setting" : " settings") + ". FightBot reloaded them."
           + (r.note ? " " + r.note : "")
@@ -520,8 +550,8 @@ let viewingBot = null;
 async function loadBots() { showBots(await ed.listBots()); }
 
 /** A bot's face, cut out of its skin image with CSS. */
-function face(texture) {
-  const f = el("div", { class: "ed-face", role: "img", "aria-label": "skin" });
+function face(texture, small) {
+  const f = el("div", { class: "ed-face" + (small ? " sm" : ""), role: "img", "aria-label": "skin" });
   if (texture) f.style.backgroundImage = "url(https://textures.minecraft.net/texture/" + texture + ")";
   return f;
 }
@@ -588,35 +618,8 @@ function showBots(data) {
 $("botsRefresh").addEventListener("click", () => refreshAll().catch(e => toast(e.message, true)));
 $("allStop").addEventListener("click", () => run("stop --all"));
 
-// ---- spawning ---------------------------------------------------------
-
-/** The --location tail, or nothing when no place was given. */
-function where() {
-  const x = $("spawnX").value.trim(), y = $("spawnY").value.trim(), z = $("spawnZ").value.trim();
-  const w = $("spawnWorld").value;
-  if (!x && !y && !z) return "";
-  if (!x || !y || !z) throw new Error("Give all three of x, y and z, or leave all three blank.");
-  return " --location " + x + " " + y + " " + z + (w ? " " + w : "");
-}
-
-$("spawnGo").addEventListener("click", async () => {
-  const name = $("spawnName").value.trim();
-  const count = Math.max(1, Math.min(200, Number($("spawnCount").value) || 1));
-  const save = $("spawnSave").value;
-  let line;
-  try {
-    if (save) {
-      line = "save " + save + " " + (name || "--random") + (count > 1 ? " " + count : "");
-    } else if (name) {
-      if (count > 1) toast("A name makes one bot. Leave the name blank to spawn " + count + ".");
-      line = "spawn " + name;
-    } else {
-      line = "spawn " + count;
-    }
-    line += where();
-  } catch (e) { return toast(e.message, true); }
-  if (await run(line)) { $("spawnName").value = ""; }
-});
+// Spawning bots is deliberately not here: that stays in game, with someone who
+// has fightbot.use standing on the server.
 
 // ---- one bot ----------------------------------------------------------
 
@@ -628,9 +631,10 @@ async function openBot(name) {
   const b = botList.find(x => x.name === name);
   $("botInfo").textContent = b ? describe(b) : "";
   fillPickers();
-  for (const id of ["botFight", "botStop", "botHeal", "botRoam", "botPatrol", "botFree",
+  for (const id of ["botFight", "botStop", "botRoam", "botPatrol", "botFree",
                     "botGiveKit", "botStoreKit", "botRemove"]) {
-    $(id).disabled = readOnly;
+    const b = $(id);
+    if (b) b.disabled = readOnly;
   }
   await loadBotSwitches(name);
 }
@@ -650,7 +654,6 @@ $("botFight").addEventListener("click", () => {
   run("fight " + viewingBot + " " + t);
 });
 $("botStop").addEventListener("click", () => run("stop " + viewingBot));
-$("botHeal").addEventListener("click", () => run("edit heal " + viewingBot));
 $("botRoam").addEventListener("click", () => {
   if (!$("botRoute").value) return toast("Make a route in game first.", true);
   run("roamingstart " + viewingBot + " " + $("botRoute").value + " " + $("botEnd").value);
@@ -678,7 +681,12 @@ $("botRemove").addEventListener("click", async () => {
 /** The switches from the bot's in-game settings screen. */
 async function loadBotSwitches(name) {
   const box = $("botSwitches");
-  box.replaceChildren(el("p", { class: "lede", text: "Reading its settings…" }));
+  // Only say "reading" the first time. Every command reloads these, and
+  // blanking them each time made the whole list flicker.
+  if (!box.firstChild) {
+    box.append(el("p", { class: "lede" },
+      el("span", { class: "sword", "aria-hidden": "true" }), " Reading its settings…"));
+  }
   let r;
   try {
     r = await ed.request("bot.settings", { name });
@@ -721,123 +729,318 @@ async function flipBot(name, key, value) {
 }
 
 // ===================================================== groups, routes, kits
+// Four short lists. Click one and it gets a screen of its own, the way the
+// in-game menus work, rather than every control being on show at once.
+
+let team = null;   // { kind: "group"|"route"|"kit"|"save", id, given }
 
 async function loadTeams() {
   if (!lists) await loadLists();
-  else drawTeams();
+  // the member heads and the pick lists both need to know who is actually here
+  try { showBots(await ed.listBots()); } catch (e) { /* carry on with what we have */ }
+  drawTeams();
 }
 
 function drawTeams() {
+  if (team) { drawTeamPanel(); return; }
+
+  const groups = Object.entries((lists && lists.groups) || {});
+  $("groupCount").textContent = groups.length + (groups.length === 1 ? " group" : " groups");
   const g = $("groups");
   g.replaceChildren();
-  const groups = Object.entries((lists && lists.groups) || {});
-  if (!groups.length) {
-    g.append(el("tr", {}, el("td", { class: "muted", text: "No groups yet." })));
-  }
+  if (!groups.length) g.append(empty("No groups yet. Make one below."));
   for (const [name, members] of groups) {
-    g.append(el("tr", {},
-      el("td", {}, el("b", { text: name })),
-      el("td", { class: "muted", text: members.length
-        ? members.length + (members.length === 1 ? " bot: " : " bots: ") + members.join(", ")
-        : "empty" }),
-      el("td", { class: "acts" },
-        el("button", { class: "btn ghost sm", disabled: readOnly, text: "Delete",
-          onclick: () => confirm("Delete the group " + name + "? Its bots are freed.")
-            && run("groupdel " + name) }))));
+    g.append(pickRow(name,
+      members.length ? members.length + (members.length === 1 ? " bot" : " bots") : "empty",
+      () => openTeam("group", name)));
   }
 
+  const routes = (lists && lists.routes) || [];
+  $("routeCount").textContent = routes.length + (routes.length === 1 ? " route" : " routes");
   const r = $("routes");
   r.replaceChildren();
-  const routes = (lists && lists.routes) || [];
   if (!routes.length) {
-    r.append(el("tr", {}, el("td", { class: "muted",
-      text: "No routes yet. Make one in game with /fightbot roamingroutecreate <name>." })));
+    r.append(empty("No routes yet. Make one in game with /fightbot roamingroutecreate <name>."));
   }
   for (const route of routes) {
-    r.append(el("tr", {},
-      el("td", {}, el("b", { text: route.name })),
-      el("td", { class: "muted", text: (route.points || 0) + (route.points === 1 ? " point" : " points")
-        + (route.targets && route.targets.length ? " · patrols hunt " + route.targets.join(", ") : "") }),
-      el("td", { class: "acts" },
-        el("button", { class: "btn ghost sm", disabled: readOnly, text: "Delete",
-          onclick: () => confirm("Delete the route " + route.name + "? Bots on it stop.")
-            && run("roamingroutedel " + route.name) }))));
+    const t = (route.targets || []).length;
+    r.append(pickRow(route.name,
+      (route.points || 0) + (route.points === 1 ? " point" : " points")
+        + (t ? " · " + t + (t === 1 ? " target" : " targets") : ""),
+      () => openTeam("route", route.name)));
   }
 
-  slots("kits", (lists && lists.kits) || [], "delload", "No kits stored yet.");
-  slots("saves", (lists && lists.saves) || [], "delsave", "No saves stored yet.");
+  const kits = (lists && lists.kits) || [];
+  const kBox = $("kits");
+  kBox.replaceChildren();
+  if (!kits.length) {
+    kBox.append(empty("No kits stored yet. Open a bot and store its gear in a slot."));
+  }
+  for (const row of kits) {
+    kBox.append(pickRow("Slot " + row.slot, row.label || "(no label)",
+      () => openTeam("kit", String(row.slot))));
+  }
+
+  // Saves spawn bots, so FightBot refuses every save command from the web.
+  // They are listed here to be read, not opened.
+  const saves = (lists && lists.saves) || [];
+  const sBox = $("saves");
+  sBox.replaceChildren();
+  if (!saves.length) {
+    sBox.append(empty("Nothing stored. Use /fightbot savegear <bot> <slot> in game."));
+  }
+  for (const row of saves) {
+    sBox.append(el("div", { class: "ed-memrow read" },
+      el("div", { class: "nm" }, "Slot " + row.slot,
+        el("div", { class: "sub", text: row.label || "(no label)" })),
+      el("span", { class: "sub", text: "/fightbot save " + row.slot })));
+  }
 }
 
-function slots(id, rows, delCmd, empty) {
-  const t = $(id);
-  t.replaceChildren();
-  if (!rows.length) {
-    t.append(el("tr", {}, el("td", { class: "muted", text: empty })));
-    return;
+function openTeam(kind, id) {
+  team = { kind, id, given: new Set() };
+  $("teamsAll").hidden = true;
+  $("teamPanel").hidden = false;
+  drawTeamPanel();
+  window.scrollTo(0, 0);
+}
+
+function closeTeam() {
+  team = null;
+  $("teamPanel").hidden = true;
+  $("teamsAll").hidden = false;
+  drawTeams();
+}
+
+$("teamBack").addEventListener("click", closeTeam);
+
+function drawTeamPanel() {
+  if (!team) return;
+  const body = $("teamBody");
+  body.replaceChildren();
+  if (team.kind === "group") groupPanel(body);
+  else if (team.kind === "route") routePanel(body);
+  else slotPanel(body);
+}
+
+/** A row with a bot's face, what it is doing, and one button. */
+function botRow(name, label, onAction, quiet) {
+  const b = botList.find(x => x.name === name);
+  return el("div", { class: "ed-memrow" },
+    face(b && b.skin, true),
+    el("div", { class: "nm" }, name,
+      el("div", { class: "sub", text: b ? describe(b) : "not on the server right now" })),
+    el("button", { class: "btn sm" + (quiet ? " ghost" : ""), disabled: readOnly,
+      text: label, onclick: onAction }));
+}
+
+const skinOf = name => {
+  const b = botList.find(x => x.name === name);
+  return b ? b.skin : null;
+};
+
+const isGroup = name => !!(lists && lists.groups && name in lists.groups);
+
+/** A head for a bot or a player, a lettered tile for a whole group. */
+const avatar = name => isGroup(name)
+  ? el("div", { class: "ed-face sm tile", "aria-hidden": "true", text: name.slice(0, 1).toUpperCase() })
+  : face(skinOf(name), true);
+
+/** Is a route's target actually around at the moment? */
+function targetState(name) {
+  const bot = botList.find(b => b.name === name);
+  if (bot) return { here: true, what: "a bot, on the server now", skin: bot.skin };
+  if (((lists && lists.players) || []).includes(name)) {
+    return { here: true, what: "a player, online now", skin: null };
   }
-  for (const row of rows) {
-    t.append(el("tr", {},
-      el("td", {}, el("b", { text: "Slot " + row.slot })),
-      el("td", { class: "muted", text: row.label || "(no label)" }),
-      el("td", { class: "acts" },
-        el("button", { class: "btn ghost sm", disabled: readOnly, text: "Delete",
-          onclick: () => confirm("Delete slot " + row.slot + "?") && run(delCmd + " " + row.slot) }))));
+  if (lists && lists.groups && name in lists.groups) {
+    const n = lists.groups[name].length;
+    return { here: n > 0, skin: null,
+      what: n ? "a group, " + n + (n === 1 ? " bot in it" : " bots in it") : "a group, empty right now" };
   }
+  return { here: false, skin: null,
+    what: "not here right now — patrols pick them up again when they are" };
+}
+
+// ---- one group --------------------------------------------------------
+
+function groupPanel(body) {
+  const name = team.id;
+  const members = (lists && lists.groups && lists.groups[name]) || null;
+  if (!members) { closeTeam(); return; }   // it was deleted while open
+
+  $("teamTitle").textContent = "Group: " + name;
+  $("teamInfo").textContent = members.length
+    ? members.length + (members.length === 1 ? " bot in it." : " bots in it.")
+    : "Nothing in it yet.";
+
+  body.append(el("h3", { class: "ed-sub", text: "In this group" }));
+  const inBox = el("div", { class: "ed-rows" });
+  if (!members.length) inBox.append(empty("Empty. Add a bot below."));
+  for (const n of members) {
+    inBox.append(botRow(n, "Take out", () => run("groupremove " + name + " " + n), true));
+  }
+  body.append(inBox);
+
+  const free = botList.filter(b => !members.includes(b.name));
+  body.append(el("h3", { class: "ed-sub", text: "Add a bot" }));
+  const addBox = el("div", { class: "ed-rows" });
+  if (!free.length) {
+    addBox.append(empty(botList.length
+      ? "Every bot on the server is already in this group."
+      : "No bots on the server. Spawn one in game with /fightbot spawn."));
+  }
+  for (const b of free) {
+    addBox.append(botRow(b.name, b.group ? "Move it here" : "Add",
+      () => run("groupadd " + name + " " + b.name)));
+  }
+  body.append(addBox);
+
+  body.append(el("h3", { class: "ed-sub", text: "What this group does" }));
+
+  const target = picker(targetList().filter(t => t.value !== name), "who to fight", "group-target");
+  body.append(el("div", { class: "ed-row" }, target,
+    btn("Set them on this", () => target.value
+      ? run("groupfight " + name + " " + target.value)
+      : toast("Nobody to fight.", true)),
+    ghost("Stop them", () => run("groupstop " + name))));
+
+  const route = picker(routeNames().map(r => ({ value: r, label: r })), "route", "group-route");
+  const end = endPicker("end");
+  body.append(el("div", { class: "ed-row" }, route, end,
+    btn("Walk the route", () => route.value
+      ? run("roamingstart --group " + name + " " + route.value + " " + end.value)
+      : toast("Make a route in game first.", true)),
+    btn("Patrol it", () => route.value
+      ? run("patrollingstart --group " + name + " " + route.value + " " + end.value)
+      : toast("Make a route in game first.", true))));
+
+  const kit = picker(slotList(lists && lists.kits), "kit", "group-kit");
+  body.append(el("div", { class: "ed-row" }, kit,
+    btn("Give them this kit", () => kit.value
+      ? run("kit --group " + name + " " + kit.value)
+      : toast("No kits stored yet.", true))));
+
+  body.append(el("div", { class: "ed-danger" },
+    el("button", { class: "btn sm danger", disabled: readOnly, text: "Delete this group",
+      onclick: () => confirm("Delete the group " + name + "? Its bots are freed.")
+        && run("groupdel " + name) })));
+}
+
+// ---- one route --------------------------------------------------------
+
+function routePanel(body) {
+  const route = ((lists && lists.routes) || []).find(r => r.name === team.id);
+  if (!route) { closeTeam(); return; }
+
+  $("teamTitle").textContent = "Route: " + route.name;
+  $("teamInfo").textContent = (route.points || 0) + (route.points === 1 ? " point." : " points.")
+    + " Points are placed in game, standing where you want each one.";
+
+  const targets = route.targets || [];
+  body.append(el("h3", { class: "ed-sub", text: "Who patrols on this route go after" }));
+  body.append(el("p", { class: "lede", text:
+    "FightBot drops a target that has gone by itself, so this list is who patrols are actually "
+    + "hunting. Anything that slipped through is marked." }));
+
+  const tBox = el("div", { class: "ed-rows" });
+  if (!targets.length) tBox.append(empty("Nobody. Patrols on this route will not go after anyone."));
+  for (const t of targets) {
+    const st = targetState(t);
+    tBox.append(el("div", { class: "ed-memrow" + (st.here ? "" : " gone") },
+      avatar(t),
+      el("div", { class: "nm" }, t, el("div", { class: "sub", text: st.what })),
+      el("button", { class: "btn ghost sm", disabled: readOnly, text: "Remove",
+        onclick: () => run("patrollingtargetdel " + route.name + " " + t) })));
+  }
+  body.append(tBox);
+
+  const free = targetList().filter(t => !targets.includes(t.value));
+  body.append(el("h3", { class: "ed-sub", text: "Add a target" }));
+  const aBox = el("div", { class: "ed-rows" });
+  if (!free.length) aBox.append(empty("Nobody left to add."));
+  for (const t of free) {
+    aBox.append(el("div", { class: "ed-memrow" },
+      avatar(t.value),
+      el("div", { class: "nm" }, t.label),
+      el("button", { class: "btn sm", disabled: readOnly, text: "Add",
+        onclick: () => run("patrollingtargetadd " + route.name + " " + t.value) })));
+  }
+  body.append(aBox);
+
+  body.append(el("h3", { class: "ed-sub", text: "Send bots along it" }));
+  const who = picker(whoList(), "which bots", "route-who");
+  const end = endPicker("end");
+  body.append(el("div", { class: "ed-row" }, who, end));
+  body.append(el("div", { class: "ed-row" },
+    btn("Walk it", () => run("roamingstart " + who.value + " " + route.name + " " + end.value)),
+    btn("Patrol it", () => run("patrollingstart " + who.value + " " + route.name + " " + end.value)),
+    ghost("Stop them", () => run("roamingstop " + who.value))));
+
+  body.append(el("div", { class: "ed-danger" },
+    el("button", { class: "btn sm danger", disabled: readOnly, text: "Delete this route",
+      onclick: () => confirm("Delete the route " + route.name + "? Bots walking it stop.")
+        && run("roamingroutedel " + route.name) })));
+}
+
+// ---- one kit or save --------------------------------------------------
+
+function slotPanel(body) {
+  const row = ((lists && lists.kits) || []).find(r => String(r.slot) === team.id);
+  if (!row) { closeTeam(); return; }
+
+  $("teamTitle").textContent = "Kit " + row.slot;
+  $("teamInfo").textContent = row.label || "(nothing stored in it yet)";
+
+  {
+    body.append(el("h3", { class: "ed-sub", text: "Give it to a bot" }));
+    body.append(el("p", { class: "lede", text:
+      "Click a bot and it takes the kit, replacing what it carries, then drops off this list. "
+      + "A bot that is busy is skipped — stop it first." }));
+
+    const box = el("div", { class: "ed-rows" });
+    const left = botList.filter(b => !team.given.has(b.name));
+    if (!left.length) {
+      box.append(empty(botList.length ? "Every bot has had it." : "No bots on the server."));
+    }
+    for (const b of left) {
+      box.append(botRow(b.name, "Give it", async () => {
+        if (await run("kit " + b.name + " " + row.slot, { refresh: false })) {
+          team.given.add(b.name);
+          drawTeamPanel();
+        }
+      }));
+    }
+    body.append(box);
+
+    const g = picker(groupNames().map(n => ({ value: n, label: n })), "group", "kit-group");
+    body.append(el("div", { class: "ed-row" },
+      el("span", { class: "ed-lab", text: "Or a whole group" }), g,
+      btn("Give it to them", () => g.value
+        ? run("kit --group " + g.value + " " + row.slot)
+        : toast("No groups yet.", true))));
+  }
+
+  const b = picker(botList.map(x => ({ value: x.name, label: x.name })), "bot", "slot-bot");
+  body.append(el("h3", { class: "ed-sub", text: "Or store a bot's gear here instead" }));
+  body.append(el("div", { class: "ed-row" }, b,
+    btn("Store it", () => b.value
+      ? run("saveload " + b.value + " " + row.slot)
+      : toast("No bots on the server.", true))));
+
+  body.append(el("div", { class: "ed-danger" },
+    el("button", { class: "btn sm danger", disabled: readOnly, text: "Delete this kit",
+      onclick: () => confirm("Delete kit " + row.slot + "?") && run("delload " + row.slot) })));
 }
 
 $("groupCreate").addEventListener("click", async () => {
   const name = $("groupNew").value.trim();
   if (!name) return toast("Give the group a name first.", true);
-  if (await run("groupcreate " + name)) $("groupNew").value = "";
-});
-$("groupAdd").addEventListener("click", () => {
-  if (!$("groupBot").value || !$("groupPick").value) return toast("Pick a bot and a group.", true);
-  run("groupadd " + $("groupPick").value + " " + $("groupBot").value);
-});
-$("groupTake").addEventListener("click", () => {
-  if (!$("groupBot").value || !$("groupPick").value) return toast("Pick a bot and a group.", true);
-  run("groupremove " + $("groupPick").value + " " + $("groupBot").value);
-});
-$("groupFight").addEventListener("click", () => {
-  if (!$("fightA").value || !$("fightB").value) return toast("Pick both sides.", true);
-  run("groupfight " + $("fightA").value + " " + $("fightB").value);
-});
-$("groupStop").addEventListener("click", () => {
-  if (!$("fightA").value) return toast("Pick a group.", true);
-  run("groupstop " + $("fightA").value);
-});
-
-const whoArg = id => $(id).value;   // "Bot1", "--all" or "--group red"
-
-$("routeRoam").addEventListener("click", () => {
-  if (!$("routePick").value) return toast("Make a route in game first.", true);
-  run("roamingstart " + whoArg("routeWho") + " " + $("routePick").value + " " + $("routeEnd").value);
-});
-$("routePatrol").addEventListener("click", () => {
-  if (!$("routePick").value) return toast("Make a route in game first.", true);
-  run("patrollingstart " + whoArg("routeWho") + " " + $("routePick").value + " " + $("routeEnd").value);
-});
-$("routeFree").addEventListener("click", () => run("roamingfree " + whoArg("routeWho")));
-$("routeStop").addEventListener("click", () => run("roamingstop " + whoArg("routeWho")));
-
-$("targetAdd").addEventListener("click", () => {
-  if (!$("targetRoute").value || !$("targetWho").value) return toast("Pick a route and a target.", true);
-  run("patrollingtargetadd " + $("targetRoute").value + " " + $("targetWho").value);
-});
-$("targetDel").addEventListener("click", () => {
-  if (!$("targetRoute").value || !$("targetWho").value) return toast("Pick a route and a target.", true);
-  run("patrollingtargetdel " + $("targetRoute").value + " " + $("targetWho").value);
-});
-
-$("kitGive").addEventListener("click", () => {
-  if (!$("kitSlot").value) return toast("No kits stored yet.", true);
-  run("kit " + whoArg("kitWho") + " " + $("kitSlot").value);
-});
-$("saveSpawn").addEventListener("click", () => {
-  if (!$("saveSlot").value) return toast("No saves stored yet.", true);
-  const name = $("saveName").value.trim();
-  const count = Math.max(1, Math.min(200, Number($("saveCount").value) || 1));
-  run("save " + $("saveSlot").value + " " + (name || "--random") + (count > 1 ? " " + count : ""));
+  if (!/^[A-Za-z0-9_-]+$/.test(name)) return toast("Letters, numbers, - and _ only, with no spaces.", true);
+  if (await run("groupcreate " + name)) {
+    $("groupNew").value = "";
+    openTeam("group", name);
+  }
 });
 
 // ================================================================= skins
