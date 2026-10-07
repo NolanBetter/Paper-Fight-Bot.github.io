@@ -6,7 +6,7 @@
 <title>Server editor — Paper Fight Bot</title>
 
 <!-- The link's secret lives in this page, so nothing else gets to run here:
-     no analytics, no chat widget, and none of the site's own scripts. Only
+     no analytics, no widgets, and none of the site's own scripts. Only
      editor.js and ../assets/fightbot-web.js, both from this domain.
      Testing against a local relay? Add it to connect-src. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app; img-src 'self' data: https://textures.minecraft.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
@@ -34,8 +34,8 @@
   </div>
 </header>
 
-<!-- connection state and tabs, stuck together under the site header so they
-     stay reachable while a long settings list scrolls -->
+<!-- connection state and tabs, stuck together under the nav so they stay
+     reachable while a long settings list scrolls -->
 <div class="ed-sticky">
   <div class="strip ed-strip">
     <div class="wrap strip-in">
@@ -49,6 +49,7 @@
   <nav class="wrap ed-tabs" id="tabs" role="tablist" hidden>
     <button class="btn ghost tab sm on" role="tab" data-tab="settings" aria-selected="true">Settings</button>
     <button class="btn ghost tab sm" role="tab" data-tab="bots" aria-selected="false">Bots</button>
+    <button class="btn ghost tab sm" role="tab" data-tab="teams" aria-selected="false">Groups &amp; kits</button>
     <button class="btn ghost tab sm" role="tab" data-tab="skins" aria-selected="false">Skins</button>
     <button class="btn ghost tab sm" role="tab" data-tab="voice" aria-selected="false">Voice lines</button>
     <button class="btn ghost tab sm" role="tab" data-tab="debug" aria-selected="false">Debug logs</button>
@@ -65,10 +66,10 @@
       <h3>Getting a link</h3>
       <ol class="ed-steps">
         <li>Join your server, or open its console.</li>
-        <li>Run <code>/fightbot web</code>.</li>
+        <li>Run <code>/fightbot web</code>. It takes a few seconds to make.</li>
         <li>Open the link it gives you. It works for 30 minutes unused, 4 hours in all.</li>
       </ol>
-      <p class="lede">You need FightBot <b>5.17.0</b> or newer and the <code>fightbot.admin</code> permission.
+      <p class="lede">You need FightBot <b>5.17.0</b> or newer and the <code>fightbot.web</code> permission.
         <a href="../install.html">How to install it</a>.</p>
     </div>
   </section>
@@ -88,11 +89,165 @@
 
   <!-- ------------------------------------------------------------- bots -->
   <section id="tab-bots" hidden>
-    <div class="ed-head2">
-      <h2>Bots on the server</h2>
-      <span class="ed-count" id="botCount"></span>
+
+    <!-- one bot at a time, once you pick one -->
+    <div class="ed-card" id="botPanel" hidden>
+      <div class="ed-head2">
+        <button class="btn ghost sm" id="botBack">&larr; All bots</button>
+        <h2 id="botName"></h2>
+      </div>
+      <p class="lede" id="botInfo"></p>
+
+      <h3 class="ed-sub">Tell it what to do</h3>
+      <div class="ed-row">
+        <select id="botTarget" class="ed-input" aria-label="who to fight"></select>
+        <button class="btn sm" id="botFight">Fight them</button>
+        <button class="btn ghost sm" id="botStop">Stop</button>
+        <button class="btn ghost sm" id="botHeal">Bring to full health</button>
+      </div>
+      <div class="ed-row">
+        <select id="botRoute" class="ed-input" aria-label="route"></select>
+        <select id="botEnd" class="ed-input" aria-label="at the end of the route">
+          <option value="loop">then loop</option>
+          <option value="back">then walk back</option>
+          <option value="stop">then stop</option>
+        </select>
+        <button class="btn sm" id="botRoam">Walk it</button>
+        <button class="btn sm" id="botPatrol">Patrol it</button>
+        <button class="btn ghost sm" id="botFree">Wander freely</button>
+      </div>
+      <div class="ed-row">
+        <select id="botKit" class="ed-input" aria-label="kit"></select>
+        <button class="btn sm" id="botGiveKit">Give it this kit</button>
+        <button class="btn ghost sm" id="botStoreKit">Store its gear in this slot</button>
+        <button class="btn sm danger" id="botRemove">Remove bot</button>
+      </div>
+
+      <h3 class="ed-sub">This bot&rsquo;s own switches</h3>
+      <p class="lede">Every one of these starts out following your <code>config.yml</code>.
+        Flip one and this bot alone changes &mdash; until it dies or the server restarts.</p>
+      <div id="botSwitches"></div>
     </div>
-    <div id="bots" class="ed-bots"></div>
+
+    <!-- all of them -->
+    <div id="botsAll">
+      <div class="ed-card" id="spawnCard">
+        <h2>Spawn bots</h2>
+        <p class="lede">Leave the name blank for a made-up one. Leave the place blank to put them where
+          the person who opened this editor is standing.</p>
+        <div class="ed-row">
+          <input type="text" id="spawnName" class="ed-input" placeholder="name (blank = random)" aria-label="bot name">
+          <label class="ed-lab" for="spawnCount">How many</label>
+          <input type="number" id="spawnCount" class="ed-input" value="1" min="1" max="200" aria-label="how many">
+          <select id="spawnSave" class="ed-input" aria-label="from a save"></select>
+        </div>
+        <div class="ed-row">
+          <label class="ed-lab">Place</label>
+          <input type="text" id="spawnX" class="ed-input" placeholder="x" aria-label="x">
+          <input type="text" id="spawnY" class="ed-input" placeholder="y" aria-label="y">
+          <input type="text" id="spawnZ" class="ed-input" placeholder="z" aria-label="z">
+          <select id="spawnWorld" class="ed-input" aria-label="world"></select>
+          <button class="btn sm" id="spawnGo">Spawn</button>
+        </div>
+      </div>
+
+      <div class="ed-head2">
+        <h2>Bots on the server</h2>
+        <span class="ed-count" id="botCount"></span>
+        <button class="btn ghost sm" id="botsRefresh">Refresh</button>
+        <button class="btn ghost sm" id="allStop">Stop them all</button>
+      </div>
+      <div id="bots" class="ed-bots"></div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------- groups and kits -->
+  <section id="tab-teams" hidden>
+    <div class="ed-card">
+      <h2>Groups</h2>
+      <p class="lede">A bot is in one group at a time. Groups keep their names across a restart,
+        but they start empty, because bots do not survive one.</p>
+      <table class="ed-table"><tbody id="groups"></tbody></table>
+      <div class="ed-row">
+        <input type="text" id="groupNew" class="ed-input" placeholder="new group name" aria-label="new group name">
+        <button class="btn sm" id="groupCreate">Make a group</button>
+      </div>
+
+      <h3 class="ed-sub">Put a bot in a group</h3>
+      <div class="ed-row">
+        <select id="groupBot" class="ed-input" aria-label="bot"></select>
+        <select id="groupPick" class="ed-input" aria-label="group"></select>
+        <button class="btn sm" id="groupAdd">Add it</button>
+        <button class="btn ghost sm" id="groupTake">Take it out</button>
+      </div>
+
+      <h3 class="ed-sub">Set two sides on each other</h3>
+      <p class="lede">Two groups fight as one-on-one duels: each bot takes an opponent until one falls,
+        then picks the next.</p>
+      <div class="ed-row">
+        <select id="fightA" class="ed-input" aria-label="group"></select>
+        <span class="ed-lab">against</span>
+        <select id="fightB" class="ed-input" aria-label="the other side"></select>
+        <button class="btn sm" id="groupFight">Fight</button>
+        <button class="btn ghost sm" id="groupStop">Stop that group</button>
+      </div>
+    </div>
+
+    <div class="ed-card">
+      <h2>Routes</h2>
+      <p class="lede">Routes are laid out in game, where you can stand on each point:
+        <code>/fb roamingroutecreate &lt;name&gt;</code>, then <code>/fb roamingpointset &lt;name&gt;</code>
+        on every spot. From here you can send bots along them and say who patrols go after.</p>
+      <table class="ed-table"><tbody id="routes"></tbody></table>
+
+      <h3 class="ed-sub">Send bots out</h3>
+      <div class="ed-row">
+        <select id="routeWho" class="ed-input" aria-label="which bots"></select>
+        <select id="routePick" class="ed-input" aria-label="route"></select>
+        <select id="routeEnd" class="ed-input" aria-label="at the end of the route">
+          <option value="loop">then loop</option>
+          <option value="back">then walk back</option>
+          <option value="stop">then stop</option>
+        </select>
+      </div>
+      <div class="ed-row">
+        <button class="btn sm" id="routeRoam">Walk the route</button>
+        <button class="btn sm" id="routePatrol">Patrol the route</button>
+        <button class="btn ghost sm" id="routeFree">Wander freely</button>
+        <button class="btn ghost sm" id="routeStop">Stop</button>
+      </div>
+
+      <h3 class="ed-sub">Who patrols go after</h3>
+      <div class="ed-row">
+        <select id="targetRoute" class="ed-input" aria-label="route"></select>
+        <select id="targetWho" class="ed-input" aria-label="target"></select>
+        <button class="btn sm" id="targetAdd">Add</button>
+        <button class="btn ghost sm" id="targetDel">Remove</button>
+      </div>
+    </div>
+
+    <div class="ed-card">
+      <h2>Kits and saves</h2>
+      <p class="lede">A <b>kit</b> re-gears bots you already have. A <b>save</b> keeps gear
+        <i>and</i> settings, so new bots spawn ready. Five slots each.</p>
+
+      <h3 class="ed-sub">Kits</h3>
+      <table class="ed-table"><tbody id="kits"></tbody></table>
+      <div class="ed-row">
+        <select id="kitWho" class="ed-input" aria-label="which bots"></select>
+        <select id="kitSlot" class="ed-input" aria-label="kit slot"></select>
+        <button class="btn sm" id="kitGive">Give them this kit</button>
+      </div>
+
+      <h3 class="ed-sub">Saves</h3>
+      <table class="ed-table"><tbody id="saves"></tbody></table>
+      <div class="ed-row">
+        <select id="saveSlot" class="ed-input" aria-label="save slot"></select>
+        <input type="text" id="saveName" class="ed-input" placeholder="name (blank = random)" aria-label="name">
+        <input type="number" id="saveCount" class="ed-input" value="1" min="1" max="200" aria-label="how many">
+        <button class="btn sm" id="saveSpawn">Spawn from this save</button>
+      </div>
+    </div>
   </section>
 
   <!-- ------------------------------------------------------------ skins -->
@@ -152,10 +307,8 @@
       <p class="lede">Every decision the bots make, written to <code>plugins/FightBot/debug/</code>.
         Leave it off unless you are chasing a bug &mdash; then turn it on, make the bug happen, and
         attach the log to a <a href="../report.html">report</a>.</p>
-      <div class="ed-row">
-        <span id="debugState" class="ed-state"></span>
-        <button class="btn sm" id="debugToggle">Turn on</button>
-      </div>
+      <div class="ed-row" id="debugToggleRow"></div>
+      <p class="lede" id="debugState"></p>
     </div>
     <div class="ed-card">
       <h2>Log files</h2>
@@ -167,12 +320,21 @@
     <div class="ed-card" id="viewer" hidden>
       <div class="ed-head2">
         <h2 id="viewName"></h2>
-        <label class="ed-check"><input type="checkbox" id="liveTail"> Follow live</label>
+        <span id="liveRow"></span>
         <button class="btn sm ghost" id="loadMore">Load earlier</button>
       </div>
       <pre class="ed-log" id="logText" tabindex="0"></pre>
     </div>
   </section>
+
+  <!-- what FightBot answered to the last command, shared by Bots and Groups -->
+  <div class="ed-card" id="cmdCard" hidden>
+    <div class="ed-head2">
+      <h2>What FightBot said</h2>
+      <button class="btn ghost sm" id="cmdClear">Clear</button>
+    </div>
+    <pre class="ed-log" id="cmdOut" style="max-height:240px"></pre>
+  </div>
 </main>
 
 <!-- unsaved settings -->

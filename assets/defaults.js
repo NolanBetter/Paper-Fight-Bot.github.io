@@ -42,8 +42,9 @@ A bot with a mace and wind charges wind-jumps and smashes you on the way down. W
     a: `Use the [report form](report.html). It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.` },
   { id: "webeditor", q: "Can I change settings without opening server files?",
     a: `Yes, from 5.17.0. Type \`/fightbot web\` in game and open the link it gives you. It opens the
-[editor](editor/) on this site, where you can change any setting, watch the bots that are on, upload skins and
-voice lines, and read the debug logs.
+[editor](editor/) on this site, where you can change any setting, run the bots \u2014 spawn them, send them after
+someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot's own switches \u2014
+upload skins and voice lines, and read the debug logs.
 
 The link is the key, so do not share it. It stops working after 30 minutes unused, after 4 hours, or when you
 type \`/fightbot web stop\`. Nothing on your server has to be opened up, and everything between your server
@@ -52,6 +53,9 @@ and the page is encrypted with a key that is only in the link.` },
     a: `With [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) on the server, yes. Bots show up
 in voice chat like players, and the ones that "talk" say lines by themselves when they join, start a fight, win
 one, get low or die.
+
+FightBot's own lines come in the jar: \`hello\` and \`am_i_muted\` as a bot joins, and \`grass\` when a roaming
+bot pulls up grass. More come with updates, and \`voice.on-their-own: false\` keeps bots quiet unless told.
 
 You can add your own \`.mp3\` or \`.wav\` files too. Those are **never** said by a bot on its own \u2014 only when
 someone types \`/fightbot vc <name>\` \u2014 everyone nearby is told it is a file added by that server and who
@@ -79,7 +83,7 @@ Spigot, CraftBukkit and Folia aren't supported. If one of those is your server, 
 4. Right-click it in creative mode to give it armour and a weapon.
 5. \`/fb stop\` calls every bot off, and \`/fb remove <bot>\` gets rid of one.
 
-Every command works as \`/fightbot\` or \`/fb\`. The permission is \`fightbot.use\`, which only OPs have by default.
+Every command works as \`/fightbot\` or \`/fb\`. The permission is \`fightbot.use\`, which only OPs have by default. Two more, also OPs only: \`fightbot.web\` for the web editor, and \`fightbot.voice.custom\` for playing sound files added to the server.
 
 Rather click than type? \`/fb web\` gives you a link to change FightBot from your browser. See The web editor.
 
@@ -256,6 +260,7 @@ Your \`config.yml\` sets how every bot behaves. These switches let one bot be di
 |---|---|
 | Ender pearls | Throwing pearls to chase and to escape. |
 | Cobwebs | Placing cobwebs to trap and slow players. |
+| Shield | Raising a shield when you are about to swing. |
 | Shield breaking | Switching to an axe to break a raised shield. |
 | Water bucket | Washing out cobwebs and clutching big falls. |
 | Potions | Splashing potions for the buff. |
@@ -476,9 +481,17 @@ If a bot is spawned with the name of someone LuckPerms already knows, \`/lp user
 | \`muted\` | Voice chat turned off (the crossed-out icon) | No |
 | \`no-mod\` | Doesn't have the mod (the disconnected icon) | No |
 
-Change one bot with \`/fb vc presence <bot> <talks\\|muted\\|no-mod>\`. Telling a bot to say something turns its voice chat on.
+Change one bot with \`/fb vc presence <bot> <talks\\|muted\\|no-mod>\`. A bot with voice chat turned off, or without the mod, stays quiet like a player would, even when you tell it to say something.
 
-**FightBot's own lines.** Recorded lines come with FightBot updates (the first ones are on their way), and bots say them by themselves: when they join, see someone walk up, start a fight, beat someone, get low, pop a totem, die, and now and then while idle. Each bot speaks in one voice, so it always sounds like the same person. Each of those has a chance and a cooldown in \`voice.triggers\`, and \`voice.min-gap-seconds\` and \`voice.max-talking\` stop bots talking over each other.
+**FightBot's own lines.** These come in the jar, and bots say them by themselves. Anyone can also play one with \`/fb vc <name>\`:
+
+| Line | When a bot says it by itself |
+|---|---|
+| \`hello\` | As it joins: 1 in 50 bots |
+| \`am_i_muted\` | As it joins, the rare one: 1 in 200 |
+| \`grass\` | When it pulls up grass while roaming: 1 in 100 times |
+
+More come with updates. Each bot speaks in one voice, so it always sounds like the same person. \`voice.triggers\` sets how often (a percentage of those odds) and a cooldown for each moment, and \`voice.min-gap-seconds\` and \`voice.max-talking\` stop bots talking over each other. Rather they only talked when you say so? \`voice.on-their-own: false\`.
 
 **Your own lines.** Put \`.mp3\` or \`.wav\` files in \`plugins/FightBot/voice/\`, then \`/fb vc reload\`. The file's name is the line's name: \`plotvoiceline.mp3\` is \`/fb vc plotvoiceline\`. Lines are cut off after \`voice.custom.max-seconds\` (15 by default). You can also add them in the web editor, which converts other kinds of sound file, like a phone's \`.m4a\`, for you.
 
@@ -487,16 +500,18 @@ Change one bot with \`/fb vc presence <bot> <talks\\|muted\\|no-mod>\`. Telling 
 | Setting | Default | What it does |
 |---|---|---|
 | \`voice.enabled\` | \`true\` | Bots in voice chat at all. |
+| \`voice.on-their-own\` | \`true\` | Bots say FightBot's lines by themselves. \`false\`: only when played with \`/fb vc\`. |
 | \`voice.presence.talks\` / \`muted\` / \`no-mod\` | \`50\` / \`20\` / \`30\` | How bots show up, as chances. |
 | \`voice.distance\` | \`0\` | How far away bots are heard, in blocks. 0 is voice chat's own distance. |
-| \`voice.volume\` | \`1.0\` | How loud lines are. Never louder than clipping. |
-| \`voice.triggers.<what>\` | | \`enabled\`, \`chance\` (out of 100) and \`cooldown\` (seconds) for each thing a bot talks about. |
+| \`voice.volume\` | \`1.0\` | How loud bots are (0.5 is half, 2.0 twice). Every line is evened out to the same loudness first, so a loud recording does not blare. Players also get a FightBot slider in voice chat. |
+| \`voice.triggers.<what>\` | | \`enabled\`, \`chance\` (a percentage of each line's own odds: 100 is as set, 200 twice as often) and \`cooldown\` (seconds) for each moment a bot talks about. |
 | \`voice.custom.enabled\` | \`true\` | Whether files added to the server can be played at all. |` },
   { id: "the-web-editor", title: "The web editor", body:
-`Change FightBot from your browser instead of the server files. Type \`/fb web\` in game (or the console) and click the link. The editor at fightmc.xyz lets you:
+`Change FightBot from your browser instead of the server files. Type \`/fb web\` in game (or the console) and click the link — it takes about 5 seconds to make, up to 30 on a slow connection. The editor at [fightmc.xyz](editor/) lets you:
 
-- **change any setting**, with each one explained, and saves and reloads it for you
-- **see the bots that are on**, with their health, what they're doing and where, and stop or remove them
+- **change any setting**, with each one explained, saved and reloaded for you. Every true-or-false one is a switch you flip
+- **see the bots that are on**, with their health, what they're doing, their group and where, and stop or remove them
+- **run the bots**: spawn them, send them after someone, set them roaming or patrolling, make groups and set two on each other, hand out kits, and flip any one bot's own switches
 - **upload skins** and **voice lines**
 - **read the debug logs**, follow one live, or download it
 
@@ -563,7 +578,8 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`max-move-speed\` | \`0.28\` | Top speed. |
 | \`crit-chance\` | \`0.30\` | Chance of a critical hit. |
 | \`combat.fight-back.players\` / \`.bots\` | \`true\` | Fighting back, as above. |
-| \`combat.use-pearls\`, \`use-cobwebs\`, \`use-axe-swap\`, \`use-water-bucket\` | \`true\` | Which tricks bots use. |
+| \`combat.use-pearls\`, \`use-cobwebs\`, \`use-shield\`, \`use-axe-swap\`, \`use-water-bucket\` | \`true\` | Which tricks bots use. Each is also a switch in a bot's own settings. |
+| \`messages.staff-notices\` | \`true\` | FightBot tells staff in chat when something happens by itself (a bot kicked, an update out). \`false\`: console only, for scripted or recorded servers. |
 | \`combat.miss-chance\` | \`0.08\` | How often a swing misses, mostly at the edge of reach. |
 | \`combat.reaction.min-ticks\` / \`max-ticks\` | \`3\` / \`7\` | How long a bot takes to react to someone stepping into reach. |
 | \`mace.enabled\` | \`false\` | Mace combat: wind jumps and elytra dives. |

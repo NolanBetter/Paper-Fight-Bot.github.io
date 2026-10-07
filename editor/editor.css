@@ -12,6 +12,35 @@
 /* ---------- a smaller button, for dense rows ---------- */
 .btn.sm{font-size:16px;padding:10px 18px;letter-spacing:.4px}
 .btn.sm:focus-visible{outline:3px solid var(--ember);outline-offset:3px}
+.btn.tiny{font-size:14px;padding:7px 13px}
+
+/* ---------- the switches ----------
+   Every true/false setting is one of these: a blocky lever you can read from
+   across the room. No rounded corners anywhere — it should look like it came
+   out of the game. The word beside it says ON or OFF, so the colour is never
+   the only thing carrying the answer. */
+.mc-sw{display:inline-flex;align-items:center;gap:12px;cursor:pointer;user-select:none;flex:none}
+.mc-sw input{position:absolute;width:1px;height:1px;opacity:0;margin:0}
+.mc-sw .track{position:relative;width:74px;height:36px;flex:none;background:#211f23;
+  box-shadow:inset 3px 3px 0 rgba(0,0,0,.85),inset -3px -3px 0 rgba(255,255,255,.07)}
+.mc-sw .knob{position:absolute;top:4px;left:4px;width:28px;height:28px;background:#5c5a60;
+  box-shadow:inset 3px 3px 0 rgba(255,255,255,.3),inset -3px -3px 0 rgba(0,0,0,.55)}
+.mc-sw .word{font-family:var(--display);font-size:17px;letter-spacing:.8px;color:var(--ash);
+  min-width:3.6ch}
+/* on: redstone-lamp green, and the knob slides to the far end */
+.mc-sw input:checked + .track{background:#1f3313;
+  box-shadow:inset 3px 3px 0 rgba(0,0,0,.8),inset -3px -3px 0 rgba(140,200,90,.18)}
+.mc-sw input:checked + .track .knob{left:42px;background:var(--grass);
+  box-shadow:inset 3px 3px 0 rgba(255,255,255,.4),inset -3px -3px 0 rgba(0,0,0,.45)}
+.mc-sw input:checked ~ .word{color:#b5e48c}
+.mc-sw input:focus-visible + .track{outline:3px solid var(--ember);outline-offset:3px}
+.mc-sw:hover .knob{filter:brightness(1.15)}
+.mc-sw.off-is-bad input:not(:checked) + .track .knob{background:#7a4440}
+/* a switch the server owns, that this one bot is overriding */
+.mc-sw.disabled{cursor:not-allowed;opacity:.5}
+@media (prefers-reduced-motion:no-preference){
+  .mc-sw .knob{transition:left .14s steps(4,end),background .14s}
+}
 
 /* ---------- the connection strip and tabs ----------
    Both stick together, as one block, so nothing scrolls out from under them. */
@@ -51,6 +80,27 @@
 .ed-state{font-size:17px;color:#fff}
 .ed-check{display:flex;align-items:center;gap:10px;color:var(--iron);font-size:16px;cursor:pointer}
 .ed-check input{width:20px;height:20px;accent-color:var(--blood)}
+
+/* a sub-heading inside a card */
+.ed-sub{font-family:var(--display);font-size:19px;color:#fff;margin:26px 0 10px}
+.ed-card .ed-sub:first-of-type{margin-top:18px}
+.btn.danger{background:#7a1a1a}
+.btn.danger:hover{background:var(--blood)}
+
+/* ---------- one switch and what it does ---------- */
+.ed-switch{display:flex;align-items:center;gap:20px;justify-content:space-between;
+  padding:16px 0;border-top:2px solid #000}
+.ed-switch:first-child{border-top:0}
+.ed-switch .name{font-family:var(--display);font-size:18px;color:#fff}
+.ed-switch .what{color:var(--ash);font-size:15.5px;max-width:60ch;margin-top:2px}
+.ed-switch > div:first-child{min-width:0}
+.ed-switch .btn.tiny{margin-top:8px}
+/* this bot is doing its own thing, not following config.yml */
+.ed-switch.own{background:#14120f;padding-left:14px;padding-right:14px;
+  box-shadow:inset 4px 0 0 var(--gold)}
+@media(max-width:560px){
+  .ed-switch{flex-direction:column;align-items:flex-start;gap:12px}
+}
 
 /* ---------- settings ---------- */
 .ed-sec{background:var(--pit);border:3px solid #000;margin:0 0 14px}

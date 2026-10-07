@@ -104,12 +104,13 @@
       </details>
       <details>
         <summary>Can I change settings without opening server files?</summary>
-        <p>Yes, from 5.17.0. Type <code class="cmd">/fightbot web</code> in game and open the link it gives you. It opens the <a href="#" rel="noopener">editor</a> on this site, where you can change any setting, watch the bots that are on, upload skins and voice lines, and read the debug logs.</p>
+        <p>Yes, from 5.17.0. Type <code class="cmd">/fightbot web</code> in game and open the link it gives you. It opens the <a href="#" rel="noopener">editor</a> on this site, where you can change any setting, run the bots — spawn them, send them after someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot&#39;s own switches — upload skins and voice lines, and read the debug logs.</p>
 <p>The link is the key, so do not share it. It stops working after 30 minutes unused, after 4 hours, or when you type <code class="cmd">/fightbot web stop</code>. Nothing on your server has to be opened up, and everything between your server and the page is encrypted with a key that is only in the link.</p>
       </details>
       <details>
         <summary>Do the bots talk?</summary>
         <p>With <a href="https://modrinth.com/plugin/simple-voice-chat" rel="noopener">Simple Voice Chat</a> on the server, yes. Bots show up in voice chat like players, and the ones that &quot;talk&quot; say lines by themselves when they join, start a fight, win one, get low or die.</p>
+<p>FightBot&#39;s own lines come in the jar: <code class="cmd">hello</code> and <code class="cmd">am_i_muted</code> as a bot joins, and <code class="cmd">grass</code> when a roaming bot pulls up grass. More come with updates, and <code class="cmd">voice.on-their-own: false</code> keeps bots quiet unless told.</p>
 <p>You can add your own <code class="cmd">.mp3</code> or <code class="cmd">.wav</code> files too. Those are <strong>never</strong> said by a bot on its own — only when someone types <code class="cmd">/fightbot vc &lt;name&gt;</code> — everyone nearby is told it is a file added by that server and who played it, and every play is logged.</p>
       </details></div>
       <!-- faq:end --></div>
