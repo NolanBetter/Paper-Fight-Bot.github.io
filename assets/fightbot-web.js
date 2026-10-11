@@ -462,6 +462,8 @@ export class Editor {
   }
   deleteSkin(file) { return this.request("skins.delete", { file }); }
   listVoice() { return this.request("voice.list"); }
+  /** A line's sound file: { name, ext: "mp3"|"wav", bytes, data: base64 } - see playable(). */
+  getVoice(name) { return this.request("voice.get", { name }, { timeout: 60000 }); }
   async uploadVoice(name, ext, bytes, overwrite = false) {
     return this.request("voice.upload", { name, ext, data: b64(new Uint8Array(bytes)), overwrite }, { timeout: 120000 });
   }
@@ -494,7 +496,14 @@ export async function connectFromLink(hashOrUrl, handlers = {}) {
   return connect({ secret, relay, ...handlers });
 }
 
-// ── for the voice upload page (browsers only) ────────────────────────
+// ── for the voice page (browsers only) ───────────────────────────────
+
+/** A voice.get reply as a URL an <audio> element (or new Audio()) can play. Revoke it when done. */
+export function playable(voice) {
+  const bytes = Uint8Array.from(atob(voice.data), (c) => c.charCodeAt(0));
+  return URL.createObjectURL(new Blob([bytes], { type: voice.ext === "wav" ? "audio/wav" : "audio/mpeg" }));
+}
+
 
 /**
  * Turn any sound file the browser can play (m4a from a phone, ogg, webm,

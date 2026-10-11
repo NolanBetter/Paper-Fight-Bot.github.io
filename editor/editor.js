@@ -9,7 +9,8 @@
    site's own scripts (which load Firebase from another domain).
    --------------------------------------------------------------------------- */
 
-import { connectFromLink, toWav } from "../assets/fightbot-web.js";
+import { connectFromLink, toWav, playable, parseLink, findRelay, b64url, unb64url }
+  from "../assets/fightbot-web.js";
 
 const $ = id => document.getElementById(id);
 
@@ -83,6 +84,14 @@ const forgetLink = () => {
 let ed = null, status = null, readOnly = false;
 let lists = null;                 // groups, routes, kits, saves, players, worlds
 let botList = [];                 // the last bots we were sent
+
+/** Minecraft names do not care about case, and FightBot may hold a group
+    member as "pixelmaster38" while the bot on the server calls itself
+    "PixelMaster38". Match names the way the game does, or the same bot shows
+    up twice: once as a missing member, once as one you could add. */
+const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
+const findBot = n => botList.find(x => same(x.name, n));
+const listHas = (list, n) => (list || []).some(x => same(x, n));
 const tabs = ["settings", "bots", "teams", "skins", "voice", "debug"];
 let current = "settings";
 
@@ -124,16 +133,42 @@ async function start() {
     return;
   }
 
+  // A /fbp web link lists a whole network instead of being one server.
   try {
-    ed = await connectFromLink(hash, {
+    const where = parseLink(hash);
+    const look = await peekSession(where.secret, where.relay);
+    if (look.network) {
+      net = look.list;
+      net.onNetwork = data => { netData = data; drawServers(); };
+      net.onGone = listGone;
+      showNetwork(look.network);
+      return;                       // nothing is open until they pick one
+    }
+  } catch (e) {
+    // not a link at all, or the relay would not talk: the editor says so
+  }
+
+  await openServer(hash);
+}
+
+/** Connect to one server and show its editor. */
+async function openServer(link) {
+  try {
+    ed = await connectFromLink(link, {
       onState: (name, data) => { if (name === "bots") showBots(data); },
       onEvent: (name, data) => {
         if (name === "debug.lines") liveLines(data);
         else if (name === "paused") resume();
       },
       onClose: why => {
+        if (switching) return;      // we let go of it on purpose
         setConn("Closed", "bad");
-        forgetLink();
+        if (netData) {
+          if (picked) serverState.set(picked, "closed");
+          drawServers();
+        } else {
+          forgetLink();
+        }
         clearInterval(endsTimer);
         $("ends").textContent = "";
         $("finish").hidden = true;
@@ -143,9 +178,10 @@ async function start() {
         $("cmdCard").hidden = true;
         $("start").hidden = false;
         $("startSpin").hidden = true;
-        $("startTitle").textContent = "The editor closed";
-        $("startMsg").textContent = "It closed because " + why + ".";
-        $("howTo").hidden = false;
+        $("startTitle").textContent = netData ? picked + "'s editor closed" : "The editor closed";
+        $("startMsg").textContent = "It closed because " + why + "."
+          + (netData ? " The other servers keep working \u2014 pick one above." : "");
+        $("howTo").hidden = !!netData;
         toast("The editor closed: " + why + ".", true);
       },
       onConnection: ok => {
@@ -157,13 +193,13 @@ async function start() {
   } catch (e) {
     $("startSpin").hidden = true;
     setConn("Not connected", "bad");
-    $("startTitle").textContent = "Could not open the editor";
+    $("startTitle").textContent = netData ? "Could not open " + picked : "Could not open the editor";
     $("startMsg").textContent = e.message;
     if (/expired|closed|isn't a FightBot|won't talk to/.test(e.message)) {
-      forgetLink();
-      $("howTo").hidden = false;
+      if (!netData) forgetLink();
+      $("howTo").hidden = !!netData;
     }
-    return;
+    return false;
   }
 
   status = ed.status;
@@ -188,6 +224,280 @@ async function start() {
 
   loadLists().catch(() => { /* pickers fall back to what bots.list gives */ });
   show("settings");
+  return true;
+}
+
+// ============================================ one link for a whole network
+/* /fbp web on a proxy hands out a "list session": an ordinary session whose
+   only content is two snapshots naming every server and its own link.
+
+   Nothing listens on a list session's inbox, and the spec is explicit that the
+   page must not send it anything — but the library always says hello when it
+   connects. So the list is read with the small reader below instead: it opens
+   the stream, unseals the snapshots and writes nothing at all. The derivation
+   and the unsealing are section 5 of the spec, the same as the library's. */
+
+const enc = new TextEncoder(), dec = new TextDecoder();
+
+async function sha256(label, secret) {
+  const b = new Uint8Array(enc.encode(label).length + secret.length);
+  b.set(enc.encode(label), 0);
+  b.set(secret, enc.encode(label).length);
+  return new Uint8Array(await crypto.subtle.digest("SHA-256", b));
+}
+
+class ListSession {
+  constructor(sid, key, base) {
+    this.sid = sid;
+    this.key = key;
+    this.base = base;
+    this.onNetwork = null;    // the server list changed
+    this.onGone = null;       // the list itself has ended
+    this.closed = false;
+  }
+
+  static async make(secret, relayFromLink) {
+    const sid = b64url(await sha256("fightbot-web sid", secret)).slice(0, 24);
+    const key = await crypto.subtle.importKey("raw", await sha256("fightbot-web key", secret),
+      "AES-GCM", false, ["decrypt"]);
+    const relay = (await findRelay(relayFromLink)).replace(/\/+$/, "");
+    return new ListSession(sid, key, relay + "/fightbot-web/v1/sessions/" + sid);
+  }
+
+  async unseal(channel, sealed) {
+    const b = unb64url(sealed);
+    if (b.length < 30 || b[0] !== 1) throw new Error("not a sealed message");
+    let plain = new Uint8Array(await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: b.subarray(2, 14),
+        additionalData: enc.encode(this.sid + "/" + channel), tagLength: 128 },
+      this.key, b.subarray(14)));
+    if (b[1] & 1) {
+      plain = new Uint8Array(await new Response(
+        new Blob([plain]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer());
+    }
+    return JSON.parse(dec.decode(plain));
+  }
+
+  /** Pull the snapshots out of whatever the stream just handed us. */
+  async snapshots(state) {
+    const out = {};
+    for (const [name, v] of Object.entries(state || {})) {
+      if (!v || typeof v.d !== "string") continue;
+      try { out[name] = (await this.unseal("state/" + name, v.d)).data; }
+      catch (e) { /* not from this session: ignore it */ }
+    }
+    return out;
+  }
+
+  /** Open the stream. first(state) is called once, with whatever is there. */
+  listen(first) {
+    if (this.closed) return;
+    const es = new EventSource(this.base + ".json");
+    this.es = es;
+    let opened = false;
+
+    const take = async e => {
+      let m;
+      try { m = JSON.parse(e.data); } catch (err) { return; }
+      if (!m || typeof m.path !== "string") return;
+      const parts = m.path.split("/").filter(Boolean);
+
+      if (!parts.length) {
+        if (m.data === null || typeof m.data !== "object") return this.gone();
+        const snaps = await this.snapshots(m.data.state);
+        if (!opened) { opened = true; if (first) first(snaps); }
+        else if (snaps.network && this.onNetwork) this.onNetwork(snaps.network);
+        return;
+      }
+      if (parts[0] !== "state") return;
+      const state = parts.length === 1 ? m.data : (m.data ? { [parts[1]]: m.data } : null);
+      if (!state) return;
+      const snaps = await this.snapshots(state);
+      if (snaps.network && this.onNetwork) this.onNetwork(snaps.network);
+    };
+
+    es.addEventListener("put", take);
+    es.addEventListener("patch", take);
+    // the relay turns away a session that is not there any more
+    es.addEventListener("cancel", () => this.recheck());
+    es.onerror = () => { if (es.readyState === 2) this.recheck(); };
+
+    // nothing at all? treat it as an ordinary session and let the editor try
+    this.firstTimer = setTimeout(() => { if (!opened) { opened = true; if (first) first({}); } }, 5000);
+  }
+
+  /** The stream was turned away. Gone for good, or just a wobble? */
+  async recheck() {
+    if (this.closed || this.checking) return;
+    this.checking = true;
+    try { this.es.close(); } catch (e) { /* closing anyway */ }
+    try {
+      const r = await fetch(this.base + "/meta.json", { cache: "no-store" });
+      if (!r.ok) return this.gone();
+      if (!(await r.json())) return this.gone();
+      this.checking = false;
+      setTimeout(() => this.listen(null), 1000);   // still there: pick it back up
+    } catch (e) {
+      this.gone();
+    }
+  }
+
+  gone() {
+    if (this.closed) return;
+    this.stop();
+    if (this.onGone) this.onGone();
+  }
+
+  stop() {
+    this.closed = true;
+    clearTimeout(this.firstTimer);
+    try { this.es && this.es.close(); } catch (e) { /* closing anyway */ }
+  }
+}
+
+/** Is this link a network list? Read only, and quick: the stream's first
+    message carries the whole session, so there is nothing to wait around for. */
+async function peekSession(secret, relayFromLink) {
+  const list = await ListSession.make(secret, relayFromLink);
+  const snaps = await new Promise(ok => list.listen(ok));
+  const isList = !!(snaps.network || (snaps.status && snaps.status.network));
+  if (!isList) { list.stop(); return { list: null, network: null }; }
+  return { list, network: snaps.network || { servers: [] } };
+}
+
+// ---- the picker -------------------------------------------------------
+
+let net = null;            // the list session, while one is open
+let netData = null;        // { proxy, openedBy, expires, servers }
+let picked = null;         // the server whose editor is showing
+let switching = false;     // dropping a connection on purpose, not a close
+let netOver = false;
+let netTimer = null;
+const serverState = new Map();   // name -> idle | opening | open | closed | failed
+
+const STATE_WORDS = {
+  idle: "ready",
+  opening: "opening…",
+  open: "open below",
+  closed: "closed — /fightbot web on it for its own link",
+  failed: "could not open"
+};
+
+function showNetwork(data) {
+  netData = data;
+  $("network").hidden = false;
+  $("startSpin").hidden = true;
+  $("startTitle").textContent = "Pick a server";
+  $("startMsg").textContent = "This link covers every server on the network. "
+    + "Choose one above and its editor opens here.";
+  $("howTo").hidden = true;
+  setConn("No server picked", "wait");
+  $("finish").hidden = true;
+  drawServers();
+}
+
+function drawServers() {
+  const box = $("servers");
+  box.replaceChildren();
+
+  for (const s of (netData.servers || [])) {
+    const state = s.error ? "failed" : (serverState.get(s.name) || "idle");
+    const dead = !!s.error || state === "closed" || netOver;
+    box.append(el("button", {
+      class: "ed-srv" + (picked === s.name ? " on" : "") + (dead ? " off" : ""),
+      type: "button", disabled: dead,
+      "aria-current": picked === s.name ? "true" : null,
+      onclick: () => pickServer(s)
+    },
+      el("span", { class: "nm", text: s.name }),
+      el("span", { class: "sub", text: s.error || STATE_WORDS[state] })));
+  }
+
+  if (!(netData.servers || []).length) {
+    box.append(empty("The proxy did not list any servers."));
+  }
+
+  const info = $("netInfo");
+  if (netOver) {
+    info.className = "ed-netinfo gone";
+    info.textContent = "This network link has closed — type /fbp web on the proxy for a new one.";
+    return;
+  }
+  info.className = "ed-netinfo";
+  info.textContent = [
+    netData.proxy,
+    netData.openedBy ? "opened by " + netData.openedBy : null,
+    netLeft()
+  ].filter(Boolean).join(" · ");
+
+  clearTimeout(netTimer);
+  if (netData.expires) {
+    const left = netData.expires - Date.now();
+    if (left <= 0) listGone();
+    else netTimer = setTimeout(() => drawServers(), Math.min(left, 30000));
+  }
+}
+
+function netLeft() {
+  if (!netData.expires) return null;
+  const mins = Math.round((netData.expires - Date.now()) / 60000);
+  if (mins <= 0) return "out of time";
+  const h = Math.floor(mins / 60);
+  return (h ? h + "h " + (mins % 60) + "m" : mins + "m") + " left on this link";
+}
+
+function listGone() {
+  if (netOver) return;
+  netOver = true;
+  clearTimeout(netTimer);
+  if (net) net.stop();
+  drawServers();
+  forgetLink();
+  toast("This network link has closed — type /fbp web on the proxy for a new one.", true);
+}
+
+/** Let go of the server we were on, without ending its session. */
+function dropServer() {
+  if (!ed || ed.closed) { ed = null; return; }
+  switching = true;
+  ed.shutdown("switched to another server");   // no bye: its link keeps working
+  switching = false;
+  ed = null;
+  if (picked) serverState.set(picked, "idle");
+  clearInterval(endsTimer);
+  watching = false;
+  viewingBot = null;
+  team = null;
+  lists = null;
+  botList = [];
+  cfg = null;
+  edits = {};
+  chosen.clear();
+  openSections.clear();
+  $("cmdOut").replaceChildren();
+  $("cmdCard").hidden = true;
+  $("savebar").hidden = true;
+  $("tabs").hidden = true;
+  $("viewer").hidden = true;
+  viewing = null;
+  for (const t of tabs) $("tab-" + t).hidden = true;
+}
+
+async function pickServer(s) {
+  if (s.error || netOver || picked === s.name) return;
+  dropServer();
+  picked = s.name;
+  serverState.set(s.name, "opening");
+  drawServers();
+
+  $("startSpin").hidden = false;
+  $("start").hidden = false;
+  $("startTitle").textContent = "Opening " + s.name + "…";
+  $("startMsg").textContent = "Connecting to that server.";
+
+  const ok = await openServer(s.link);
+  serverState.set(s.name, ok ? "open" : "failed");
+  drawServers();
 }
 
 function show(name) {
@@ -328,7 +638,7 @@ function whoList() {
 /** Anything a bot can be pointed at. */
 function targetList(exclude) {
   const players = ((lists && lists.players) || []).map(p => ({ value: p, label: p + " (player)" }));
-  const bots = botList.filter(b => b.name !== exclude).map(b => ({ value: b.name, label: b.name + " (bot)" }));
+  const bots = botList.filter(b => !same(b.name, exclude)).map(b => ({ value: b.name, label: b.name + " (bot)" }));
   const groups = groupNames().map(g => ({ value: g, label: g + " (group)" }));
   return players.concat(bots, groups);
 }
@@ -372,6 +682,17 @@ const btn = (text, onclick) => el("button", { class: "btn sm", disabled: readOnl
 const ghost = (text, onclick) => el("button", { class: "btn ghost sm", disabled: readOnly, text, onclick });
 const empty = text => el("div", { class: "ed-empty", text });
 
+/** Put a spinning sword in a container while its list is on the way. Only
+    when it is empty: redrawing a list you can already see should not flicker. */
+function busy(box, what) {
+  if (!box || box.firstChild) return;
+  const line = el("div", { class: "ed-busy" },
+    el("span", { class: "sword", "aria-hidden": "true" }), " " + what);
+  box.replaceChildren(box.tagName === "TBODY"
+    ? el("tr", {}, el("td", { colspan: "4" }, line))
+    : line);
+}
+
 /** A row you click to open that thing's own screen. */
 const pickRow = (title, sub, onClick) =>
   el("button", { class: "ed-pickrow", type: "button", onclick: onClick },
@@ -389,6 +710,7 @@ const pretty = key => {
 };
 
 async function loadSettings() {
+  busy($("sections"), "Reading config.yml\u2026");
   cfg = await ed.getConfig();
   edits = {};
   renderSettings();
@@ -547,12 +869,25 @@ $("save").addEventListener("click", async () => {
 
 let viewingBot = null;
 
-async function loadBots() { showBots(await ed.listBots()); }
+async function loadBots() {
+  busy($("bots"), "Looking for bots on the server\u2026");
+  showBots(await ed.listBots());
+}
 
-/** A bot's face, cut out of its skin image with CSS. */
+/** A bot's face, cut out of its skin image with CSS. The image comes from
+    Mojang, so the box spins until it arrives rather than sitting blank. */
 function face(texture, small) {
   const f = el("div", { class: "ed-face" + (small ? " sm" : ""), role: "img", "aria-label": "skin" });
-  if (texture) f.style.backgroundImage = "url(https://textures.minecraft.net/texture/" + texture + ")";
+  if (!texture) return f;
+
+  const url = "https://textures.minecraft.net/texture/" + texture;
+  const spin = el("span", { class: "sword waiting", "aria-hidden": "true" });
+  f.append(spin);
+
+  const img = new Image();
+  img.onload = () => { f.style.backgroundImage = "url(" + url + ")"; spin.remove(); };
+  img.onerror = () => spin.remove();   // no skin to show: the plain box is the answer
+  img.src = url;
   return f;
 }
 
@@ -561,7 +896,7 @@ const describe = b => [
   b.route || null,
   b.world + " " + Math.round(b.x) + " " + Math.round(b.y) + " " + Math.round(b.z),
   b.group ? "group " + b.group : null,
-  b.holding ? "holding " + b.holding.toLowerCase().replace(/_/g, " ") : null
+  b.holding && b.holding !== "AIR" ? "holding " + b.holding.toLowerCase().replace(/_/g, " ") : null
 ].filter(Boolean).join(" · ");
 
 function showBots(data) {
@@ -571,7 +906,7 @@ function showBots(data) {
 
   // the one-bot panel keeps up with the snapshots too
   if (viewingBot) {
-    const b = botList.find(x => x.name === viewingBot);
+    const b = findBot(viewingBot);
     if (b) $("botInfo").textContent = describe(b);
     else { closeBot(); toast(viewingBot + " is not on the server any more."); }
   }
@@ -628,7 +963,7 @@ async function openBot(name) {
   $("botsAll").hidden = true;
   $("botPanel").hidden = false;
   $("botName").textContent = name;
-  const b = botList.find(x => x.name === name);
+  const b = findBot(name);
   $("botInfo").textContent = b ? describe(b) : "";
   fillPickers();
   for (const id of ["botFight", "botStop", "botRoam", "botPatrol", "botFree",
@@ -694,7 +1029,7 @@ async function loadBotSwitches(name) {
     box.replaceChildren(el("p", { class: "lede", text: e.message }));
     return;
   }
-  if (viewingBot !== name) return;   // they moved on while it loaded
+  if (!same(viewingBot, name)) return;   // they moved on while it loaded
 
   box.replaceChildren();
   const rows = r.settings || [];
@@ -735,6 +1070,10 @@ async function flipBot(name, key, value) {
 let team = null;   // { kind: "group"|"route"|"kit"|"save", id, given }
 
 async function loadTeams() {
+  busy($("groups"), "Reading your groups\u2026");
+  busy($("routes"), "Reading your routes\u2026");
+  busy($("kits"), "Reading your kits\u2026");
+  busy($("saves"), "Reading your saves\u2026");
   if (!lists) await loadLists();
   // the member heads and the pick lists both need to know who is actually here
   try { showBots(await ed.listBots()); } catch (e) { /* carry on with what we have */ }
@@ -825,21 +1164,23 @@ function drawTeamPanel() {
 
 /** A row with a bot's face, what it is doing, and one button. */
 function botRow(name, label, onAction, quiet) {
-  const b = botList.find(x => x.name === name);
+  const b = findBot(name);
   return el("div", { class: "ed-memrow" },
     face(b && b.skin, true),
-    el("div", { class: "nm" }, name,
+    // show the bot's own spelling of its name when it is here
+    el("div", { class: "nm" }, b ? b.name : name,
       el("div", { class: "sub", text: b ? describe(b) : "not on the server right now" })),
     el("button", { class: "btn sm" + (quiet ? " ghost" : ""), disabled: readOnly,
       text: label, onclick: onAction }));
 }
 
 const skinOf = name => {
-  const b = botList.find(x => x.name === name);
+  const b = findBot(name);
   return b ? b.skin : null;
 };
 
-const isGroup = name => !!(lists && lists.groups && name in lists.groups);
+const groupKey = name => groupNames().find(g => same(g, name)) || null;
+const isGroup = name => !!groupKey(name);
 
 /** A head for a bot or a player, a lettered tile for a whole group. */
 const avatar = name => isGroup(name)
@@ -848,18 +1189,18 @@ const avatar = name => isGroup(name)
 
 /** Is a route's target actually around at the moment? */
 function targetState(name) {
-  const bot = botList.find(b => b.name === name);
+  const bot = findBot(name);
   if (bot) return { here: true, what: "a bot, on the server now", skin: bot.skin };
-  if (((lists && lists.players) || []).includes(name)) {
+  if (listHas(lists && lists.players, name)) {
     return { here: true, what: "a player, online now", skin: null };
   }
-  if (lists && lists.groups && name in lists.groups) {
-    const n = lists.groups[name].length;
+  const g = groupKey(name);
+  if (g) {
+    const n = lists.groups[g].length;
     return { here: n > 0, skin: null,
       what: n ? "a group, " + n + (n === 1 ? " bot in it" : " bots in it") : "a group, empty right now" };
   }
-  return { here: false, skin: null,
-    what: "not here right now — patrols pick them up again when they are" };
+  return { here: false, skin: null, what: "not on the server right now" };
 }
 
 // ---- one group --------------------------------------------------------
@@ -882,7 +1223,7 @@ function groupPanel(body) {
   }
   body.append(inBox);
 
-  const free = botList.filter(b => !members.includes(b.name));
+  const free = botList.filter(b => !listHas(members, b.name));
   body.append(el("h3", { class: "ed-sub", text: "Add a bot" }));
   const addBox = el("div", { class: "ed-rows" });
   if (!free.length) {
@@ -898,7 +1239,7 @@ function groupPanel(body) {
 
   body.append(el("h3", { class: "ed-sub", text: "What this group does" }));
 
-  const target = picker(targetList().filter(t => t.value !== name), "who to fight", "group-target");
+  const target = picker(targetList().filter(t => !same(t.value, name)), "who to fight", "group-target");
   body.append(el("div", { class: "ed-row" }, target,
     btn("Set them on this", () => target.value
       ? run("groupfight " + name + " " + target.value)
@@ -955,7 +1296,7 @@ function routePanel(body) {
   }
   body.append(tBox);
 
-  const free = targetList().filter(t => !targets.includes(t.value));
+  const free = targetList().filter(t => !listHas(targets, t.value));
   body.append(el("h3", { class: "ed-sub", text: "Add a target" }));
   const aBox = el("div", { class: "ed-rows" });
   if (!free.length) aBox.append(empty("Nobody left to add."));
@@ -999,14 +1340,14 @@ function slotPanel(body) {
       + "A bot that is busy is skipped — stop it first." }));
 
     const box = el("div", { class: "ed-rows" });
-    const left = botList.filter(b => !team.given.has(b.name));
+    const left = botList.filter(b => !team.given.has(b.name.toLowerCase()));
     if (!left.length) {
       box.append(empty(botList.length ? "Every bot has had it." : "No bots on the server."));
     }
     for (const b of left) {
       box.append(botRow(b.name, "Give it", async () => {
         if (await run("kit " + b.name + " " + row.slot, { refresh: false })) {
-          team.given.add(b.name);
+          team.given.add(b.name.toLowerCase());
           drawTeamPanel();
         }
       }));
@@ -1045,7 +1386,10 @@ $("groupCreate").addEventListener("click", async () => {
 
 // ================================================================= skins
 
-async function loadSkins() { showSkins(await ed.listSkins()); }
+async function loadSkins() {
+  busy($("skins"), "Reading the skins folder\u2026");
+  showSkins(await ed.listSkins());
+}
 
 function showSkins(d) {
   $("skinStatus").textContent = [
@@ -1058,15 +1402,18 @@ function showSkins(d) {
   const t = $("skins");
   t.replaceChildren();
   if (!d.files.length) {
-    t.append(el("tr", {}, el("td", { class: "muted", text: "No skins in the folder yet." })));
+    t.append(el("tr", {}, el("td", { class: "muted", colspan: "3", text: "No skins in the folder yet." })));
     return;
   }
   for (const f of d.files) {
     t.append(el("tr", {},
+      el("td", { class: "facecell" }, face(f.texture, true)),
       el("td", {}, el("b", { text: f.file })),
-      el("td", { class: "muted", text: f.kind === "image"
-        ? (f.signed ? "signed, ready" : "waiting to be signed") + " · " + kb(f.bytes)
-        : "signed (.yml)" }),
+      el("td", { class: "muted", text: [
+        f.kind === "image" ? (f.signed ? "signed, ready" : "waiting to be signed") : "signed (.yml)",
+        kb(f.bytes),
+        f.texture ? null : "no face to show yet"
+      ].filter(Boolean).join(" · ") }),
       el("td", { class: "acts" },
         el("button", { class: "btn ghost sm", disabled: readOnly, text: "Delete",
           onclick: () => confirm("Delete " + f.file + "?")
@@ -1074,10 +1421,103 @@ function showSkins(d) {
   }
 }
 
-$("skinFile").addEventListener("change", () => {
+/* Previewing what you picked happens entirely in the browser — nothing is
+   sent until you press Upload. Images go in as data: URLs and sound as a
+   blob:, which is exactly what this page's Content-Security-Policy allows. */
+
+let skinOk = false;
+
+$("skinFile").addEventListener("change", async () => {
   const f = $("skinFile").files[0];
   if (f && !$("skinName").value) $("skinName").value = slug(f.name.replace(/\.png$/i, ""));
+  await showSkinPreview(f);
 });
+
+async function showSkinPreview(f) {
+  const box = $("skinPreview");
+  skinOk = false;
+  box.replaceChildren();
+  box.hidden = !f;
+  if (!f) return;
+
+  box.append(el("div", { class: "ed-busy" },
+    el("span", { class: "sword", "aria-hidden": "true" }), " Looking at it\u2026"));
+
+  let url, w, h;
+  try {
+    url = await new Promise((ok, no) => {
+      const r = new FileReader();
+      r.onload = () => ok(r.result);
+      r.onerror = () => no(new Error("could not read it"));
+      r.readAsDataURL(f);
+    });
+    ({ w, h } = await new Promise((ok, no) => {
+      const i = new Image();
+      i.onload = () => ok({ w: i.naturalWidth, h: i.naturalHeight });
+      i.onerror = () => no(new Error("that is not an image this browser can open"));
+      i.src = url;
+    }));
+  } catch (e) {
+    box.replaceChildren(el("p", { class: "ed-bad", text: e.message }));
+    return;
+  }
+
+  const rightSize = w === 64 && (h === 64 || h === 32);
+  const tooBig = f.size > 262144;
+  skinOk = rightSize && !tooBig;
+
+  // the face, cut out the same way the bots' heads are
+  const head = el("div", { class: "ed-face big", role: "img", "aria-label": "the face on this skin" });
+  head.style.backgroundImage = "url(" + url + ")";
+
+  const whole = el("img", { class: "ed-skinwhole", src: url,
+    alt: "the whole skin image, " + w + " by " + h });
+
+  box.replaceChildren(el("div", { class: "ed-preview" },
+    head,
+    whole,
+    el("div", { class: "ed-previnfo" },
+      el("div", { class: "name", text: f.name }),
+      el("div", { class: "sub", text: w + " \u00d7 " + h + " \u00b7 " + kb(f.size) }),
+      el("div", { class: rightSize ? "sub good" : "sub bad",
+        text: rightSize ? "the right size for a skin" : "a skin has to be 64 \u00d7 64, or an old 64 \u00d7 32" }),
+      tooBig ? el("div", { class: "sub bad", text: "over the 256 KB limit" }) : null)));
+}
+
+let voiceUrl = null;
+
+$("voiceFile").addEventListener("change", () => {
+  const f = $("voiceFile").files[0];
+  if (f && !$("voiceName").value) $("voiceName").value = slug(f.name.replace(/\.[^.]+$/, ""));
+  showVoicePreview(f);
+});
+
+function showVoicePreview(f) {
+  const box = $("voicePreview");
+  box.replaceChildren();
+  if (voiceUrl) { URL.revokeObjectURL(voiceUrl); voiceUrl = null; }
+  box.hidden = !f;
+  if (!f) return;
+
+  voiceUrl = URL.createObjectURL(f);
+  const player = el("audio", { controls: true, src: voiceUrl, class: "ed-audio" });
+  const info = el("div", { class: "ed-previnfo" },
+    el("div", { class: "name", text: f.name }),
+    el("div", { class: "sub", text: kb(f.size) + (f.size > 3 * 1048576 ? " \u00b7 over the 3 MB limit" : "") }));
+
+  player.addEventListener("loadedmetadata", () => {
+    const secs = Math.round(player.duration * 10) / 10;
+    const max = voiceMax || 15;
+    info.append(el("div", { class: secs > max ? "sub bad" : "sub good",
+      text: secs + "s" + (secs > max ? " \u2014 lines are cut off after " + max + "s" : "") }));
+  });
+  player.addEventListener("error", () => {
+    info.append(el("div", { class: "sub",
+      text: "this browser cannot play it, so it will be converted to a WAV when you upload" }));
+  });
+
+  box.replaceChildren(el("div", { class: "ed-preview" }, player, info));
+}
 
 $("skinUpload").addEventListener("click", async () => {
   const f = $("skinFile").files[0];
@@ -1086,8 +1526,8 @@ $("skinUpload").addEventListener("click", async () => {
   const btn = $("skinUpload");
   btn.disabled = true;
   try {
+    if (!skinOk) return toast("That image is not a 64 \u00d7 64 skin \u2014 see what is wrong under the picker.", true);
     const bytes = new Uint8Array(await f.arrayBuffer());
-    if (bytes.length > 262144) return toast("That PNG is over 256 KB. A real skin is only a few KB.", true);
     let r;
     try {
       r = await ed.uploadSkin($("skinName").value.trim(), bytes);
@@ -1098,6 +1538,7 @@ $("skinUpload").addEventListener("click", async () => {
     showSkins(r);
     $("skinFile").value = "";
     $("skinName").value = "";
+    showSkinPreview(null);
     toast(r.note || "Saved " + (r.saved || "it") + ".");
   } catch (e) {
     toast(e.message, true);
@@ -1109,16 +1550,46 @@ $("skinUpload").addEventListener("click", async () => {
 // ================================================================= voice
 
 async function loadVoice() {
+  busy($("lines"), "Reading the voice lines\u2026");
   if (!botList.length) {
     try { showBots(await ed.listBots()); } catch (e) { /* the list still works without bots */ }
   }
   showVoice(await ed.listVoice());
 }
 
+const heard = [];   // blob urls handed to <audio>, let go of on the next draw
+
 function showVoice(d) {
+  for (const u of heard.splice(0)) URL.revokeObjectURL(u);
+  voiceMax = d.maxSeconds || 15;
   $("voiceStatus").textContent = d.installed
     ? d.status
     : "Simple Voice Chat is not on this server, so lines can be added but bots cannot say them yet.";
+
+  /** Fetch the line and play it in this browser, to whoever is looking. */
+  const listen = async (name, btn) => {
+    const row = btn.closest("tr");
+    const was = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Fetching\u2026";
+    try {
+      const got = await ed.getVoice(name);
+      const url = playable(got);
+      heard.push(url);
+      const player = el("audio", { controls: true, src: url, class: "ed-audio",
+        "aria-label": name });
+      const cell = row.querySelector(".acts");
+      const old = row.querySelector("audio");
+      if (old) old.remove();
+      cell.append(player);
+      player.play().catch(() => { /* they can press play themselves */ });
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = was;
+    }
+  };
 
   const play = name => ed.playVoice(name, $("voiceBot").value || "--all").then(
     r => toast(r.started + (r.started === 1 ? " bot is" : " bots are") + " saying " + name
@@ -1137,7 +1608,9 @@ function showVoice(d) {
         l.seconds ? l.seconds + "s" : null].filter(Boolean).join(" · ") }),
       el("td", { class: "acts" },
         el("button", { class: "btn ghost sm", disabled: readOnly || !d.ready, text: "Play",
-          onclick: () => play(l.name) }))));
+          onclick: () => play(l.name) }),
+        el("button", { class: "btn ghost sm", text: "Listen",
+          onclick: ev => listen(l.name, ev.currentTarget) }))));
   }
 
   for (const l of d.custom || []) {
@@ -1149,6 +1622,8 @@ function showVoice(d) {
       el("td", { class: "acts" },
         el("button", { class: "btn ghost sm", disabled: readOnly || !d.ready || !!l.problem, text: "Play",
           onclick: () => play(l.name) }),
+        el("button", { class: "btn ghost sm", disabled: !!l.problem, text: "Listen",
+          onclick: ev => listen(l.name, ev.currentTarget) }),
         el("button", { class: "btn ghost sm", disabled: readOnly, text: "Delete",
           onclick: () => confirm("Delete " + l.name + "?")
             && ed.deleteVoice(l.name).then(showVoice, e => toast(e.message, true)) }))));
@@ -1162,11 +1637,6 @@ function showVoice(d) {
       text: "Added lines are switched off in config.yml (voice.custom.enabled)." })));
   }
 }
-
-$("voiceFile").addEventListener("change", () => {
-  const f = $("voiceFile").files[0];
-  if (f && !$("voiceName").value) $("voiceName").value = slug(f.name.replace(/\.[^.]+$/, ""));
-});
 
 $("voiceUpload").addEventListener("click", async () => {
   const f = $("voiceFile").files[0];
@@ -1200,6 +1670,7 @@ $("voiceUpload").addEventListener("click", async () => {
     showVoice(r);
     $("voiceFile").value = "";
     $("voiceName").value = "";
+    showVoicePreview(null);
     toast("Added " + (r.saved || name) + (r.seconds ? " (" + r.seconds + "s)" : "") + ".");
   } catch (e) {
     toast(e.message, true);
@@ -1213,6 +1684,7 @@ $("voiceUpload").addEventListener("click", async () => {
 const PAGE = 262144;          // how much of a log to pull at a time
 const LIVE_KEEP = 2097152;    // characters kept on screen while following live
 let viewing = null, viewFrom = 0, liveChars = 0;
+let voiceMax = 15;
 let liveSwitch = null;
 
 const liveOn = () => !!(liveSwitch && liveSwitch.input.checked);
@@ -1224,7 +1696,10 @@ function setLive(on) {
   if (ed && !ed.closed) ed.liveDebug(on).catch(() => {});
 }
 
-async function loadDebug() { showDebug(await ed.listDebug()); }
+async function loadDebug() {
+  busy($("logs"), "Looking for debug logs\u2026");
+  showDebug(await ed.listDebug());
+}
 
 function showDebug(d) {
   $("debugState").textContent = d.enabled

@@ -5,7 +5,7 @@ stylesheet, ES modules.
 
     index.html      home
     install.html    installation and first fight
-    wiki.html       the FightBot wiki, 5.17.0
+    wiki.html       the FightBot wiki, 5.18.1
     faq.html        common questions
     report.html     bug report form
     reports.html    your reports, and the reply threads
@@ -60,10 +60,16 @@ what people see if Firebase is blocked or slow.
 
 ## The editor at /editor/
 
-`/fightbot web` on a server running FightBot 5.17.0 hands out a one-off link to
+`/fightbot web` on a server running FightBot 5.17.2 hands out a one-off link to
 this page. The link's `#k=…` is the key to that server, so the page runs nothing
 else: no analytics, no widgets, and none of the site's own scripts. It has its
 own strict Content-Security-Policy and `noindex`. Keep it that way.
+
+`/fbp web` on a Velocity or BungeeCord proxy (5.18.1) hands out one link for a
+whole network. That link's session holds only a `state/network` snapshot listing
+each server and its own link, so the page shows a picker first and connects to
+the server you pick. Nothing listens to the list's inbox, so the page never
+writes to it — `ListSession` in `editor/editor.js` reads it and nothing more.
 
 `assets/fightbot-web.js` does all the talking and is tested against the real
 plugin — change the page, not the library. Section 4 of FIREBASE-SETUP.md has

@@ -34,6 +34,16 @@
   </div>
 </header>
 
+<!-- one link for a whole network: pick which server to work on. Hidden
+     unless the link that opened this page is a /fbp web one. -->
+<section class="ed-network" id="network" hidden>
+  <div class="wrap">
+    <h2>Network &mdash; pick a server</h2>
+    <div class="ed-servers" id="servers"></div>
+    <p class="ed-netinfo" id="netInfo"></p>
+  </div>
+</section>
+
 <!-- connection state and tabs, stuck together under the nav so they stay
      reachable while a long settings list scrolls -->
 <div class="ed-sticky">
@@ -73,6 +83,7 @@
         <li>Open the link it gives you. It works for 30 minutes unused, 4 hours in all.</li>
       </ol>
       <p class="lede">You need FightBot <b>5.17.2</b> or newer and the <code>fightbot.web</code> permission.
+        On a network, <code>/fbp web</code> on a proxy running <b>5.18.1</b> gives one link for every server.
         <a href="../install.html">How to install it</a>.</p>
     </div>
   </section>
@@ -211,10 +222,13 @@
         <input type="text" id="skinName" class="ed-input" placeholder="name" aria-label="skin name">
         <button class="btn sm" id="skinUpload">Upload</button>
       </div>
+      <div id="skinPreview" hidden></div>
     </div>
     <div class="ed-card">
       <h2>Skins folder</h2>
       <p class="lede" id="skinStatus"></p>
+      <p class="lede small-note">FightBot sends the names of these files, not the images, so they
+        cannot be shown here. A bot wearing one shows its face on the <b>Bots</b> tab.</p>
       <table class="ed-table"><tbody id="skins"></tbody></table>
     </div>
   </section>
@@ -238,9 +252,12 @@
         <input type="text" id="voiceName" class="ed-input" placeholder="name" aria-label="line name">
         <button class="btn sm" id="voiceUpload">Upload</button>
       </div>
+      <div id="voicePreview" hidden></div>
     </div>
     <div class="ed-card">
       <h2>Lines</h2>
+      <p class="lede small-note"><b>Play</b> sends the line out in game, where the bot is.
+        <b>Listen</b> fetches the sound file and plays it here, to you only.</p>
       <div class="ed-row">
         <label class="ed-lab" for="voiceBot">Play on</label>
         <select id="voiceBot" class="ed-input"></select>

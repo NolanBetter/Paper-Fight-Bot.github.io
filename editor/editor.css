@@ -140,10 +140,10 @@
   display:grid;grid-template-columns:56px 1fr;gap:4px 16px;align-content:start}
 /* a bot's face, cut straight out of its skin image - no canvas needed */
 .ed-face{width:56px;height:56px;background:#2a272b;grid-row:span 3;image-rendering:pixelated;
-  background-size:448px 448px;background-position:-56px -56px}
+  background-size:800% auto;background-position:-56px -56px}
 /* the same trick at list size: 8x the box, offset by one box */
 .ed-face.sm{width:36px;height:36px;grid-row:auto;flex:none;
-  background-size:288px 288px;background-position:-36px -36px}
+  background-size:800% auto;background-position:-36px -36px}
 .ed-bot .nm{font-family:var(--display);font-size:19px;color:#fff;word-break:break-all}
 .ed-bot .nm small{font-family:var(--body);font-size:14px;color:var(--ash);letter-spacing:0}
 .ed-hp{height:12px;background:#2b0f0e;border:2px solid #000;margin:2px 0}
@@ -228,3 +228,56 @@
 .ed-memrow.read .sub{font-family:var(--body);font-size:14.5px;color:var(--ash);
   letter-spacing:0;margin-top:3px}
 .ed-memrow.read > .sub{margin-top:0;flex:none}
+
+/* ---------- waiting for something ---------- */
+.ed-busy{display:flex;align-items:center;gap:12px;background:var(--pit);
+  padding:18px;color:var(--ash);font-size:16px}
+.ed-table .ed-busy{background:none;padding:10px 0}
+/* a face waiting on Mojang for its skin */
+.ed-face{display:flex;align-items:center;justify-content:center}
+.sword.waiting{width:70%;height:70%;opacity:.45}
+.ed-face.big{width:96px;height:96px;grid-row:auto;flex:none;
+  background-size:800% auto;background-position:-96px -96px}
+
+/* ---------- looking at what you picked, before it is sent ---------- */
+.ed-preview{display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+  background:var(--pit);border:3px solid #000;padding:18px;margin-top:14px}
+.ed-skinwhole{width:192px;height:auto;image-rendering:pixelated;
+  background:#000;box-shadow:inset 2px 2px 0 rgba(255,255,255,.08)}
+.ed-previnfo{min-width:200px}
+.ed-previnfo .name{font-family:var(--display);font-size:18px;color:#fff;word-break:break-all}
+.ed-previnfo .sub{color:var(--ash);font-size:15.5px;margin-top:4px}
+.ed-previnfo .sub.good{color:#b5e48c}
+.ed-previnfo .sub.bad{color:#ff9a92}
+.ed-bad{color:#ff9a92;font-size:16px}
+.ed-audio{width:320px;max-width:100%;filter:invert(1) hue-rotate(180deg)}
+.small-note{font-size:15.5px;color:#7e7b82;border-left:3px solid var(--line,#2a272b);
+  padding-left:14px;margin-top:14px}
+
+/* ---------- one link, many servers ----------
+   The picker sits above everything, and the chosen server's editor fills the
+   page below it. Buttons are deliberately big: this is the thing you reach
+   for most on a network. */
+.ed-network{background:var(--pit);border-bottom:3px solid #000;padding:22px 0 20px}
+.ed-network h2{font-size:clamp(21px,3vw,26px);color:#fff;margin:0 0 14px}
+.ed-servers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.ed-srv{display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+  background:var(--stone);color:var(--iron);border:0;cursor:pointer;
+  padding:16px 20px;text-align:left;font:inherit;
+  box-shadow:inset 3px 3px 0 rgba(255,255,255,.1),inset -3px -3px 0 rgba(0,0,0,.65);
+  transition:background .12s}
+.ed-srv:hover{background:#2a272c;color:#fff}
+.ed-srv:focus-visible{outline:3px solid var(--ember);outline-offset:3px}
+.ed-srv .nm{font-family:var(--display);font-size:21px;letter-spacing:.5px}
+.ed-srv .sub{font-size:14.5px;color:var(--ash)}
+.ed-srv.on{background:var(--blood);color:#fff;
+  box-shadow:inset 3px 3px 0 rgba(255,255,255,.22),inset -3px -3px 0 rgba(0,0,0,.45)}
+.ed-srv.on .sub{color:#ffd9d7}
+.ed-srv.off,.ed-srv:disabled{background:var(--pit);color:#6d6b70;cursor:not-allowed;
+  box-shadow:inset 2px 2px 0 rgba(255,255,255,.05),inset -2px -2px 0 rgba(0,0,0,.6)}
+.ed-srv.off .sub,.ed-srv:disabled .sub{color:#6d6b70}
+.ed-netinfo{margin:16px 0 0;color:var(--ash);font-size:15.5px}
+.ed-netinfo.gone{color:var(--gold)}
+
+/* a skin's own face, beside its file name */
+.ed-table td.facecell{width:52px;padding-right:0}

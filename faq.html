@@ -104,8 +104,9 @@
       </details>
       <details>
         <summary>Can I change settings without opening server files?</summary>
-        <p>Yes, from 5.17.0. Type <code class="cmd">/fightbot web</code> in game and open the link it gives you. It opens the <a href="#" rel="noopener">editor</a> on this site, where you can change any setting, run the bots that are already there — send them after someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot&#39;s own switches — upload skins and voice lines, and read the debug logs.</p>
-<p>Making bots stays in game on purpose — FightBot refuses spawning, saves and renaming or cloning from the web.</p>
+        <p>Yes. Type <code class="cmd">/fightbot web</code> in game and open the link it gives you. It opens the <a href="#" rel="noopener">editor</a> on this site, where you can change any setting, run the bots that are already there — send them after someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot&#39;s own switches — upload skins and voice lines, and read the debug logs.</p>
+<p>Making bots stays in game on purpose — FightBot refuses spawning, saves, and renaming or cloning from the web.</p>
+<p>On a network, <code class="cmd">/fbp web</code> on the proxy gives one link for every server at once: the editor puts a server picker at the top, and each server&#39;s own editor opens from there.</p>
 <p>The link is the key, so do not share it. It stops working after 30 minutes unused, after 4 hours, or when you type <code class="cmd">/fightbot web stop</code>. Nothing on your server has to be opened up, and everything between your server and the page is encrypted with a key that is only in the link.</p>
       </details>
       <details>
@@ -113,6 +114,12 @@
         <p>With <a href="https://modrinth.com/plugin/simple-voice-chat" rel="noopener">Simple Voice Chat</a> on the server, yes. Bots show up in voice chat like players, and the ones that &quot;talk&quot; say lines by themselves when they join, start a fight, win one, get low or die.</p>
 <p>FightBot&#39;s own lines come in the jar: <code class="cmd">hello</code> and <code class="cmd">am_i_muted</code> as a bot joins, and <code class="cmd">grass</code> when a roaming bot pulls up grass. More come with updates, and <code class="cmd">voice.on-their-own: false</code> keeps bots quiet unless told.</p>
 <p>You can add your own <code class="cmd">.mp3</code> or <code class="cmd">.wav</code> files too. Those are <strong>never</strong> said by a bot on its own — only when someone types <code class="cmd">/fightbot vc &lt;name&gt;</code> — everyone nearby is told it is a file added by that server and who played it, and every play is logged.</p>
+      </details>
+      <details>
+        <summary>Does it work on a network with a proxy?</summary>
+        <p>Yes, from 5.18.0. Put the same jar in your Velocity or BungeeCord proxy&#39;s <code class="cmd">plugins</code> folder as well, and the servers link up to it by themselves. Only the servers you want bots on need FightBot.</p>
+<p>With the proxy linked up, bots count in the network&#39;s player count and hover list, <code class="cmd">/fbp &lt;server&gt; &lt;command&gt;</code> runs any FightBot command on any server from the proxy, and <code class="cmd">/fb send &lt;bot&gt; &lt;server&gt;</code> walks a bot over to another server with its gear, health, skin and settings. Kits, saves, skins and voice lines can be shared across the network, and <code class="cmd">/fbp web</code> gives one web editor link that covers every server.</p>
+<p>On Velocity with modern forwarding there is nothing to set up. Otherwise paste the proxy&#39;s <code class="cmd">link-secret.txt</code> into <code class="cmd">network.secret</code> on each server. <a href="wiki.html" rel="noopener">The wiki</a> has the whole setup.</p>
       </details></div>
       <!-- faq:end --></div>
 
