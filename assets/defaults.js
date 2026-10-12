@@ -48,6 +48,9 @@ switches — upload skins and voice lines, and read the debug logs.
 
 Making bots stays in game on purpose — FightBot refuses spawning, saves, and renaming or cloning from the web.
 
+Skins can be looked at properly: click one in the skins list and it turns into a model you can spin round,
+with the second layer on or off.
+
 On a network, \`/fbp web\` on the proxy gives one link for every server at once: the editor puts a server picker
 at the top, and each server's own editor opens from there.
 

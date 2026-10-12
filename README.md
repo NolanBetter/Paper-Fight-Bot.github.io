@@ -17,8 +17,9 @@ stylesheet, ES modules.
 
     editor/         the in-game web editor, opened by /fightbot web
       index.html    the page itself
-      editor.js     its five tabs
+      editor.js     its six tabs
       editor.css    its styles, on top of assets/style.css
+      skin3d.js     a skin as a model you can turn round, in plain CSS
       relay.json    where the relay is, read by both the page and the plugin
 
     assets/
@@ -74,6 +75,31 @@ writes to it — `ListSession` in `editor/editor.js` reads it and nothing more.
 `assets/fightbot-web.js` does all the talking and is tested against the real
 plugin — change the page, not the library. Section 4 of FIREBASE-SETUP.md has
 the one-time database setup.
+
+## Locking the site
+
+**Edit pages -> Lock the site** puts a curtain over the whole site while
+something is being changed — a FightBot release the pages have to catch up
+with, say. It is one document, `content/lock`:
+
+    { on: true, message: "...", by: "...", at: <when> }
+
+The rules already make `content/*` public to read and owner only to write, so
+there was nothing to add in the Firebase console for it. `app.js` follows the
+document live (`onSnapshot`), so the curtain goes up and comes down on every
+open tab the moment the switch is flipped.
+
+- The owner keeps seeing the whole site, with a gold band as a reminder.
+- `account.html` is never curtained, or signing in to unlock it would be a
+  chicken and egg.
+- The editor reads the same document with one plain `fetch` of the Firestore
+  REST API — no sign in and no SDK on that page, which is why
+  `firestore.googleapis.com` is in its `connect-src`. Signing in on the site
+  leaves `pfbOwner` in `localStorage`, and the editor lets that browser
+  through.
+- **If the answer never arrives, the site and the editor open as normal.** A
+  lock is a courtesy to visitors, not a guard: someone who sets that flag by
+  hand gets in, and a server owner is never shut out of their own bots.
 
 ## Deploying on GitHub Pages
 

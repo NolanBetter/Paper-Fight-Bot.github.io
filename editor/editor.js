@@ -11,6 +11,7 @@
 
 import { connectFromLink, toWav, playable, parseLink, findRelay, b64url, unb64url }
   from "../assets/fightbot-web.js";
+import { skinModel, detectSlim } from "./skin3d.js";
 
 const $ = id => document.getElementById(id);
 
@@ -122,7 +123,51 @@ function showEnds() {
     + (status.idleMinutes ? ", or after " + status.idleMinutes + " minutes unused" : "") + ".";
 }
 
+// ------------------------------------------------------ the owner's lock
+/* fightmc.xyz can be put behind a curtain from its Edit pages screen while
+   something is being changed — a FightBot release the site has to catch up
+   with, say. One GET of a public document says so: no sign in, no Firebase
+   SDK on this page, and nothing of the link is sent. The ids below are the
+   same public ones the rest of the site carries; they name the project and
+   grant nothing.
+
+   If the answer does not arrive, the editor opens as normal. A lock is a
+   courtesy to visitors, never a thing that should stand between someone and
+   their own server. */
+
+const LOCK_URL = "https://firestore.googleapis.com/v1/projects/pfbwebsite-45ce2"
+  + "/databases/(default)/documents/content/lock";
+const LOCK_KEY = "AIzaSyDHFEiYuEYY0Rw29gleoFVAyZ-Pyg68EMc";
+
+/** The message to show, or null to carry on. */
+async function siteLocked() {
+  try {
+    // signing in on the site leaves this behind, so the owner is let through
+    if (localStorage.getItem("pfbOwner") === "1") return null;
+  } catch (e) { /* a private window has no storage: just ask */ }
+  try {
+    const r = await fetch(LOCK_URL + "?key=" + LOCK_KEY, { cache: "no-store" });
+    if (!r.ok) return null;                        // no document, no lock
+    const f = (await r.json()).fields || {};
+    if (!f.on || f.on.booleanValue !== true) return null;
+    return (f.message && f.message.stringValue)
+      || "The site is down for a bit while it is being worked on. Back soon.";
+  } catch (e) {
+    return null;                                   // offline, blocked, anything
+  }
+}
+
+function showLocked(why) {
+  $("lockedWhy").textContent = why;
+  $("locked").hidden = false;
+  $("start").hidden = true;
+  setConn("Site locked", "bad");
+}
+
 async function start() {
+  const locked = await siteLocked();
+  if (locked) { showLocked(locked); return; }
+
   if (!hash.includes("k=")) {
     $("startTitle").textContent = "This page needs a link";
     $("startMsg").textContent = "The editor only opens with the one-off link FightBot gives you, "
@@ -516,6 +561,8 @@ function show(name) {
   watch();
   // the live log only runs while you can see it
   if (leaving === "debug" && name !== "debug" && liveOn()) setLive(false);
+  // and a model that is spinning away on a tab nobody is looking at
+  if (leaving === "skins" && name !== "skins") closeSkin();
 
   const load = {
     settings: loadSettings, bots: loadBots, teams: loadTeams,
@@ -531,9 +578,10 @@ for (const b of document.querySelectorAll("#tabs button")) {
 // Bots are only watched while they are on screen and this window is in front —
 // a hidden tab has no business pulling a snapshot every two seconds.
 let watching = false;
+const needsBots = () => current === "bots" || current === "teams";
 function watch(force = false) {
   if (!ed || ed.closed) return;
-  const want = current === "bots" && document.visibilityState === "visible";
+  const want = needsBots() && document.visibilityState === "visible";
   if (want === watching && !force) return;
   watching = want;
   ed.watchBots(want).catch(() => { watching = null; });
@@ -541,7 +589,7 @@ function watch(force = false) {
 
 document.addEventListener("visibilitychange", () => {
   watch();
-  if (document.visibilityState === "visible" && current === "bots" && ed && !ed.closed) {
+  if (document.visibilityState === "visible" && needsBots() && ed && !ed.closed) {
     loadBots().catch(() => {});
   }
 });
@@ -550,7 +598,7 @@ document.addEventListener("visibilitychange", () => {
     (a sleeping laptop, a throttled tab). Ask again for what is still wanted. */
 function resume() {
   if (!ed || ed.closed) return;
-  if (current === "bots" && document.visibilityState === "visible") watch(true);
+  if (needsBots() && document.visibilityState === "visible") watch(true);
   if (current === "debug" && liveOn()) ed.liveDebug(true).catch(() => {});
 }
 
@@ -609,7 +657,7 @@ async function refreshAll() {
 async function loadLists() {
   lists = await ed.request("lists");
   fillPickers();
-  if (current === "teams") drawTeams();
+  if (current === "teams") drawTeams();      // drawTeams redraws the open panel too
 }
 
 // ---- the pickers ------------------------------------------------------
@@ -899,9 +947,23 @@ const describe = b => [
   b.holding && b.holding !== "AIR" ? "holding " + b.holding.toLowerCase().replace(/_/g, " ") : null
 ].filter(Boolean).join(" · ");
 
+/** The names we last saw, so a snapshot that only moved a bot a few blocks
+    does not redraw a screen somebody is clicking on. */
+let roster = "";
+const rosterOf = bots => bots.map(b => b.name.toLowerCase()).sort().join(",");
+
 function showBots(data) {
   botList = (data && data.bots) || [];
   fillPickers();
+
+  // A bot spawned or died. The groups, routes and kits were built from the
+  // old list and from FightBot's own lists, so both want asking again.
+  const now = rosterOf(botList);
+  if (now !== roster) {
+    roster = now;
+    if (ed && !ed.closed) loadLists().catch(() => {});   // this redraws Groups & kits
+  }
+
   if (current !== "bots") return;
 
   // the one-bot panel keeps up with the snapshots too
@@ -1223,6 +1285,24 @@ function groupPanel(body) {
   }
   body.append(inBox);
 
+  // A bot that died or was removed leaves its name behind in the group.
+  // This is the one button that clears all of them out.
+  const gone = members.filter(n => !findBot(n));
+  if (gone.length) {
+    body.append(el("p", { class: "ed-hint" },
+      gone.length === 1
+        ? "1 bot in this group is not on the server any more."
+        : gone.length + " bots in this group are not on the server any more.",
+      " ",
+      el("button", { class: "btn sm", disabled: readOnly,
+        text: gone.length === 1 ? "Take it out" : "Take them out",
+        onclick: async () => {
+          for (const n of gone) await run("groupremove " + name + " " + n, { refresh: false });
+          await refreshAll();
+          toast(gone.length + (gone.length === 1 ? " bot" : " bots") + " taken out of " + name + ".");
+        } })));
+  }
+
   const free = botList.filter(b => !listHas(members, b.name));
   body.append(el("h3", { class: "ed-sub", text: "Add a bot" }));
   const addBox = el("div", { class: "ed-rows" });
@@ -1391,7 +1471,16 @@ async function loadSkins() {
   showSkins(await ed.listSkins());
 }
 
+let openSkinFile = null;
+
 function showSkins(d) {
+  // the skin being looked at may have just been deleted, or replaced
+  if (openSkinFile) {
+    const still = d.files.find(f => f.file === openSkinFile);
+    if (!still) closeSkin();
+    else if (still.texture && still.texture !== openSkinTexture) openSkin(still);
+  }
+
   $("skinStatus").textContent = [
     "Skin source: " + d.source + (d.folderMode ? "" : " — bots will not wear this folder until it is 'folder'"),
     d.signing ? "signing " + d.signDone + " of " + d.signTotal + "…" : null,
@@ -1406,13 +1495,17 @@ function showSkins(d) {
     return;
   }
   for (const f of d.files) {
+    const name = f.texture
+      ? el("button", { class: "ed-link", text: f.file, title: "See it as a model",
+          onclick: () => openSkin(f) })
+      : el("b", { text: f.file });
     t.append(el("tr", {},
       el("td", { class: "facecell" }, face(f.texture, true)),
-      el("td", {}, el("b", { text: f.file })),
+      el("td", {}, name),
       el("td", { class: "muted", text: [
         f.kind === "image" ? (f.signed ? "signed, ready" : "waiting to be signed") : "signed (.yml)",
         kb(f.bytes),
-        f.texture ? null : "no face to show yet"
+        f.texture ? null : "nothing to show until it is signed"
       ].filter(Boolean).join(" · ") }),
       el("td", { class: "acts" },
         el("button", { class: "btn ghost sm", disabled: readOnly, text: "Delete",
@@ -1420,6 +1513,81 @@ function showSkins(d) {
             && ed.deleteSkin(f.file).then(showSkins, e => toast(e.message, true)) }))));
   }
 }
+
+// ---- one skin, as a model ---------------------------------------------
+
+let shown = null;          // the model on screen, so it can be stopped
+
+/** The model, with its own controls: turn it, spin it, and the second layer
+    (the hat and jacket) on or off. Built for anything with a skin image —
+    a file in the folder, or the one you are about to upload. */
+function skinViewer(url, { label, slim = false, flat = true, info = [] } = {}) {
+  if (shown) shown.stop();
+
+  const model = skinModel(url, { label, slim, height: 300 });
+  shown = model;
+
+  const layers = mcSwitch({
+    checked: true, label: "second layer", onChange: v => model.setLayers(v)
+  });
+  const slimSw = mcSwitch({
+    checked: slim, label: "slim arms", onChange: v => model.setSlim(v)
+  });
+  const spinBtn = el("button", { class: "btn sm ghost", text: "Spin it",
+    onclick: () => { spinBtn.textContent = model.spin() ? "Stop spinning" : "Spin it"; } });
+
+  // the pixels auto-tell us whether these are Alex's narrower arms
+  detectSlim(url).then(v => {
+    if (v === null || v === slimSw.input.checked) return;
+    slimSw.input.checked = v;
+    slimSw.querySelector(".word").textContent = v ? "ON" : "OFF";
+    model.setSlim(v);
+  });
+
+  const side = el("div", { class: "ed-skinside" },
+    el("h3", { class: "ed-sub", text: "The image" }),
+    flat ? el("img", { class: "ed-skinflat", src: url, alt: "the whole skin image" }) : null,
+    ...info.map(line => el("p", { class: "sk-tip", text: line })),
+    el("h3", { class: "ed-sub", text: "Show" }),
+    el("div", { class: "ed-row" }, el("span", { class: "ed-lab", text: "Second layer" }), layers),
+    el("div", { class: "ed-row" }, el("span", { class: "ed-lab", text: "Slim arms" }), slimSw),
+    el("div", { class: "ed-row" }, spinBtn,
+      el("button", { class: "btn sm ghost", text: "Face me", onclick: () => model.reset() })));
+
+  return el("div", { class: "ed-skinview" },
+    el("div", { class: "shot" }, model,
+      el("p", { class: "sk-tip", text: "Drag it to turn it round. Arrow keys work too." })),
+    side);
+}
+
+let openSkinTexture = null;
+
+function openSkin(f) {
+  const url = "https://textures.minecraft.net/texture/" + f.texture;
+  openSkinFile = f.file;
+  openSkinTexture = f.texture;
+  $("skinTitle").textContent = f.file;
+  $("skinNote").textContent = [
+    f.kind === "image" ? "an image in the skins folder" : "signed skin data (.yml)",
+    kb(f.bytes)
+  ].filter(Boolean).join(" · ");
+  const view = $("skinView");
+  view.replaceChildren(skinViewer(url, { label: f.file + ", as a model" }));
+  $("skinPanel").hidden = false;
+  $("skinList").hidden = true;
+  $("skinPanel").scrollIntoView({ block: "start", behavior: "instant" });
+}
+
+function closeSkin() {
+  openSkinFile = null;
+  openSkinTexture = null;
+  if (shown) { shown.stop(); shown = null; }
+  $("skinView").replaceChildren();
+  $("skinPanel").hidden = true;
+  $("skinList").hidden = false;
+}
+
+$("skinBack").addEventListener("click", closeSkin);
 
 /* Previewing what you picked happens entirely in the browser — nothing is
    sent until you press Upload. Images go in as data: URLs and sound as a
@@ -1466,22 +1634,34 @@ async function showSkinPreview(f) {
   const tooBig = f.size > 262144;
   skinOk = rightSize && !tooBig;
 
-  // the face, cut out the same way the bots' heads are
-  const head = el("div", { class: "ed-face big", role: "img", "aria-label": "the face on this skin" });
-  head.style.backgroundImage = "url(" + url + ")";
+  const facts = [
+    f.name,
+    w + " \u00d7 " + h + " \u00b7 " + kb(f.size),
+    rightSize ? "the right size for a skin" : "a skin has to be 64 \u00d7 64, or an old 64 \u00d7 32",
+    tooBig ? "over the 256 KB limit" : null
+  ].filter(Boolean);
 
-  const whole = el("img", { class: "ed-skinwhole", src: url,
-    alt: "the whole skin image, " + w + " by " + h });
+  if (!rightSize) {
+    // not a skin: say so, and show the picture rather than a mangled model
+    const head = el("div", { class: "ed-face big", role: "img", "aria-label": "the image you picked" });
+    head.style.backgroundImage = "url(" + url + ")";
+    box.replaceChildren(el("div", { class: "ed-preview" },
+      head,
+      el("img", { class: "ed-skinwhole", src: url, alt: "the image, " + w + " by " + h }),
+      el("div", { class: "ed-previnfo" },
+        el("div", { class: "name", text: f.name }),
+        el("div", { class: "sub", text: w + " \u00d7 " + h + " \u00b7 " + kb(f.size) }),
+        el("div", { class: "sub bad",
+          text: "a skin has to be 64 \u00d7 64, or an old 64 \u00d7 32" }),
+        tooBig ? el("div", { class: "sub bad", text: "over the 256 KB limit" }) : null)));
+    return;
+  }
 
-  box.replaceChildren(el("div", { class: "ed-preview" },
-    head,
-    whole,
-    el("div", { class: "ed-previnfo" },
-      el("div", { class: "name", text: f.name }),
-      el("div", { class: "sub", text: w + " \u00d7 " + h + " \u00b7 " + kb(f.size) }),
-      el("div", { class: rightSize ? "sub good" : "sub bad",
-        text: rightSize ? "the right size for a skin" : "a skin has to be 64 \u00d7 64, or an old 64 \u00d7 32" }),
-      tooBig ? el("div", { class: "sub bad", text: "over the 256 KB limit" }) : null)));
+  // it is a skin: turn it around before sending it
+  box.replaceChildren(skinViewer(url, {
+    label: "the skin you picked, as a model",
+    info: facts
+  }));
 }
 
 let voiceUrl = null;

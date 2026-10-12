@@ -1045,6 +1045,55 @@ function mountAdmin() {
     draw(entry.id);
   });
 
+  // ---- the lock switch
+  const lockNote = $("#lockNote");
+
+  function drawLock() {
+    const on = !!(lockDoc && lockDoc.on);
+    const stateLine = $("#lockState");
+    if (stateLine) {
+      stateLine.textContent = on
+        ? "The site is locked. Everyone but you sees the message below."
+        : "The site is open. Everyone can see it.";
+      stateLine.style.color = on ? "var(--gold)" : "var(--grass)";
+      stateLine.style.fontSize = "17px";
+      stateLine.hidden = false;
+    }
+    const box = $("#lockMsg");
+    if (box && document.activeElement !== box) {
+      box.value = (lockDoc && lockDoc.message) || LOCK_DEFAULT;
+    }
+    const lockBtn = $("#lockOn"), openBtn = $("#lockOff");
+    if (lockBtn) { lockBtn.hidden = on; }
+    if (openBtn) { openBtn.hidden = !on; }
+    const save = $("#lockSave");
+    if (save) save.hidden = !on;
+  }
+
+  async function setLock(on) {
+    const box = $("#lockMsg");
+    const message = ((box && box.value) || "").trim() || LOCK_DEFAULT;
+    if (on && !confirm("Lock the site? Everyone but you will see the message instead of the site, and the editor will not open.")) return;
+    try {
+      await setDoc(doc(db, "content", "lock"),
+        { on, message, by: displayName() || "the owner", at: serverTimestamp() });
+      lockDoc = { on, message };
+      store.set(LOCK_CACHE, on ? "on" : "off");
+      applyLock();
+      drawLock();
+      when(lockNote, on ? "Locked. Only you can see the site now." : "Unlocked. The site is back for everyone.");
+    } catch (e) {
+      when(lockNote, e.message || "Could not change it.", true);
+    }
+  }
+
+  $("#lockOn") && $("#lockOn").addEventListener("click", () => setLock(true));
+  $("#lockOff") && $("#lockOff").addEventListener("click", () => setLock(false));
+  $("#lockSave") && $("#lockSave").addEventListener("click", () => setLock(true));
+
+  refresh.push(() => { if (isOwner()) drawLock(); });
+  lockWatchers.push(() => { if (isOwner()) drawLock(); });
+
   $$("[data-doc]").forEach(btn => btn.addEventListener("click", () => {
     key = btn.getAttribute("data-doc");
     $$("[data-doc]").forEach(b => b.classList.toggle("on", b === btn));
@@ -1070,6 +1119,112 @@ function mountAdmin() {
       if (first) first.click();
     }
   });
+}
+
+// ------------------------------------------------------------- site lock
+/* One switch on the Edit pages screen puts the whole site behind a curtain
+   while something is being changed — a new plugin release that needs the site
+   changed too, say. It lives in content/lock, which the rules already make
+   public to read and owner only to write, so there is nothing to add in the
+   Firebase console for it.
+
+   The owner still sees everything, with a band at the top as a reminder.
+   account.html is never curtained, or signing in to unlock would be a
+   chicken and egg. The editor is a separate page with no sign in of its own;
+   it reads the same document and looks for the flag left here. */
+
+const LOCK_CACHE = "pfbLock";    // so a locked site does not flash its content
+const OWNER_FLAG = "pfbOwner";   // and the editor knows the owner when it sees one
+
+const LOCK_DEFAULT = "The site is down for a bit while it is being worked on. Back soon.";
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private window */ } },
+  drop(k) { try { localStorage.removeItem(k); } catch (e) { /* ditto */ } }
+};
+
+let lockDoc = null;        // what the database says, once we know
+let curtain = null;
+const lockWatchers = [];   // the Edit pages screen keeps its switch in step
+
+/** Nothing is hidden on the sign in page: that is the way back in. */
+const curtainable = () => page() !== "account.html";
+
+function showCurtain(message) {
+  if (!curtainable()) return;
+  document.documentElement.classList.add("locked");
+  if (curtain) {
+    curtain.querySelector(".lock-why").textContent = message;
+    return;
+  }
+  const wrap = document.createElement("div");
+  wrap.className = "lockwall";
+  wrap.id = "siteLock";
+  wrap.innerHTML =
+    '<div class="lock-in">' +
+      '<img src="assets/wordmark.png" alt="Paper Fight Bot" width="620" height="136">' +
+      '<h1>Back in a bit</h1>' +
+      '<p class="lock-why"></p>' +
+      '<p class="lock-small">The plugin itself is unaffected — your bots keep fighting.</p>' +
+      '<a class="btn ghost" href="account.html">Owner? Sign in</a>' +
+    '</div>';
+  wrap.querySelector(".lock-why").textContent = message;
+  document.body.append(wrap);
+  curtain = wrap;
+}
+
+function hideCurtain() {
+  document.documentElement.classList.remove("locked");
+  if (curtain) { curtain.remove(); curtain = null; }
+}
+
+/** The owner's reminder that everyone else is looking at the curtain. */
+function lockBand(on) {
+  let band = $("#lockBand");
+  if (!on) { if (band) band.remove(); return; }
+  if (band) return;
+  band = document.createElement("div");
+  band.id = "lockBand";
+  band.className = "lockband";
+  band.innerHTML = '<b>The site is locked.</b> Only you can see it. ' +
+    '<a href="admin.html">Unlock it on Edit pages</a>.';
+  document.body.prepend(band);
+}
+
+function applyLock() {
+  for (const f of lockWatchers) { try { f(); } catch (e) { /* never block the curtain */ } }
+  const known = lockDoc !== null;
+  const cached = store.get(LOCK_CACHE);
+  const on = known ? !!lockDoc.on : cached === "on";
+  const why = (known && lockDoc.message) || LOCK_DEFAULT;
+
+  if (!on) { hideCurtain(); lockBand(false); return; }
+
+  // Before sign in has settled, trust the flag the owner's last visit left.
+  const owner = state.ready ? isOwner() : store.get(OWNER_FLAG) === "1";
+  if (owner) { hideCurtain(); lockBand(true); }
+  else { lockBand(false); showCurtain(why); }
+}
+
+function gotLock(data) {
+  lockDoc = data || { on: false };
+  store.set(LOCK_CACHE, lockDoc.on ? "on" : "off");
+  applyLock();
+}
+
+/** Followed rather than polled, so the curtain goes up and comes down on
+    every open tab the moment the switch is flipped. If Firebase cannot be
+    reached at all, the site stays open: a lock is a courtesy, not a guard. */
+function watchLock() {
+  applyLock();
+  try {
+    onSnapshot(doc(db, "content", "lock"),
+      snap => gotLock(snap.exists() ? snap.data() : { on: false }),
+      () => gotLock({ on: false }));
+  } catch (e) {
+    gotLock({ on: false });
+  }
 }
 
 // ------------------------------------------------------------------ boot
@@ -1104,13 +1259,16 @@ onAuthStateChanged(auth, async user => {
     }
   }
   state.ready = true;
+  if (isOwner()) store.set(OWNER_FLAG, "1"); else store.drop(OWNER_FLAG);
+  applyLock();
   rerender();
   watchUnread();
 });
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => { route(); rerender(); });
+  document.addEventListener("DOMContentLoaded", () => { route(); rerender(); watchLock(); });
 } else {
   route();
   rerender();
+  watchLock();
 }

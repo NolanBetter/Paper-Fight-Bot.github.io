@@ -56,6 +56,23 @@
     </div>
 
     <div id="adminTool" hidden>
+
+      <div class="note" id="lockCard" style="margin:0 0 26px">
+        <h2 style="margin:0 0 8px">Lock the site</h2>
+        <p class="hint" style="margin-top:0">For when a new FightBot is on Modrinth and the site has
+        to catch up. While it is locked, everyone but you sees your message instead of the site, and
+        the editor says the same thing and will not open. You keep seeing the whole site.</p>
+        <p class="status" id="lockState"></p>
+        <label class="hint" for="lockMsg" style="display:block;margin:0 0 6px;color:var(--iron)">What they see</label>
+        <textarea id="lockMsg" class="ed-input" rows="3" maxlength="300"></textarea>
+        <div class="cta-row" style="margin-top:14px">
+          <button class="btn" id="lockOn" type="button">Lock the site</button>
+          <button class="btn" id="lockSave" type="button" hidden>Save the message</button>
+          <button class="btn ghost" id="lockOff" type="button" hidden>Unlock the site</button>
+        </div>
+        <p class="status" id="lockNote" hidden></p>
+      </div>
+
       <div class="cta-row" style="margin:0 0 24px">
         <button class="btn ghost tab" data-doc="faq" type="button">FAQ</button>
         <button class="btn ghost tab" data-doc="wiki" type="button">Wiki</button>

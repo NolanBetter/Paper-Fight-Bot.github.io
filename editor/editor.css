@@ -156,6 +156,9 @@
    The groups, routes, kits and saves screens are built out of these: a short
    list of rows, one of which you click to open its own screen. */
 .ed-rows{display:grid;gap:3px;background:#000;border:3px solid #000;margin:0 0 6px}
+/* a line under a list, with the button that acts on what it says */
+.ed-hint{display:flex;flex-wrap:wrap;align-items:center;gap:12px;color:var(--gold);
+  font-size:16.5px;margin:10px 0 0}
 .ed-empty{background:var(--pit);padding:18px 18px;color:var(--ash);font-size:16px}
 
 .ed-pickrow{display:flex;align-items:center;gap:18px;width:100%;text-align:left;
@@ -281,3 +284,33 @@
 
 /* a skin's own face, beside its file name */
 .ed-table td.facecell{width:52px;padding-right:0}
+
+/* ---------- a skin as a model you can turn around ---------- */
+.sk-3d{display:grid;place-items:center;touch-action:none;cursor:grab;outline:0;
+  padding:10px 0;min-height:60px}
+.sk-3d.dragging{cursor:grabbing}
+.sk-3d:focus-visible{outline:3px solid var(--ember);outline-offset:4px}
+.sk-stage{perspective:900px;display:grid;place-items:center;overflow:hidden;padding:10px 0}
+.sk-model{position:relative;transform-style:preserve-3d;will-change:transform}
+.sk-box{position:absolute;left:50%;top:50%;transform-style:preserve-3d}
+.sk-face{position:absolute;left:50%;top:50%;background-repeat:no-repeat;
+  image-rendering:pixelated;backface-visibility:hidden}
+.sk-3d.sk-waiting .sk-model{opacity:.25}
+.sk-3d.sk-nope::after{content:"that image would not load";color:var(--ash);font-size:16px}
+
+/* the panel the model sits in */
+.ed-skinview{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:clamp(14px,3vw,30px);
+  align-items:start}
+@media(max-width:720px){.ed-skinview{grid-template-columns:1fr}}
+.ed-skinview .shot{background:#000;border:3px solid #000;padding:8px}
+.ed-skinside h3{margin-top:0}
+.ed-skinflat{image-rendering:pixelated;width:100%;max-width:256px;height:auto;
+  background:#000;border:3px solid #000}
+.sk-tip{color:var(--ash);font-size:16px;margin:10px 0 0}
+
+/* a file name you can click, inside a table */
+.ed-link{background:none;border:0;padding:0;font:inherit;font-weight:700;color:#fff;
+  text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:4px;
+  text-decoration-color:var(--blood);text-decoration-thickness:3px}
+.ed-link:hover{color:var(--ember)}
+.ed-link:focus-visible{outline:3px solid var(--ember);outline-offset:3px}

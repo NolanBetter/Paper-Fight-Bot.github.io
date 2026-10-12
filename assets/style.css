@@ -71,6 +71,10 @@ section{padding:var(--gap) 0}
 @keyframes dot-in{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
 
 /* ---------- buttons ---------- */
+/* a class that sets display beats the browser's own [hidden], so say it
+   louder once, here, rather than remembering it at every call site */
+[hidden]{display:none !important}
+
 .btn{font-family:var(--display);font-size:19px;letter-spacing:.6px;padding:15px 28px;border:0;cursor:pointer;
   text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;color:#fff;
   background:var(--blood);box-shadow:inset 3px 3px 0 rgba(255,255,255,.22),inset -3px -3px 0 rgba(0,0,0,.45);
@@ -371,3 +375,23 @@ footer a:hover{color:var(--iron);border-color:var(--blood)}
 .loading{display:flex;align-items:center;gap:12px;color:var(--ash);font-size:16px}
 /* keep the nav from jumping about when the real name arrives */
 .auth.loading{min-width:104px;gap:10px}
+
+/* ---------- the owner's lock ----------
+   A curtain over the whole site while something is being changed. The owner
+   is let through and gets the band instead. */
+html.locked body > *:not(.lockwall){display:none !important}
+html.locked{overflow:hidden}
+
+.lockwall{position:fixed;inset:0;z-index:999;background:var(--void,#09080a);
+  display:grid;place-items:center;padding:28px;overflow:auto}
+.lock-in{max-width:620px;text-align:center}
+.lock-in img{width:min(100%,420px);height:auto;image-rendering:pixelated;margin-bottom:26px}
+.lock-in h1{font-size:clamp(28px,6vw,42px);color:#fff;margin:0 0 14px}
+.lock-why{font-size:19px;line-height:1.6;color:var(--iron);margin:0 0 18px}
+.lock-small{font-size:16px;color:var(--ash);margin:0 0 26px}
+
+/* sits above the sticky header rather than under it, so it never covers the
+   nav; it scrolls away with the top of the page */
+.lockband{background:var(--gold);color:#140f02;font-size:16.5px;padding:11px 18px;text-align:center;
+  font-weight:500;position:relative;z-index:60}
+.lockband a{color:#140f02;text-decoration:underline}

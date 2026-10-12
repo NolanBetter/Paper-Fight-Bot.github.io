@@ -8,8 +8,10 @@
 <!-- The link's secret lives in this page, so nothing else gets to run here:
      no analytics, no widgets, and none of the site's own scripts. Only
      editor.js and ../assets/fightbot-web.js, both from this domain.
+     firestore.googleapis.com is read once, for the owner's site lock: one
+     GET of a public document, no sign in, no SDK, nothing sent.
      Testing against a local relay? Add it to connect-src. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app; img-src 'self' data: https://textures.minecraft.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app https://firestore.googleapis.com; img-src 'self' data: https://textures.minecraft.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#060506">
@@ -67,6 +69,16 @@
 </div>
 
 <main id="main" class="wrap ed-main">
+
+  <!-- the owner has the site locked while something is being changed -->
+  <section class="ed-card" id="locked" hidden>
+    <h2>Back in a bit</h2>
+    <p class="lede" id="lockedWhy"></p>
+    <p class="lede">Your link still works — try again once the site is back. Nothing has happened to
+      your server, and the bots on it carry on.</p>
+    <p class="hint">If you are the owner: sign in at <a href="../account.html">fightmc.xyz</a> in this
+      browser, then open the link again.</p>
+  </section>
 
   <!-- before it is connected, and if it never connects -->
   <section class="ed-card" id="start">
@@ -224,11 +236,21 @@
       </div>
       <div id="skinPreview" hidden></div>
     </div>
-    <div class="ed-card">
+    <!-- one skin, close up -->
+    <div class="ed-card" id="skinPanel" hidden>
+      <div class="ed-head2">
+        <button class="btn ghost sm" id="skinBack">&larr; All skins</button>
+        <h2 id="skinTitle">Skin</h2>
+      </div>
+      <p class="lede" id="skinNote"></p>
+      <div class="ed-skinview" id="skinView"></div>
+    </div>
+
+    <div class="ed-card" id="skinList">
       <h2>Skins folder</h2>
       <p class="lede" id="skinStatus"></p>
-      <p class="lede small-note">FightBot sends the names of these files, not the images, so they
-        cannot be shown here. A bot wearing one shows its face on the <b>Bots</b> tab.</p>
+      <p class="lede small-note">Click a name to turn it around. A skin can only be shown once it has
+        been signed, which takes a few seconds after it goes up.</p>
       <table class="ed-table"><tbody id="skins"></tbody></table>
     </div>
   </section>
