@@ -117,6 +117,21 @@
 <p>You can add your own <code class="cmd">.mp3</code> or <code class="cmd">.wav</code> files too. Those are <strong>never</strong> said by a bot on its own — only when someone types <code class="cmd">/fightbot vc &lt;name&gt;</code> — everyone nearby is told it is a file added by that server and who played it, and every play is logged.</p>
       </details>
       <details>
+        <summary>Do the bots survive a restart?</summary>
+        <p>Yes, from 5.19.6. As the server stops, every bot is written down, and as it starts they come back where they stood, with the same inventory, skin, health, settings and group. That covers a FightBot update too, since those need a restart.</p>
+<p>They do not pick up what they were doing — fights and routes start afresh — and they come back a few at a time (<code class="cmd">restart.per-second</code>, 10) so a big army does not hold the start up. <code class="cmd">restart.max-bots</code> caps how many come back (100, or <code class="cmd">0</code> for all of them), and <code class="cmd">restart.keep-bots: false</code> turns it off.</p>
+<p>A plugin reload is different: after <code class="cmd">/plugman reload FightBot</code> or <code class="cmd">/reload</code>, bots come back still doing what they were.</p>
+      </details>
+      <details>
+        <summary>What can a bot fight with?</summary>
+        <p>Give it the gear and it works out the rest. A sword or axe, a shield, a totem, pearls, cobwebs, a water bucket, splash potions, a pickaxe for mining and food to heal on.</p>
+<p>Newer kit each has its own switch, in the config or in one bot&#39;s settings menu:</p>
+<ul><li><strong>Bow and crossbow</strong> (on by default): it shoots at anyone further off than 8 blocks, or somewhere it</li></ul>
+<p>cannot walk to. It allows for the drop and for where you are running, and the game does the shot, so every enchantment works.</p>
+<ul><li><strong>Mace</strong> (off): wind jumps, pearl launches and elytra dives.</li><li><strong>Spear</strong> (off, 1.21.11 and up): it keeps 2 to 4 blocks off, jabs, and now and then lowers it and charges.</li><li><strong>Elytra</strong> (off): it flies after anyone who gets far away, and fights in the air.</li></ul>
+<p>Gear wears out and breaks like yours, and a bot with Mending gear and bottles o&#39; enchanting mends itself.</p>
+      </details>
+      <details>
         <summary>Does it work on a network with a proxy?</summary>
         <p>Yes, from 5.18.0. Put the same jar in your Velocity or BungeeCord proxy&#39;s <code class="cmd">plugins</code> folder as well, and the servers link up to it by themselves. Only the servers you want bots on need FightBot.</p>
 <p>With the proxy linked up, bots count in the network&#39;s player count and hover list, <code class="cmd">/fbp &lt;server&gt; &lt;command&gt;</code> runs any FightBot command on any server from the proxy, and <code class="cmd">/fb send &lt;bot&gt; &lt;server&gt;</code> walks a bot over to another server with its gear, health, skin and settings. Kits, saves, skins and voice lines can be shared across the network, and <code class="cmd">/fbp web</code> gives one web editor link that covers every server.</p>

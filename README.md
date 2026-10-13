@@ -5,7 +5,7 @@ stylesheet, ES modules.
 
     index.html      home
     install.html    installation and first fight
-    wiki.html       the FightBot wiki, 5.18.1
+    wiki.html       the FightBot wiki, 5.19.6
     faq.html        common questions
     report.html     bug report form
     reports.html    your reports, and the reply threads

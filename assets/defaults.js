@@ -68,6 +68,31 @@ bot pulls up grass. More come with updates, and \`voice.on-their-own: false\` ke
 You can add your own \`.mp3\` or \`.wav\` files too. Those are **never** said by a bot on its own — only when
 someone types \`/fightbot vc <name>\` — everyone nearby is told it is a file added by that server and who
 played it, and every play is logged.` },
+  { id: "restart", q: "Do the bots survive a restart?",
+    a: `Yes, from 5.19.6. As the server stops, every bot is written down, and as it starts they come back
+where they stood, with the same inventory, skin, health, settings and group. That covers a FightBot
+update too, since those need a restart.
+
+They do not pick up what they were doing — fights and routes start afresh — and they come back a few at
+a time (\`restart.per-second\`, 10) so a big army does not hold the start up. \`restart.max-bots\` caps how many
+come back (100, or \`0\` for all of them), and \`restart.keep-bots: false\` turns it off.
+
+A plugin reload is different: after \`/plugman reload FightBot\` or \`/reload\`, bots come back still doing
+what they were.` },
+  { id: "weapons", q: "What can a bot fight with?",
+    a: `Give it the gear and it works out the rest. A sword or axe, a shield, a totem, pearls, cobwebs, a
+water bucket, splash potions, a pickaxe for mining and food to heal on.
+
+Newer kit each has its own switch, in the config or in one bot's settings menu:
+
+- **Bow and crossbow** (on by default): it shoots at anyone further off than 8 blocks, or somewhere it
+cannot walk to. It allows for the drop and for where you are running, and the game does the shot, so every
+enchantment works.
+- **Mace** (off): wind jumps, pearl launches and elytra dives.
+- **Spear** (off, 1.21.11 and up): it keeps 2 to 4 blocks off, jabs, and now and then lowers it and charges.
+- **Elytra** (off): it flies after anyone who gets far away, and fights in the air.
+
+Gear wears out and breaks like yours, and a bot with Mending gear and bottles o' enchanting mends itself.` },
   { id: "proxy", q: "Does it work on a network with a proxy?",
     a: `Yes, from 5.18.0. Put the same jar in your Velocity or BungeeCord proxy's \`plugins\` folder as well, and
 the servers link up to it by themselves. Only the servers you want bots on need FightBot.
@@ -131,12 +156,12 @@ Rather click than type? \`/fb web\` gives you a link to change FightBot from you
 | \`/fb edit clone <bot> --random [count]\` | Up to 200 copies at once, with random names. |
 | \`/fb edit change <bot> <name\\|--random>\` | Renames a bot. |
 | \`/fb tp <bot\\|--all\\|--group <group>> <player\\|x y z>\` | Teleports bots. Sent to a player, they face the way that player faces. Sent to x y z, they face south. |
-| \`/fb look <bot\\|--all> <player\\|bot\\|stop>\` | Bots watch someone until you say \`stop\`, or until that player leaves or dies. A busy bot won't watch, so stop it first. |
+| \`/fb look <bot\\|--all> <player\\|bot\\|--stop>\` | Bots watch someone until you say \`--stop\`, or until that player leaves or dies. A busy bot won't watch, so stop it first. |
 
 A bot never takes a name that belongs to someone else:
 
 - nobody who has played on your server (unless \`identity.protect-real-names\` is off)
-- no AuthMe account
+- no AuthMe or nLogin account
 - no banned name
 
 Player data is safe either way, because bots have IDs of their own. If a real player joins using a bot's name, the bot steps aside.
@@ -182,6 +207,7 @@ Bots fight like a person, not a machine:
 - **A moment to react.** Someone stepping into reach gets hit after a few ticks, not the very tick they arrive (\`combat.reaction.min-ticks\` and \`max-ticks\`).
 - **Not like clockwork.** Swings come a little early or late (\`combat.swing-jitter-ticks\`), and now and then one misses, mostly at the edge of reach (\`combat.miss-chance\`).
 - **Real critical hits only.** A bot jumps and swings on the way down, and the game decides if it's a crit. It never crits walking along, and its reach is a player's, whatever weapon you hold.
+- **A charged swing.** It waits for its weapon to charge up (the attack bar a player sees) before it swings, and times its crit jumps to come down just as it fills (\`combat.wait-for-charge\`). That matters most for slow weapons: a half-charged axe hit does far less.
 - **Hit them straight away.** A bot can be hit the moment it joins, teleports, pearls or changes world, like a player.
 
 ## Mace
@@ -189,7 +215,7 @@ Bots fight like a person, not a machine:
 Turn mace combat on with \`mace.enabled: true\` (or for one bot, with **Mace** in its settings menu). The bot uses the game's own mace, wind charges, elytra and fireworks, so damage, Density, Breach and Wind Burst all work as they do for you.
 
 - **Wind jump** (mace + wind charges): close in, it throws a wind charge at its feet, flies up and smashes you on the way down. With Wind Burst it can bounce up and smash again (\`mace.wind-chain-max\`).
-- **Elytra dive** (mace + elytra + firework rockets): from further away, it takes off, climbs and flies over you, swaps the elytra for its chestplate and drops onto you from about \`mace.dive-height\` blocks.
+- **Elytra dive** (mace + elytra + firework rockets): from further away (up to 72 blocks), it takes off, climbs and flies over you, swaps the elytra for its chestplate and drops onto you from about \`mace.dive-height\` blocks. It aims for where you'll be when it gets there, not where you were.
 - **Pearl launch** (mace + ender pearls + wind charges): it throws a pearl up and towards you, wind-charges itself up after it, rides the pearl and smashes down. Turn it off with \`mace.pearl-launch: false\`.
 - **After a miss** it saves itself the way you would: a wind charge just before it lands, a water bucket, or the elytra again.
 - **Against you:** if you dive on a bot with a mace, it sidesteps, or raises its shield in time.
@@ -238,6 +264,60 @@ The shield works exactly like a player's:
 - An axe knocks it out for 5 seconds, so axes and stun slams work on bots.
 
 Like a person, it reacts a moment late, and now and then it misses one. While it holds the shield up, it moves slowly and can't attack.
+
+It gets the shield up **in time**: about half a second before your swing is charged, since a shield takes a quarter of a second to start working. It drops it the moment its own swing is ready, and can jump for a crit with the shield still up.
+
+## Axe fighting
+
+- **Your shield goes up:** after a moment, the bot gets out its axe (from anywhere in its inventory, if it isn't already holding one) and hits your shield. That knocks it out for 5 seconds.
+- **Then it punishes:** its sword comes back out for fast hits while your shield is down. A bot whose weapon is an axe gets a sword out of its inventory for this, if it has one (\`combat.axe.punish-with-sword\`). When your shield is back, the axe goes away again.
+- **Crits with an axe:** axe players crit nearly every hit, because there's time to jump while the axe charges. Bots do too (\`combat.axe.crit-chance\`, 0.80).
+- **Its own shield knocked out:** most of the time it backs off until it's back, still facing you, and hits you if you come after it (\`combat.axe.back-off\`).
+- \`combat.use-axe-swap\` (or **Shield breaking** in a bot's settings) turns shield breaking on or off.
+
+## Spears
+
+**Off for now:** turn it on with \`spear.enabled: true\` (or for one bot, with **Spear fighting** in its settings). Then a bot holding a **spear** (1.21.11 and up) fights like a spear player:
+
+- It keeps **2 to 4 blocks** off and **jabs**, since a spear can't hit anything closer than 2 blocks. Too close, and it steps back.
+- A spear never crits, so it doesn't jump for them.
+- Now and then, with you a few blocks off, it **lowers the spear and charges**. The faster you're closing when the tip meets you, the harder it hits.
+- The jab, the charge and **Lunge** are all the game's own, so every spear and enchantment works as it does for you.
+- \`spear.charge: false\` turns charging off, and keeps the jabs.
+
+## Elytra: chasing and air fights
+
+**Off for now:** turn it on with \`elytra.enabled: true\` (or for one bot, with **Elytra flying** in its settings). Then give a bot an **elytra and firework rockets** (anywhere in its inventory):
+
+- **Someone gets far away** (more than 24 blocks): it puts the elytra on, takes off, crosses to them on rockets, and glides down to land beside them. Its chestplate goes back on, and it fights on foot.
+- **Someone flies off on an elytra:** it goes after them in the air, leading where they're going, and hits them mid-flight with its weapon.
+- It levels off before the ground, so it lands without fall damage.
+- A **mace** bot dives on you from the elytra instead. See Mace.
+
+| Setting | Default | What it does |
+|---|---|---|
+| \`elytra.enabled\` | \`false\` | Elytra flying at all. Also **Elytra flying** in a bot's settings. |
+| \`elytra.chase\` | \`true\` | Flying after players who get far away. |
+| \`elytra.chase-distance\` | \`24\` | How far off someone has to be before it flies (12 to 200). |
+| \`elytra.air-fights\` | \`true\` | Chasing and hitting players who are flying. |
+| \`elytra.max-rockets\` | \`8\` | Rockets it may use on one flight. |
+
+## Bows and crossbows
+
+Give a bot a **bow or crossbow and some arrows** (anywhere in its inventory). It shoots at players it can't hit with its weapon: further off than 8 blocks, or somewhere it can't walk to.
+
+- It **draws**, then **aims ahead** of someone running and **high enough** for the arrow's drop, and lets go. The game does the shot, so Power, Punch, Flame, Infinity, Piercing, Multishot, Quick Charge and tipped or spectral arrows all work.
+- A **crossbow** loads first, then fires when it has a clear shot. It keeps a loaded crossbow loaded for next time.
+- It moves slowly while it draws, like you. When you come close, its weapon comes back out.
+- Its aim isn't perfect: it misjudges your speed a little and its hand isn't quite steady (\`ranged.aim-error\`).
+- Arrows it walks over go back in its inventory.
+
+| Setting | Default | What it does |
+|---|---|---|
+| \`ranged.enabled\` | \`true\` | Bows and crossbows. Also **Bow & crossbow** in a bot's settings. |
+| \`ranged.min-distance\` | \`8\` | Closer than this, it fights hand to hand. |
+| \`ranged.max-distance\` | \`40\` | Further than this, it doesn't shoot. |
+| \`ranged.aim-error\` | \`1.0\` | How unsteady its aim is, in degrees. \`0\` never misses a still target. |
 
 ## Knockback
 
@@ -293,6 +373,9 @@ Your \`config.yml\` sets how every bot behaves. These switches let one bot be di
 | Bridging | Crossing gaps and water when there's no way round. |
 | Mining | Breaking blocks in its way with a pickaxe. |
 | Realistic ping | A wandering ping in the tab list. |
+| Bow & crossbow | Shooting players out of reach. |
+| Spear fighting | Jabbing and charging with a spear. |
+| Elytra flying | Flying after far-off players, and fighting in the air. |
 
 - **Glowing means on.** Click to flip a switch.
 - **Right-click** hands a switch back to the server, so it follows \`config.yml\` again.
@@ -322,8 +405,19 @@ Only armour, the offhand and the weapon have fixed slots. Everything else can go
 - ender pearls
 - a water bucket
 - a mace and wind charges
-- an elytra
-- a pickaxe` },
+- an elytra, and firework rockets
+- a pickaxe
+- bottles o' enchanting, to mend Mending gear
+- a bow or crossbow, and arrows
+- a spear (it can be the weapon too)
+
+## Wear and mending
+
+Bot gear wears out and breaks like yours. A bot wearing **Mending** gear, with **bottles o' enchanting** anywhere in its inventory, mends like a player: it throws the bottles down in front of itself and picks up the XP. The repair is the game's own, so a worn-out netherite set takes over a hundred bottles.
+
+- \`gear.mending-throw-speed\` (\`0.5\`): how hard it throws each bottle.
+- \`gear.mending-throw-angle\` (\`45\`): how far down it throws. \`0\` is straight ahead, \`90\` is at its feet.
+- \`gear.repair-after-fight-seconds\` (\`30\`): a bot standing about gets its gear back to full this long after its last fight. A bot that never fought, like a practice dummy, always has full gear.` },
   { id: "kits-and-saves", title: "Kits and saves", body:
 `\`/fb kits\` (or \`/fb saves\`) opens one screen, with **Kits** on one side and **Saves** on the other. Both hold up to five loadouts and survive restarts.
 
@@ -417,8 +511,7 @@ A patrol walks a route and goes after **that route's targets**, and only those. 
 
 | Setting | What bots wear |
 |---|---|
-| \`random\` | Skins from a list of accounts built into FightBot, downloaded from Mojang, so the server needs internet. There's nothing else to do. The bot keeps its own name. |
-| \`name\` | The bot's name is a real account, and it wears that account's own skin. See Names with their own skins. |
+| \`random\` | FightBot's own skins: a list built into FightBot, plus real names with their own skins that it finds by itself. Downloaded from Mojang, so the server needs internet. There's nothing else to do. See Names with their own skins. |
 | \`folder\` | Your own skin images. Put skin \`.png\` files (64×64, or old-style 64×32) in \`plugins/FightBot/skins/\`. |
 | \`mojang\` | The skins of real accounts. List their usernames under \`identity.skin-names\`. |
 | \`none\` | Plain Steve and Alex. This is the default. |
@@ -441,19 +534,30 @@ Already have signed skin data? Save it as a small \`.yml\` file in the skins fol
 
 ## Names with their own skins
 
-With \`skin-source: name\`, every \`--random\` bot gets the name of a real account and that account's own skin:
+With \`skin-source: random\`, FightBot finds more skins by itself. **While nobody is on your server** (bots don't count), every 10 seconds it:
 
-1. FightBot picks a name the usual way (\`identity.name-source\`: made up, from \`botnames.yml\`, or numbered).
-2. It asks Mojang whether that account exists and what it wears.
-3. **No account, no skin, or one of the game's default skins** (Steve, Alex and the other seven)? It skips the name and tries another. A skin worn by lots of accounts is skipped too.
-4. **A skin of its own?** The name is kept, ready for a bot.
+1. Makes up a few names, the same way it makes up bot names.
+2. Asks Mojang which of them are real accounts, and what they wear.
+3. **No account, no skin, or one of the game's default skins** (Steve, Alex and the other seven)? It skips the name. A skin worn by lots of accounts is skipped too.
+4. **A skin of its own?** It keeps the name and its skin.
 
-It checks in the background, one name every few seconds, and keeps 12 checked names ready. Everything it learns is kept in \`skins/cache/names.yml\`, so names are only checked once. Until some are ready (the first minute or two after you turn it on), new bots get a made-up name and one of FightBot's built-in skins.
+Then, with \`name-source: random\` (the default), **new bots get those names, each wearing its own skin**. Bots named another way (from \`botnames.yml\`, numbered, or \`/fb spawn Name\`) keep their names and wear one of the skins instead.
 
-- A bot you name yourself (\`/fb spawn Notch\`) wears that account's skin once it's been checked. The first time, it gets a built-in skin while FightBot checks.
+- It keeps at most one name each time, so up to 360 an hour. Fewer when the names it tries have no skin of their own.
+- Everything it finds is kept in \`skins/cache/names.txt\`, so no name is checked twice. Delete the file to start over.
+- Until some are found, new bots get a made-up name and one of the built-in skins.
+- \`/fb skins\` shows how many it has found and what it's doing.
 - These are real people's names and skins. If the real owner joins your server, the bot steps aside, the same as with any other name.
 - Rather not see a certain skin? Add it to \`identity.skip-skins\`: the long code at the end of its \`textures.minecraft.net\` address, or the whole address.
-- \`botnames.yml\` works best. Made-up names often don't belong to an account, so more of them get skipped.
+
+| Setting | Default | What it does |
+|---|---|---|
+| \`identity.find-skins.enabled\` | \`true\` | Finding more skins. |
+| \`identity.find-skins.every-seconds\` | \`10\` | How often it looks (5 to 3600). |
+| \`identity.find-skins.only-when-empty\` | \`true\` | Only while nobody's on. \`false\`: it keeps looking while players are on too. |
+| \`identity.find-skins.max\` | \`5000\` | It stops once it has found this many (up to 50000). |
+
+\`skin-source: name\` from 5.18.0 is now part of \`random\`. An old config is switched over by itself, and the names it found are kept.
 
 \`mojang\` and \`random\` mode download skins in the background the same way. The first bots after a fresh start may look plain for a moment. Mojang also asks for a short wait sometimes, and that's normal too.` },
   { id: "names", title: "Names", body:
@@ -469,7 +573,7 @@ Number patterns use \`%<digits>n\` for one random character from those digits, a
 
 With \`file\`, if \`botnames.yml\` is empty or every name in it is taken, bots get made-up names, and FightBot says so in chat.
 
-\`identity.protect-real-names\` (on by default) stops bots taking the name of anyone who has played on your server. Turn it off to let bots use those names too, for example on a scripted server. Online players, AuthMe accounts and banned names are still off-limits.` },
+\`identity.protect-real-names\` (on by default) stops bots taking the name of anyone who has played on your server. Turn it off to let bots use those names too, for example on a scripted server. Online players, AuthMe and nLogin accounts, and banned names are still off-limits.` },
   { id: "kicks-and-bans", title: "Kicks and bans", body:
 `Bots are players, so they can be kicked and banned like players.
 
@@ -492,7 +596,9 @@ FightBot notes this in the console the first time it happens.` },
 `FightBot checks what's installed at startup and says, in the console, anything that affects bots.
 
 - **AuthMe:** bots can't type a password, so FightBot logs its own bots in as they join. It only does this for bots, and no AuthMe accounts are made. A name that has an AuthMe account belongs to a real player, so it can't be used for a bot.
-- **Other login plugins** (nLogin, LoginSecurity, and others): these hold players who haven't logged in, and bots can't log in. If bots won't fight, that's why.
+- **nLogin:** nLogin only lets in names that have an account, so as each bot joins, FightBot gives it a throwaway nLogin account with a long random password that nobody is ever told, and logs it in. The account is deleted once the bot leaves. If the server stops with bots online, their accounts are deleted the next time it starts (\`plugins/FightBot/nlogin-bot-accounts.txt\` keeps track). A name that already has an nLogin account belongs to a real player, so it's never used for a bot.
+- **SimpleLogin:** bots can't type a password, so FightBot marks its own bots logged in as they join, and takes off the blindness and frozen walking speed SimpleLogin puts on new players. Nothing goes into SimpleLogin's accounts. SimpleLogin keeps accounts by player ID, and a bot's ID is FightBot's own, so a bot can never use a real player's account.
+- **Other login plugins** (LoginSecurity, LibreLogin and others): these hold players who haven't logged in, and bots can't log in. If bots won't fight, that's why.
 - **PacketEvents** (on its own or inside GrimAC): it tries to kick players whose connection it can't hook, and bots have none. FightBot stops that kick, for bots only.
 - **ViaVersion:** its "Could not find UserConnection" warning when a bot joins is harmless.
 - **ProtocolLib:** plugins built on it expect every player to have a network connection. Bots don't, so if one logs errors naming a bot, that's why.
@@ -635,7 +741,16 @@ The proxy's own settings are in \`config.yml\` in its FightBot folder:
 - Any bot body an older copy of FightBot left behind is removed first, so its name is free again.
 - \`reload.keep-bots: false\` removes the bots on a reload instead.
 
-A server restart still starts with no bots, as always.` },
+## Server restarts
+
+Bots come back after a server restart too, and after a FightBot update, since that needs a restart.
+
+- As the server stops, every bot is written down. As it starts, they come back where they stood, with the same inventory, skin, health, settings and group.
+- They **don't** carry on with what they were doing. Fights and routes start afresh.
+- They come back **a few at a time** (\`restart.per-second\`, 10), so a big army doesn't hold the startup up.
+- At most **\`restart.max-bots\`** come back (100; \`0\` means all of them). Lower it if your server struggles with lots of bots.
+- **Crash-safe:** if the server goes down while bringing them back, the next start doesn't try again. It says so, and keeps them in \`restart-bots-failed.yml\`.
+- \`restart.keep-bots: false\` starts every restart with no bots, as before.` },
   { id: "updates", title: "Updates", body:
 `When the server starts, and twice a day after, FightBot looks on Modrinth for the newest release made for your Minecraft version.
 
@@ -682,11 +797,15 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`combat.fight-back.players\` / \`.bots\` | \`true\` | Fighting back, as above. |
 | \`combat.use-pearls\`, \`use-cobwebs\`, \`use-shield\`, \`use-axe-swap\`, \`use-water-bucket\` | \`true\` | Which tricks bots use. Each is also a switch in a bot's own settings. |
 | \`messages.staff-notices\` | \`true\` | FightBot tells staff in chat when something happens by itself (a bot kicked, an update out...). \`false\`: console only, for scripted or recorded servers. |
+| \`combat.wait-for-charge\` | \`true\` | Bots wait for their weapon to charge before they swing. |
+| \`combat.axe.crit-chance\` | \`0.80\` | How often a bot jumps for a crit with an axe. |
 | \`combat.miss-chance\` | \`0.08\` | How often a swing misses, mostly at the edge of reach. |
 | \`combat.reaction.min-ticks\` / \`max-ticks\` | \`3\` / \`7\` | How long a bot takes to react to someone stepping into reach. |
 | \`mace.enabled\` | \`false\` | Mace combat: wind jumps, pearl launches and elytra dives. See Mace. |
 | \`mace.how-often\` | \`100\` | How keen bots are on the mace moves. \`50\` is half as often, \`200\` twice (10 to 400). |
 | \`orders.must-stop-first\` | \`true\` | A busy bot turns down a new order until it's stopped. \`false\`: new orders take over. |
+| \`gear.mending-throw-speed\` / \`mending-throw-angle\` | \`0.5\` / \`45\` | How hard and how far down bots throw XP bottles. See Wear and mending. |
+| \`gear.repair-after-fight-seconds\` | \`30\` | How long after a fight a bot standing about gets its gear back to full. |
 | \`death.drop-items\` | \`auto\` | What a bot drops when it dies: \`auto\` (like a player), \`always\` or \`never\`. |
 | \`voice.enabled\` | \`true\` | Bots in voice chat, when Simple Voice Chat is on the server. |
 | \`web.enabled\` | \`true\` | The web editor (\`/fb web\`). |
@@ -697,6 +816,7 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`ping.enabled\` | \`true\` | A realistic, wandering ping in the tab list. |
 | \`death.leave-message\` / \`sound\` | \`true\` | The "left the game" line and the death boom. |
 | \`reload.keep-bots\` | \`true\` | Bots come back after a plugin reload, doing what they were. |
+| \`restart.keep-bots\` / \`max-bots\` | \`true\` / \`100\` | Bots come back after a server restart, where they stood. See Server restarts. |
 | \`luckperms.enabled\` / \`group\` | \`true\` / \`""\` | LuckPerms data for bots, and a group for every bot. |
 | \`updates.check\` / \`download\` / \`betas\` | \`true\` / \`true\` / \`false\` | Update checks, as above. |
 | \`network.enabled\` | \`auto\` | The link to FightBot on a Velocity or BungeeCord proxy. \`auto\` only runs behind a proxy. See [Networks](#networks-velocity-and-bungeecord). |
