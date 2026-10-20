@@ -9,7 +9,7 @@
    site's own scripts (which load Firebase from another domain).
    --------------------------------------------------------------------------- */
 
-import { connectFromLink, toWav, playable, parseLink, findRelay, b64url, unb64url }
+import { connectFromLink, toWav, playable, parseLink, findRelay, b64, b64url, unb64url }
   from "../assets/fightbot-web.js";
 import { skinModel, detectSlim } from "./skin3d.js";
 
@@ -83,6 +83,12 @@ const forgetLink = () => {
 // ---------------------------------------------------------------- state
 
 let ed = null, status = null, readOnly = false;
+
+/* Settings this page will not change, whatever the server allows. The AI key
+   is somebody's account with Groq, Gemini or OpenAI: a link in a chat log is
+   enough to spend their money with it, so it only ever goes in config.yml on
+   the server. FightBot never sends the key itself either way. */
+const OFF_LIMITS = new Set(["ai.api-key"]);
 let lists = null;                 // groups, routes, kits, saves, players, worlds
 let botList = [];                 // the last bots we were sent
 
@@ -93,7 +99,7 @@ let botList = [];                 // the last bots we were sent
 const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
 const findBot = n => botList.find(x => same(x.name, n));
 const listHas = (list, n) => (list || []).some(x => same(x, n));
-const tabs = ["settings", "bots", "teams", "skins", "voice", "debug"];
+const tabs = ["settings", "bots", "teams", "skins", "emotes", "voice", "debug"];
 let current = "settings";
 
 function setConn(text, kind, busy) {
@@ -255,10 +261,16 @@ async function openServer(link) {
     status.server,
     status.players + (status.maxPlayers ? "/" + status.maxPlayers : "") + " playing",
     status.bots + (status.bots === 1 ? " bot" : " bots"),
-    status.tps ? status.tps + " TPS" : null
+    status.tps ? status.tps + " TPS" : null,
+    // how long one message to the relay took when the link opened
+    status.relayMs ? "relay " + status.relayMs + " ms" + (status.relayMs > 700 ? " (slow)" : "") : null
   ].filter(Boolean).join(" · ");
   $("server").textContent = line;
-  $("server").title = line + (status.openedBy ? "\nOpened by " + status.openedBy : "");
+  $("server").title = line
+    + (status.openedBy ? "\nOpened by " + status.openedBy : "")
+    + (status.relayMs > 700
+      ? "\nThe relay is a long way from this server, so the editor feels slow."
+      : "");
   showEnds();
   endsTimer = setInterval(showEnds, 30000);
   $("finish").hidden = false;
@@ -555,7 +567,7 @@ function show(name) {
     b.classList.toggle("on", on);
   }
   // FightBot's answers belong to the two tabs that send it commands
-  $("cmdCard").hidden = !((name === "bots" || name === "teams") && $("cmdOut").textContent.trim());
+  $("cmdCard").hidden = !(["bots", "teams", "emotes"].includes(name) && $("cmdOut").textContent.trim());
 
   if (!ed || ed.closed) return;
   watch();
@@ -566,7 +578,7 @@ function show(name) {
 
   const load = {
     settings: loadSettings, bots: loadBots, teams: loadTeams,
-    skins: loadSkins, voice: loadVoice, debug: loadDebug
+    skins: loadSkins, emotes: loadEmotes, voice: loadVoice, debug: loadDebug
   }[name];
   load().catch(e => toast(e.message, true));
 }
@@ -637,7 +649,7 @@ function say(command, out) {
   while (box.textContent.length > 40000 && box.firstChild && box.firstChild !== box.lastChild) {
     box.firstChild.remove();
   }
-  $("cmdCard").hidden = !(current === "bots" || current === "teams");
+  $("cmdCard").hidden = !["bots", "teams", "emotes"].includes(current);
   box.scrollTop = box.scrollHeight;
 }
 
@@ -846,6 +858,15 @@ function settingRow(e) {
     input.value = (value || []).join("\n");
     input.addEventListener("input", () => changed(input.value.split("\n").map(s => s.trim()).filter(Boolean)));
 
+  } else if (OFF_LIMITS.has(e.key)) {
+    // A key that pays a bill somewhere. It is never sent to this page, and
+    // this page will not set one either: it only says whether the server has
+    // one. Put it in config.yml on the server, where it is read by nobody
+    // but FightBot.
+    input = el("div", { class: "ed-locked" },
+      el("b", { text: cfg.secrets && cfg.secrets[e.key] ? "A key is set" : "No key set" }),
+      el("span", { text: "Only from the server's config.yml, never from here." }));
+
   } else if (e.secret) {
     // the value itself never leaves the server: type to replace it
     input = el("input", { type: "password", class: "ed-input", disabled, autocomplete: "off",
@@ -987,7 +1008,10 @@ function showBots(data) {
     const pct = b.maxHealth ? Math.max(0, Math.min(100, (b.health / b.maxHealth) * 100)) : 0;
 
     const voice = el("select", { class: "ed-input", disabled: readOnly, "aria-label": "voice chat for " + b.name },
-      ...["talks", "muted", "no-mod"].map(p => el("option", { value: p, text: "voice: " + p })));
+      // Voice Chat draws "muted" as the crossed-out speaker and calls it
+      // deafened, so that is what it says here. The value sent is unchanged.
+      ...[["talks", "talks"], ["muted", "deafened"], ["no-mod", "no mod"]]
+        .map(([v, label]) => el("option", { value: v, text: "voice: " + label })));
     voice.value = b.voice || "no-mod";
     voice.addEventListener("change", () => ed.setPresence(b.name, voice.value).then(
       () => toast(b.name + ": voice " + voice.value),
@@ -1236,6 +1260,17 @@ function botRow(name, label, onAction, quiet) {
       text: label, onclick: onAction }));
 }
 
+/** A row for somebody who is playing, rather than a bot. */
+function playerRow(name, label, onAction, { quiet = false, sub } = {}) {
+  return el("div", { class: "ed-memrow" },
+    el("div", { class: "ed-face sm tile person", "aria-hidden": "true", text: name.slice(0, 1).toUpperCase() }),
+    el("div", { class: "nm" }, name,
+      el("div", { class: "sub", text: sub || (listHas(lists && lists.players, name)
+        ? "a player, online now" : "a player, not online right now") })),
+    el("button", { class: "btn sm" + (quiet ? " ghost" : ""), disabled: readOnly,
+      text: label, onclick: onAction }));
+}
+
 const skinOf = name => {
   const b = findBot(name);
   return b ? b.skin : null;
@@ -1272,22 +1307,33 @@ function groupPanel(body) {
   const members = (lists && lists.groups && lists.groups[name]) || null;
   if (!members) { closeTeam(); return; }   // it was deleted while open
 
+  // A group holds players as well as bots from 6.0.0. A member that is not a
+  // bot on the server, but is somebody online, is a player on its team.
+  const players = members.filter(n => !findBot(n) && listHas(lists && lists.players, n));
+  const bots = members.filter(n => !listHas(players, n));
+
   $("teamTitle").textContent = "Group: " + name;
   $("teamInfo").textContent = members.length
-    ? members.length + (members.length === 1 ? " bot in it." : " bots in it.")
+    ? [bots.length + (bots.length === 1 ? " bot" : " bots"),
+       players.length ? players.length + (players.length === 1 ? " player" : " players") : null
+      ].filter(Boolean).join(" and ") + " in it."
     : "Nothing in it yet.";
 
   body.append(el("h3", { class: "ed-sub", text: "In this group" }));
   const inBox = el("div", { class: "ed-rows" });
-  if (!members.length) inBox.append(empty("Empty. Add a bot below."));
-  for (const n of members) {
+  if (!members.length) inBox.append(empty("Empty. Add a bot or a player below."));
+  for (const n of bots) {
     inBox.append(botRow(n, "Take out", () => run("groupremove " + name + " " + n), true));
+  }
+  for (const n of players) {
+    inBox.append(playerRow(n, "Take out", () => run("groupremove " + name + " " + n),
+      { quiet: true, sub: "a player, on this group's side" }));
   }
   body.append(inBox);
 
-  // A bot that died or was removed leaves its name behind in the group.
-  // This is the one button that clears all of them out.
-  const gone = members.filter(n => !findBot(n));
+  // A bot that died or was removed leaves its name behind in the group. A
+  // player who logged off does too, but they come back, so only bots count.
+  const gone = bots.filter(n => !findBot(n));
   if (gone.length) {
     body.append(el("p", { class: "ed-hint" },
       gone.length === 1
@@ -1305,6 +1351,12 @@ function groupPanel(body) {
 
   const free = botList.filter(b => !listHas(members, b.name));
   body.append(el("h3", { class: "ed-sub", text: "Add a bot" }));
+  if (free.length > 1) {
+    body.append(el("p", { class: "ed-hint" },
+      free.length + " bots are not in this group.", " ",
+      el("button", { class: "btn sm", disabled: readOnly, text: "Put every bot in it",
+        onclick: () => run("groupadd " + name + " --all") })));
+  }
   const addBox = el("div", { class: "ed-rows" });
   if (!free.length) {
     addBox.append(empty(botList.length
@@ -1316,6 +1368,21 @@ function groupPanel(body) {
       () => run("groupadd " + name + " " + b.name)));
   }
   body.append(addBox);
+
+  // Players fight on the group's side. With groups.friendly-fire off (the
+  // default), its bots never turn on them.
+  const whoIsFree = ((lists && lists.players) || []).filter(n => !listHas(members, n));
+  body.append(el("h3", { class: "ed-sub", text: "Add a player" }));
+  const playBox = el("div", { class: "ed-rows" });
+  if (!whoIsFree.length) {
+    playBox.append(empty(((lists && lists.players) || []).length
+      ? "Everyone online is already in this group."
+      : "Nobody else is online. A player has to be on the server to join a group."));
+  }
+  for (const n of whoIsFree) {
+    playBox.append(playerRow(n, "Add", () => run("groupadd " + name + " " + n)));
+  }
+  body.append(playBox);
 
   body.append(el("h3", { class: "ed-sub", text: "What this group does" }));
 
@@ -1728,6 +1795,161 @@ $("skinUpload").addEventListener("click", async () => {
 });
 
 // ================================================================= voice
+
+// ======================================================= emotes & models
+/* Two folders on the server, both the same shape: a list of files, an upload
+   and a delete. Emotes can also be played on a bot, which is a command like
+   any other. Both need a mod in each player's game to be seen at all, which
+   the page says rather than leaving people wondering. */
+
+const EMOTE_MAX = 2 * 1048576;
+
+async function loadEmotes() {
+  // the "play on" picker lists the bots that are here
+  if (ed && !ed.closed) await ed.listBots().then(showBots).catch(() => {});
+  busy($("emotes"), "Reading the emotes folder\u2026");
+  busy($("models"), "Reading the models folder\u2026");
+  // either may be refused by a FightBot older than 6.0.0, so neither waits
+  // on the other
+  const [e, m] = await Promise.allSettled([
+    ed.request("emotes.list"), ed.request("models.list")
+  ]);
+  if (e.status === "fulfilled") showEmotes(e.value);
+  else folderProblem($("emotes"), $("emoteStatus"), e.reason, "Emotes");
+  if (m.status === "fulfilled") showModels(m.value);
+  else folderProblem($("models"), $("modelStatus"), m.reason, "Player models");
+}
+
+/** An older FightBot does not know these at all. Say so once, plainly. */
+function folderProblem(table, line, err, what) {
+  line.textContent = what + " need FightBot 6.0.0 or newer on the server. "
+    + ((err && err.message) || "This server would not answer.");
+  table.replaceChildren(el("tr", {},
+    el("td", { class: "muted", colspan: "3", text: "Nothing to show." })));
+  const row = $(table.id === "emotes" ? "emotePlay" : "modelProjects");
+  if (row) row.hidden = true;
+}
+
+/** The rows both folders share. */
+function fileRows(table, d, onDelete) {
+  table.replaceChildren();
+  if (!d.files || !d.files.length) {
+    table.append(el("tr", {}, el("td", { class: "muted", colspan: "3",
+      text: "Nothing in the folder yet. Add one above." })));
+    return;
+  }
+  for (const f of d.files) {
+    table.append(el("tr", {},
+      el("td", {}, el("b", { text: f.name || f.file })),
+      el("td", { class: "muted", text: [f.file, kb(f.bytes)].filter(Boolean).join(" \u00b7 ") }),
+      el("td", { class: "acts" },
+        el("button", { class: "btn ghost sm", disabled: readOnly, text: "Delete",
+          onclick: () => confirm("Delete " + f.file + "?") && onDelete(f.file) }))));
+  }
+}
+
+function showEmotes(d) {
+  $("emoteStatus").textContent = d.ready
+    ? (d.files || []).length + ((d.files || []).length === 1 ? " emote file" : " emote files")
+      + ((d.names || []).length ? " \u00b7 " + d.names.length + " ready to play" : "")
+    : (d.problem || "Emotecraft is not on this server, so bots cannot play emotes yet.");
+
+  fileRows($("emotes"), d, file =>
+    ed.request("emotes.delete", { file }).then(showEmotes, e => toast(e.message, true)));
+
+  // play one on a bot, every bot, or a whole group
+  const row = $("emotePlay");
+  row.hidden = false;
+  row.replaceChildren();
+  const names = d.names || [];
+  if (!names.length) {
+    row.append(el("p", { class: "lede", text: d.ready
+      ? "No emotes to play yet. Add one below."
+      : "Emotes play once Emotecraft is on the server." }));
+    return;
+  }
+  const who = picker(whoList(), "which bots", "emote-who");
+  const what = picker(names.map(n => ({ value: n, label: n })), "emote", "emote-what");
+  row.append(who, what,
+    btn("Play it", () => who.value && what.value
+      ? run("emote " + who.value + " " + what.value, { refresh: false })
+      : toast("Pick a bot and an emote.", true)),
+    ghost("Stop", () => who.value
+      ? run("emote " + who.value + " --stop", { refresh: false })
+      : toast("Pick a bot first.", true)));
+}
+
+function showModels(d) {
+  $("modelStatus").textContent = d.ready
+    ? (d.files || []).length + ((d.files || []).length === 1 ? " model" : " models")
+      + " in the folder"
+    : (d.problem || "Customizable Player Models is not on this server, so bots wear their skins.");
+
+  fileRows($("models"), d, file =>
+    ed.request("models.delete", { file }).then(showModels, e => toast(e.message, true)));
+
+  // a .cpmproject is the editor's save file, not something a bot can wear
+  const note = $("modelProjects");
+  const projects = d.projects || [];
+  note.hidden = !projects.length;
+  if (projects.length) {
+    note.replaceChildren(
+      el("b", { text: projects.length === 1 ? "One file is a CPM project, not a model: "
+        : projects.length + " files are CPM projects, not models: " }),
+      document.createTextNode(projects.join(", ")),
+      el("p", { class: "lede", style: "margin:10px 0 0",
+        text: d.projectHelp || "Open it in the CPM editor and use File > Export, with "
+          + "\"Export mode: Model\", then upload the .cpmmodel it makes." }));
+  }
+}
+
+/** Both uploads, which differ only in what they are called. */
+function wireUpload({ file, name, button, types, type, after }) {
+  $(file).addEventListener("change", () => {
+    const f = $(file).files[0];
+    if (f && !$(name).value) $(name).value = slug(f.name.replace(/\.[^.]+$/, ""));
+  });
+
+  $(button).addEventListener("click", async () => {
+    const f = $(file).files[0];
+    if (!f) return toast("Pick a file first.", true);
+    const ext = "." + (f.name.split(".").pop() || "").toLowerCase();
+    if (!types.includes(ext)) {
+      return toast("That has to be " + types.join(" or ") + ", not " + ext + ".", true);
+    }
+    if (f.size > EMOTE_MAX) return toast("That is over 2 MB.", true);
+    const given = $(name).value.trim();
+    if (!given) return toast("Give it a name.", true);
+
+    const btn = $(button);
+    btn.disabled = true;
+    try {
+      const data = b64(new Uint8Array(await f.arrayBuffer()));
+      const send = (overwrite) =>
+        ed.request(type + ".upload", { name: given + ext, data, overwrite }, { timeout: 120000 });
+      let r;
+      try {
+        r = await send(false);
+      } catch (e) {
+        if (!/already/i.test(e.message) || !confirm(e.message + "\n\nReplace it?")) throw e;
+        r = await send(true);
+      }
+      after(r);
+      $(file).value = "";
+      $(name).value = "";
+      toast("Added " + (r.saved || given + ext) + ".");
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
+wireUpload({ file: "emoteFile", name: "emoteName", button: "emoteUpload",
+  types: [".json", ".emotecraft"], type: "emotes", after: showEmotes });
+wireUpload({ file: "modelFile", name: "modelName", button: "modelUpload",
+  types: [".cpmmodel"], type: "models", after: showModels });
 
 async function loadVoice() {
   busy($("lines"), "Reading the voice lines\u2026");

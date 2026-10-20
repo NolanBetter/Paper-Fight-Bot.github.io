@@ -63,6 +63,7 @@
     <button class="btn ghost tab sm" role="tab" data-tab="bots" aria-selected="false">Bots</button>
     <button class="btn ghost tab sm" role="tab" data-tab="teams" aria-selected="false">Groups &amp; kits</button>
     <button class="btn ghost tab sm" role="tab" data-tab="skins" aria-selected="false">Skins</button>
+    <button class="btn ghost tab sm" role="tab" data-tab="emotes" aria-selected="false">Emotes &amp; models</button>
     <button class="btn ghost tab sm" role="tab" data-tab="voice" aria-selected="false">Voice lines</button>
     <button class="btn ghost tab sm" role="tab" data-tab="debug" aria-selected="false">Debug logs</button>
   </nav>
@@ -95,7 +96,8 @@
         <li>Open the link it gives you. It works for 30 minutes unused, 4 hours in all.</li>
       </ol>
       <p class="lede">You need FightBot <b>5.17.2</b> or newer and the <code>fightbot.web</code> permission.
-        On a network, <code>/fbp web</code> on a proxy running <b>5.18.1</b> gives one link for every server.
+        On a network, <code>/fbp web</code> on a proxy running <b>5.18.1</b> or newer gives one link for every server.
+        Emotes and player models need <b>6.0.0</b>.
         <a href="../install.html">How to install it</a>.</p>
     </div>
   </section>
@@ -252,6 +254,47 @@
       <p class="lede small-note">Click a name to turn it around. A skin can only be shown once it has
         been signed, which takes a few seconds after it goes up.</p>
       <table class="ed-table"><tbody id="skins"></tbody></table>
+    </div>
+  </section>
+
+  <!-- -------------------------------------------------- emotes & models -->
+  <section id="tab-emotes" hidden>
+    <div class="ed-card">
+      <h2>Emotes</h2>
+      <p class="lede" id="emoteStatus"></p>
+      <p class="lede small-note">Emotes come from <b>Emotecraft</b>, and only players with the
+        Emotecraft mod see them. A bot told to fight stops its emote by itself.</p>
+      <h3 class="ed-sub">Play one</h3>
+      <div class="ed-row" id="emotePlay"></div>
+      <h3 class="ed-sub">Add an emote</h3>
+      <div class="ed-row">
+        <input type="file" id="emoteFile" accept=".json,.emotecraft" class="ed-input">
+        <input type="text" id="emoteName" class="ed-input" placeholder="name" aria-label="emote name">
+        <button class="btn sm" id="emoteUpload">Upload</button>
+      </div>
+      <p class="lede small-note">A <code>.json</code> or <code>.emotecraft</code> file, up to 2&nbsp;MB.
+        The name you give it is what you play: <code>/fightbot emote &lt;bot&gt; &lt;name&gt;</code>.</p>
+      <h3 class="ed-sub">Emote files</h3>
+      <table class="ed-table"><tbody id="emotes"></tbody></table>
+    </div>
+
+    <div class="ed-card">
+      <h2>Player models</h2>
+      <p class="lede" id="modelStatus"></p>
+      <p class="lede small-note">Models come from <b>Customizable Player Models</b>. Each new bot wears
+        one of these at random &mdash; <code>identity.models</code> in Settings sets how many &mdash; and
+        only players with the CPM mod see them. Everyone else sees the bot&rsquo;s skin.</p>
+      <div class="note gold" id="modelProjects" hidden></div>
+      <h3 class="ed-sub">Add a model</h3>
+      <div class="ed-row">
+        <input type="file" id="modelFile" accept=".cpmmodel" class="ed-input">
+        <input type="text" id="modelName" class="ed-input" placeholder="name" aria-label="model name">
+        <button class="btn sm" id="modelUpload">Upload</button>
+      </div>
+      <p class="lede small-note">A <code>.cpmmodel</code> file, up to 2&nbsp;MB. In the CPM editor that is
+        <b>File &rsaquo; Export</b> with <b>Export mode: Model</b>.</p>
+      <h3 class="ed-sub">Model files</h3>
+      <table class="ed-table"><tbody id="models"></tbody></table>
     </div>
   </section>
 
