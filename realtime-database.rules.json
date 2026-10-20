@@ -1,0 +1,69 @@
+{
+  "rules": {
+    // Nothing is readable or writable unless a rule below says so.
+    ".read": false,
+    ".write": false,
+
+    // The FightBot web editor's relay. Each open editor is one session,
+    // named by an id that only the server and the page know (it comes from
+    // the secret in the /fightbot web link). Everything inside is
+    // encrypted with a key from that same secret, so this database only
+    // ever holds scrambled bytes. Sessions can't be listed: there is no
+    // .read above $sid.
+    "fightbot-web": {
+      "v1": {
+        // What the server writes, and the page follows
+        "sessions": {
+          "$sid": {
+            // Readable while it's open (a closed or expired one can't be followed)
+            ".read": "$sid.length === 24 && $sid.matches(/^[A-Za-z0-9_-]+$/) && data.child('meta').exists()",
+            // Create (with its meta), delete it, or write while it hasn't expired
+            ".write": "$sid.length === 24 && $sid.matches(/^[A-Za-z0-9_-]+$/) && ((!data.exists() && newData.child('meta/v').isNumber()) || !newData.exists() || data.child('meta/expires').val() > now - 300000)",
+
+            "meta": {
+              ".validate": "newData.hasChildren(['v', 'created', 'expires'])",
+              "v": { ".validate": "newData.isNumber()" },
+              "created": { ".validate": "newData.isNumber()" },
+              "expires": { ".validate": "newData.isNumber() && newData.val() <= now + 90000000" },
+              "$other": { ".validate": false }
+            },
+            // server -> page: replies and events
+            "up": {
+              "$msg": {
+                ".validate": "newData.hasChildren(['t', 'd'])",
+                "t": { ".validate": "newData.isNumber()" },
+                "d": { ".validate": "newData.isString() && newData.val().length <= 6000000" },
+                "$other": { ".validate": false }
+              }
+            },
+            // the server's latest snapshots (status, bots)
+            "state": {
+              "$name": {
+                ".validate": "$name.length <= 16 && $name.matches(/^[a-z]+$/) && newData.hasChildren(['t', 'd'])",
+                "t": { ".validate": "newData.isNumber()" },
+                "d": { ".validate": "newData.isString() && newData.val().length <= 2000000" },
+                "$other": { ".validate": false }
+              }
+            },
+            "$other": { ".validate": false }
+          }
+        },
+        // page -> server: requests. Apart from the session, so the page isn't
+        // sent its own messages back (uploads would come down twice).
+        "inbox": {
+          "$sid": {
+            ".read": "$sid.length === 24 && $sid.matches(/^[A-Za-z0-9_-]+$/) && root.child('fightbot-web/v1/sessions/' + $sid + '/meta').exists()",
+            // Only while its session is open - or emptied
+            ".write": "$sid.length === 24 && $sid.matches(/^[A-Za-z0-9_-]+$/) && (!newData.exists() || root.child('fightbot-web/v1/sessions/' + $sid + '/meta/expires').val() > now - 300000)",
+            "$msg": {
+              ".validate": "newData.hasChildren(['t', 'd'])",
+              "t": { ".validate": "newData.isNumber()" },
+              "d": { ".validate": "newData.isString() && newData.val().length <= 6000000" },
+              "$other": { ".validate": false }
+            }
+          }
+        }
+      }
+    }
+  }
+}

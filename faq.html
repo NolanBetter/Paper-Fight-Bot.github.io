@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ — Paper Fight Bot</title>
+<meta name="description" content="Common questions about Paper Fight Bot: versions, dependencies, bot limits and server support.">
+<meta property="og:title" content="FAQ — Paper Fight Bot">
+<meta property="og:description" content="Common questions about Paper Fight Bot: versions, dependencies, bot limits and server support.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://fightmc.xyz/faq.html">
+<meta property="og:image" content="https://fightmc.xyz/assets/banner.png">
+<meta name="theme-color" content="#060506">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="index.html"><img src="assets/logo.png" alt=""><span><span class="p">PAPER </span>FIGHT <b>BOT</b></span></a>
+    <nav>
+      <a href="install.html">Install</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="faq.html">FAQ</a>
+      <a href="report.html">Report</a>
+      <a href="account.html">Account</a>
+      <a href="#" data-modrinth>Download</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="phead">
+  <div class="wrap">
+    <h1>FAQ</h1>
+    <p class="lede">If your question isn't here, ask in Discord.</p>
+  </div>
+</div>
+
+<section class="tight">
+  <div class="wrap">
+    <div id="faqBody"><!-- faq:start -->
+<div class="qa">
+      <details>
+        <summary>Does it need any other plugins?</summary>
+        <p>No, on anything newer than 3.17.1. It is one jar.</p>
+<p>3.17.1 and older ran bots as disguised zombies, so those need <a href="https://www.spigotmc.org/resources/libs-disguises-free.81/" rel="noopener">LibsDisguises</a>. That is the version to use if your server is below 1.20.5.</p>
+      </details>
+      <details>
+        <summary>What can I run it on?</summary>
+        <p><strong>Paper 1.20.5 or newer, or a fork like Purpur.</strong> Nothing else.</p>
+<p>Spigot, CraftBukkit and Folia are not supported. FightBot checks at startup and says so in the console rather than half working.</p>
+      </details>
+      <details>
+        <summary>Why Paper and not Spigot?</summary>
+        <p>Bots are real server side players now, not mobs wearing a disguise. They have real hitboxes, real physics, and every other plugin on your server sees them as players. They even show in the tab list with a realistic ping. That needs Paper&#39;s API.</p>
+      </details>
+      <details>
+        <summary>Does it cost anything?</summary>
+        <p>No. It is free on Modrinth.</p>
+      </details>
+      <details>
+        <summary>How many bots can I run at once?</summary>
+        <p>Up to 200 from one command, with <code class="cmd">/fightbot spawn &lt;count&gt;</code>. Whether your server enjoys 200 is another matter, since they path, fight and place blocks the way players do. Scale up gradually and watch your TPS.</p>
+      </details>
+      <details>
+        <summary>Can bots fight each other?</summary>
+        <p>Yes. Put them in groups and use <code class="cmd">/fightbot groupfight &lt;group&gt; &lt;target&gt;</code>, or set two groups on one another. Good for watching what a loadout actually does.</p>
+      </details>
+      <details>
+        <summary>Can I change their gear while they are fighting?</summary>
+        <p>No. The bot is moving items between its hands the whole time, so its inventory is closed while it fights. Run <code class="cmd">/fightbot stop &lt;bot&gt;</code> first, then right click it in creative or use <strong>Open gear</strong> in its settings menu.</p>
+      </details>
+      <details>
+        <summary>Where did crystal PvP go?</summary>
+        <p>It is switched off while it is reworked, and comes back in a later update. Roaming and patrolling are back as of 5.17.0 — see <a href="wiki.html" rel="noopener">the wiki</a>.</p>
+      </details>
+      <details>
+        <summary>Does the mace work?</summary>
+        <p>Yes, and from 6.0.0 it is <strong>on by default</strong>. A config from before that is switched on once when it updates; turn it off after that and it stays off (<code class="cmd">mace.enabled</code>, or <strong>Mace</strong> in one bot&#39;s settings).</p>
+<p>A bot with a mace and wind charges wind-jumps and smashes you on the way down. With an elytra and rockets it takes off, flies over you and dives — and with a Wind Burst mace, every smash throws it back up, the elytra goes on, and it rockets straight back down at you, again and again until it misses. If you dive on a bot, it sidesteps or gets its shield up.</p>
+      </details>
+      <details>
+        <summary>Is there a permission node?</summary>
+        <p><code class="cmd">fightbot.use</code>, default OP. Grant it to let other people spawn and command bots. <code class="cmd">/fightbot help</code> in game lists everything.</p>
+      </details>
+      <details>
+        <summary>Should I use the beta builds?</summary>
+        <p>Only if you are chasing a specific fix or happy to report bugs. Stick to the newest full release for anything you care about, and back up first.</p>
+      </details>
+      <details>
+        <summary>Can I use it in a video?</summary>
+        <p>Go ahead. A link back is appreciated but not required.</p>
+      </details>
+      <details>
+        <summary>How do I report a bug?</summary>
+        <p>Use the <a href="report.html" rel="noopener">report form</a>. It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.</p>
+      </details>
+      <details>
+        <summary>Can I change settings without opening server files?</summary>
+        <p>Yes. Type <code class="cmd">/fightbot web</code> in game and open the link it gives you. It opens the <a href="#" rel="noopener">editor</a> on this site, where you can change any setting, run the bots that are already there — send them after someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot&#39;s own switches — upload skins and voice lines, and read the debug logs.</p>
+<p>Making bots stays in game on purpose — FightBot refuses spawning, saves, and renaming or cloning from the web.</p>
+<p>Skins can be looked at properly: click one in the skins list and it turns into a model you can spin round, with the second layer on or off. From 6.0.0 there is an <strong>Emotes &amp; models</strong> tab too, for Emotecraft emotes (upload one, then play it on a bot, a group or every bot) and Customizable Player Models files.</p>
+<p>One thing the editor will not do: <strong>the AI key</strong>. It can switch AI chat on and change its settings, but the key itself is never shown there and cannot be set there — that only ever goes in <code class="cmd">config.yml</code> on your own server.</p>
+<p>On a network, <code class="cmd">/fbp web</code> on the proxy gives one link for every server at once: the editor puts a server picker at the top, and each server&#39;s own editor opens from there.</p>
+<p>The link is the key, so do not share it. It stops working after 30 minutes unused, after 4 hours, or when you type <code class="cmd">/fightbot web stop</code>. Nothing on your server has to be opened up, and everything between your server and the page is encrypted with a key that is only in the link.</p>
+      </details>
+      <details>
+        <summary>Do the bots talk?</summary>
+        <p>With <a href="https://modrinth.com/plugin/simple-voice-chat" rel="noopener">Simple Voice Chat</a> on the server, yes. Bots show up in voice chat like players, and the ones that &quot;talk&quot; say lines by themselves when they join, start a fight, win one, get low or die.</p>
+<p>FightBot&#39;s own lines come in the jar: <code class="cmd">hello</code> and <code class="cmd">am_i_muted</code> as a bot joins, and <code class="cmd">grass</code> when a roaming bot pulls up grass. More come with updates, and <code class="cmd">voice.on-their-own: false</code> keeps bots quiet unless told.</p>
+<p>You can add your own <code class="cmd">.mp3</code> or <code class="cmd">.wav</code> files too. Those are <strong>never</strong> said by a bot on its own — only when someone types <code class="cmd">/fightbot vc &lt;name&gt;</code> — everyone nearby is told it is a file added by that server and who played it, and every play is logged.</p>
+      </details>
+      <details>
+        <summary>Do the bots survive a restart?</summary>
+        <p>Yes, from 5.19.6. As the server stops, every bot is written down, and as it starts they come back where they stood, with the same inventory, skin, health, settings and group. That covers a FightBot update too, since those need a restart.</p>
+<p>They do not pick up what they were doing — fights and routes start afresh — and they come back a few at a time (<code class="cmd">restart.per-second</code>, 10) so a big army does not hold the start up. <code class="cmd">restart.max-bots</code> caps how many come back (100, or <code class="cmd">0</code> for all of them), and <code class="cmd">restart.keep-bots: false</code> turns it off.</p>
+<p>A plugin reload is different: after <code class="cmd">/plugman reload FightBot</code> or <code class="cmd">/reload</code>, bots come back still doing what they were.</p>
+      </details>
+      <details>
+        <summary>What can a bot fight with?</summary>
+        <p>Give it the gear and it works out the rest. A sword or axe, a shield, a totem, pearls, cobwebs, a water bucket, splash potions, a pickaxe for mining and food to heal on.</p>
+<p>Newer kit each has its own switch, in the config or in one bot&#39;s settings menu:</p>
+<ul><li><strong>Bow and crossbow</strong> (on by default): it shoots at anyone further off than 8 blocks, or somewhere it</li></ul>
+<p>cannot walk to. It allows for the drop and for where you are running, and the game does the shot, so every enchantment works.</p>
+<ul><li><strong>Mace</strong> (on from 6.0.0): wind jumps, pearl launches, and elytra dives that come round again after every Wind Burst smash.</li><li><strong>Spear</strong> (off, 1.21.11 and up): it keeps 2 to 4 blocks off, jabs, and now and then lowers it and charges.</li><li><strong>Elytra</strong> (off): it flies after anyone who gets far away, and fights in the air.</li></ul>
+<p>Gear wears out and breaks like yours, and a bot with Mending gear and bottles o&#39; enchanting mends itself.</p>
+      </details>
+      <details>
+        <summary>Can I talk to the bots?</summary>
+        <p>From 6.0.0, yes. With <a href="https://modrinth.com/plugin/simple-voice-chat" rel="noopener">Simple Voice Chat</a> on the server, stand within 8 blocks of a bot, look at it and say something short — it answers out loud in a word or two (&quot;Hi&quot;, &quot;Good&quot;) and then gets back to fighting. No small talk.</p>
+<p>It uses <strong>your own key</strong> with Groq (free plan), Google Gemini or OpenAI, so it costs whatever they charge. <a href="ai.html" rel="noopener">Setting it up</a> takes about five minutes.</p>
+<p>The key goes in <code class="cmd">config.yml</code> on your server and nowhere else — this site will not show it or set it. Players are told, the first time they are near a bot that answers, that what they say to it goes to that company. Nothing else they say is used.</p>
+      </details>
+      <details>
+        <summary>Can bots have my own models, emotes and capes?</summary>
+        <p><strong>Models:</strong> with <a href="https://modrinth.com/plugin/custom-player-models" rel="noopener">Customizable Player Models</a> on the server, drop <code class="cmd">.cpmmodel</code> files in <code class="cmd">plugins/FightBot/models/</code> (or upload them in the editor) and each new bot wears one at random.</p>
+<p><strong>Emotes:</strong> with <a href="https://modrinth.com/plugin/emotecraft" rel="noopener">Emotecraft</a>, <code class="cmd">.json</code> or <code class="cmd">.emotecraft</code> files go in <code class="cmd">plugins/FightBot/emotes/</code>, and <code class="cmd">/fightbot emote &lt;bot&gt; &lt;name&gt;</code> plays one. Both are only seen by players who have that mod.</p>
+<p><strong>Capes:</strong> Minecraft only shows capes Mojang gave an account, so they cannot be made from a picture. Bots wear capes that come with a borrowed skin — about 30 in 100 do (<code class="cmd">identity.capes</code>).</p>
+<p><strong>Skins:</strong> about 970 come built into 6.0.0, already signed, ready the moment the server starts.</p>
+      </details>
+      <details>
+        <summary>Does it work on a network with a proxy?</summary>
+        <p>Yes, from 5.18.0. Put the same jar in your Velocity or BungeeCord proxy&#39;s <code class="cmd">plugins</code> folder as well, and the servers link up to it by themselves. Only the servers you want bots on need FightBot.</p>
+<p>With the proxy linked up, bots count in the network&#39;s player count and hover list, <code class="cmd">/fbp &lt;server&gt; &lt;command&gt;</code> runs any FightBot command on any server from the proxy, and <code class="cmd">/fb send &lt;bot&gt; &lt;server&gt;</code> walks a bot over to another server with its gear, health, skin and settings. Kits, saves, skins and voice lines can be shared across the network, and <code class="cmd">/fbp web</code> gives one web editor link that covers every server.</p>
+<p>On Velocity with modern forwarding there is nothing to set up. Otherwise paste the proxy&#39;s <code class="cmd">link-secret.txt</code> into <code class="cmd">network.secret</code> on each server. <a href="wiki.html" rel="noopener">The wiki</a> has the whole setup.</p>
+      </details></div>
+      <!-- faq:end --></div>
+
+    <div class="cta-row">
+      <a class="btn" href="#" data-discord>Ask in Discord</a>
+      <a class="btn ghost" href="wiki.html">Read the wiki</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap f-in">
+    <a href="install.html">Install</a>
+    <a href="wiki.html">Wiki</a>
+    <a href="faq.html">FAQ</a>
+    <a href="#" data-modrinth>Modrinth</a>
+    <a href="#" data-discord>Discord</a>
+    <span class="credit">Paper Fight Bot &middot; not an official Minecraft service, not approved by Mojang</span>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script type="module" src="assets/app.js"></script>
+</body>
+</html>

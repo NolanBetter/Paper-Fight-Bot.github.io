@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bots that talk back — Paper Fight Bot</title>
+<meta name="description" content="Set up AI voice chat for Paper Fight Bot: talk to a bot in Simple Voice Chat and it answers out loud.">
+<meta property="og:title" content="Bots that talk back — Paper Fight Bot">
+<meta property="og:description" content="Set up AI voice chat for Paper Fight Bot: talk to a bot in Simple Voice Chat and it answers out loud.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://fightmc.xyz/ai.html">
+<meta property="og:image" content="https://fightmc.xyz/assets/banner.png">
+<meta name="theme-color" content="#060506">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="index.html"><img src="assets/logo.png" alt=""><span><span class="p">PAPER </span>FIGHT <b>BOT</b></span></a>
+    <nav>
+      <a href="install.html">Install</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="faq.html">FAQ</a>
+      <a href="report.html">Report</a>
+      <a href="account.html">Account</a>
+      <a href="#" data-modrinth>Download</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="phead">
+  <div class="wrap">
+    <h1>Bots that talk back</h1>
+    <p class="lede">Say something to a bot in voice chat and it answers out loud, in a word or two.
+      Ten minutes to set up, from <span data-version>6.0.0</span>.</p>
+  </div>
+</div>
+
+<section class="tight">
+  <div class="wrap">
+
+    <div class="note">
+      <b>What it sounds like.</b> You: <i>&ldquo;Hello&rdquo;</i> &rarr; the bot: <i>&ldquo;Hi&rdquo;</i>.
+      You: <i>&ldquo;How&rsquo;s it going?&rdquo;</i> &rarr; <i>&ldquo;Good&rdquo;</i>. That is the whole idea:
+      it answers greetings and short questions, then gets back to fighting. No small talk, no speeches.
+    </div>
+
+    <h2>What you need</h2>
+    <div class="spec">
+      <div class="spec-row">
+        <h3>FightBot <span data-version>6.0.0</span></h3>
+        <p>Or newer. <a href="install.html">Installing it</a> takes about four minutes.</p>
+      </div>
+      <div class="spec-row">
+        <h3>Simple Voice Chat</h3>
+        <p>The plugin on the server, <em>and</em> the mod in each player&rsquo;s game, with a working
+          microphone. Without it the bots still fight, they just have nothing to talk through.</p>
+      </div>
+      <div class="spec-row">
+        <h3>A free Groq account</h3>
+        <p>Groq has a free plan, which is why it is the one in this guide. Google Gemini and OpenAI
+          work too &mdash; the setting is <span class="cmd">ai.provider</span>.</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top:44px">Setting it up</h2>
+    <div class="steps">
+      <div class="step">
+        <div>
+          <h3>Get a key from Groq</h3>
+          <p>Sign in at <a href="https://console.groq.com" rel="noopener noreferrer" target="_blank">console.groq.com</a>,
+            open <b>API Keys</b>, and click <b>Create API Key</b>. Call it anything &mdash; &ldquo;FightBot&rdquo; does.</p>
+          <p><b>Copy it and keep it like a password.</b> It starts with <span class="cmd">gsk_</span>, and anyone
+            who has it can spend your Groq account.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Put it in the config, on your server</h3>
+          <p>Open <span class="cmd">plugins/FightBot/config.yml</span>, find the <span class="cmd">ai:</span>
+            part, and set these three lines:</p>
+          <pre>ai:
+  <span class="k">enabled</span>: true
+  <span class="k">provider</span>: groq
+  <span class="k">api-key</span>: <span class="k">"gsk_…your key…"</span></pre>
+          <p>Leave the rest alone, then run <span class="cmd">/fb reload</span>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Check it is listening</h3>
+          <p>Type <span class="cmd">/fb ai</span>. It should say <b>AI chat (Groq): listening</b>, and how many
+            bots can answer. If something is missing, it says what.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Talk to a bot</h3>
+          <p>Spawn one with <span class="cmd">/fb spawn</span> and make sure it talks:
+            <span class="cmd">/fb vc presence &lt;bot&gt; talks</span>. Then turn on
+            <span class="cmd">/fb ai watch</span>, stand <b>within 8 blocks</b>, <b>look right at it</b>,
+            and say &ldquo;Hi&rdquo;.</p>
+          <p>It answers out loud. The first time, you also get a one-off chat message saying that what you say
+            to bots goes to Groq &mdash; every player gets that once. <span class="cmd">/fb ai watch</span> again
+            turns the step-by-step messages off.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="note gold" style="margin-top:34px">
+      <b>The key never goes through this website.</b> The editor at <a href="editor/">fightmc.xyz</a> can switch
+      AI chat on and change its settings, but it never shows the key and will not set one &mdash; that only ever
+      goes in the file on your own server.
+    </div>
+
+    <h2 style="margin-top:44px">If it does not answer</h2>
+    <p class="lede">Look at what <span class="cmd">/fb ai watch</span> printed while you were talking.</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>What you see</th><th>What it means</th></tr></thead>
+        <tbody>
+          <tr><td>Nothing at all when you talk</td>
+              <td>Voice chat is not sending your voice. Check your microphone in Simple Voice Chat&rsquo;s
+                settings (press <span class="cmd">V</span>).</td></tr>
+          <tr><td><i>heard you&hellip; but you weren&rsquo;t facing a bot that can answer</i></td>
+              <td>Look right at the bot, and stand closer than 8 blocks.</td></tr>
+          <tr><td><i>no bot near you can answer</i></td>
+              <td>The bots near you are deafened, have no mod, or wear a CPM model. It says which.</td></tr>
+          <tr><td><i>paused: Groq wants the model&rsquo;s terms accepted</i></td>
+              <td>On console.groq.com open the <b>Playground</b>, pick
+                <span class="cmd">canopylabs/orpheus-v1-english</span> and accept its terms. FightBot tries
+                again by itself every 2 minutes.</td></tr>
+          <tr><td><i>refused the key</i></td>
+              <td>The key is wrong or was deleted. Make a new one, put it in
+                <span class="cmd">ai.api-key</span>, then <span class="cmd">/fb reload</span>.</td></tr>
+          <tr><td><i>has nothing to say to that</i></td>
+              <td>It only answers greetings and short questions. Try &ldquo;Hi&rdquo; or
+                &ldquo;How&rsquo;s it going?&rdquo;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lede">A short wait before the answer is normal: each one is three quick trips to Groq &mdash;
+      hearing you, thinking, and speaking.</p>
+
+    <h2 style="margin-top:44px">What it costs, and limits</h2>
+    <div class="spec">
+      <div class="spec-row">
+        <h3>Groq&rsquo;s free plan</h3>
+        <p>About <b>100 spoken answers a day</b> (10 a minute) with its voice model. When that runs out, bots
+          stop answering and just fight, and FightBot tries again later. Groq has paid plans if you want more.</p>
+      </div>
+      <div class="spec-row">
+        <h3>Your own cap</h3>
+        <p>&#8203;<span class="cmd">ai.max-per-hour</span> (120) is the most answers your server gives in an
+          hour, whatever the plan allows.</p>
+      </div>
+      <div class="spec-row">
+        <h3>Selling longer chats</h3>
+        <p>Chats have no limit by default. To limit most people and sell the rest as a rank, give
+          <span class="cmd">fightbot.ai.limited</span> to your default group and take it off the rank you sell.
+          Limited players get <span class="cmd">ai.limited-replies</span> answers each chat (2).</p>
+        <pre>/lp group default permission set fightbot.ai.limited true
+/lp group vip permission set fightbot.ai.limited false</pre>
+      </div>
+    </div>
+
+    <h2 style="margin-top:44px">The other settings</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Setting</th><th>Default</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><span class="cmd">ai.range</span></td><td>8</td>
+              <td>How close you stand, facing the bot (2&ndash;32 blocks).</td></tr>
+          <tr><td><span class="cmd">ai.words</span></td><td>3</td>
+              <td>Longest answer, in words (1&ndash;12).</td></tr>
+          <tr><td><span class="cmd">ai.replies</span></td><td>0</td>
+              <td>Answers per chat. <span class="cmd">0</span> means no limit.</td></tr>
+          <tr><td><span class="cmd">ai.chat-again-minutes</span></td><td>5</td>
+              <td>After this long, a new chat starts.</td></tr>
+          <tr><td><span class="cmd">ai.voice</span></td><td>blank</td>
+              <td>Blank is <span class="cmd">autumn</span>. Any of Groq&rsquo;s voices for its talking model.</td></tr>
+          <tr><td><span class="cmd">ai.model</span>, <span class="cmd">ai.listen-model</span>,
+                  <span class="cmd">ai.speak-model</span></td><td>blank</td>
+              <td>Blank uses Groq&rsquo;s own. Only change these if Groq renames a model.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="margin-top:44px">What is sent, and what is not</h2>
+    <div class="note">
+      <b>Only what a player says while standing by a bot that answers, facing it</b>, goes to Groq. Nothing else
+      they say is used. Every player is told this the first time they are near a bot that answers. With
+      <span class="cmd">/fb ai watch</span> on, or debug logging, staff can see what was said while they test.
+    </div>
+
+    <div class="cta-row" style="margin-top:30px">
+      <a class="btn" href="wiki.html#ai-voice-chat">AI chat in the wiki</a>
+      <a class="btn ghost" href="#" data-discord>Ask in Discord</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap f-in">
+    <a href="install.html">Install</a>
+    <a href="wiki.html">Wiki</a>
+    <a href="faq.html">FAQ</a>
+    <a href="#" data-modrinth>Modrinth</a>
+    <a href="#" data-discord>Discord</a>
+    <span class="credit">Paper Fight Bot &middot; not an official Minecraft service, not approved by Mojang</span>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script type="module" src="assets/app.js"></script>
+</body>
+</html>
