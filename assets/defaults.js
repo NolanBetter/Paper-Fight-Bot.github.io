@@ -29,9 +29,9 @@ Spigot, CraftBukkit and Folia are not supported. FightBot checks at startup and 
   { id: "missing", q: "Where did crystal PvP go?",
     a: `It is switched off while it is reworked, and comes back in a later update. Roaming and patrolling are back as of 5.17.0 \u2014 see [the wiki](wiki.html).` },
   { id: "mace", q: "Does the mace work?",
-    a: `Yes. It is off by default, so turn it on with \`mace.enabled\` in the config, or for one bot in its settings menu.
+    a: `Yes, and from 6.0.0 it is **on by default**. A config from before that is switched on once when it updates; turn it off after that and it stays off (\`mace.enabled\`, or **Mace** in one bot's settings).
 
-A bot with a mace and wind charges wind-jumps and smashes you on the way down. With an elytra and rockets it takes off, flies over you and dives. If you dive on a bot, it sidesteps or gets its shield up.` },
+A bot with a mace and wind charges wind-jumps and smashes you on the way down. With an elytra and rockets it takes off, flies over you and dives \u2014 and with a Wind Burst mace, every smash throws it back up, the elytra goes on, and it rockets straight back down at you, again and again until it misses. If you dive on a bot, it sidesteps or gets its shield up.` },
   { id: "perm", q: "Is there a permission node?",
     a: `\`fightbot.use\`, default OP. Grant it to let other people spawn and command bots. \`/fightbot help\` in game lists everything.` },
   { id: "beta", q: "Should I use the beta builds?",
@@ -49,7 +49,11 @@ switches — upload skins and voice lines, and read the debug logs.
 Making bots stays in game on purpose — FightBot refuses spawning, saves, and renaming or cloning from the web.
 
 Skins can be looked at properly: click one in the skins list and it turns into a model you can spin round,
-with the second layer on or off.
+with the second layer on or off. From 6.0.0 there is an **Emotes & models** tab too, for Emotecraft emotes
+(upload one, then play it on a bot, a group or every bot) and Customizable Player Models files.
+
+One thing the editor will not do: **the AI key**. It can switch AI chat on and change its settings, but the key
+itself is never shown there and cannot be set there — that only ever goes in \`config.yml\` on your own server.
 
 On a network, \`/fbp web\` on the proxy gives one link for every server at once: the editor puts a server picker
 at the top, and each server's own editor opens from there.
@@ -88,11 +92,35 @@ Newer kit each has its own switch, in the config or in one bot's settings menu:
 - **Bow and crossbow** (on by default): it shoots at anyone further off than 8 blocks, or somewhere it
 cannot walk to. It allows for the drop and for where you are running, and the game does the shot, so every
 enchantment works.
-- **Mace** (off): wind jumps, pearl launches and elytra dives.
+- **Mace** (on from 6.0.0): wind jumps, pearl launches, and elytra dives that come round again after every Wind Burst smash.
 - **Spear** (off, 1.21.11 and up): it keeps 2 to 4 blocks off, jabs, and now and then lowers it and charges.
 - **Elytra** (off): it flies after anyone who gets far away, and fights in the air.
 
 Gear wears out and breaks like yours, and a bot with Mending gear and bottles o' enchanting mends itself.` },
+  { id: "aichat", q: "Can I talk to the bots?",
+    a: `From 6.0.0, yes. With [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) on the server,
+stand within 8 blocks of a bot, look at it and say something short — it answers out loud in a word or two
+("Hi", "Good") and then gets back to fighting. No small talk.
+
+It uses **your own key** with Groq (free plan), Google Gemini or OpenAI, so it costs whatever they charge.
+[Setting it up](ai.html) takes about five minutes.
+
+The key goes in \`config.yml\` on your server and nowhere else — this site will not show it or set it. Players
+are told, the first time they are near a bot that answers, that what they say to it goes to that company.
+Nothing else they say is used.` },
+  { id: "looks", q: "Can bots have my own models, emotes and capes?",
+    a: `**Models:** with [Customizable Player Models](https://modrinth.com/plugin/custom-player-models) on the
+server, drop \`.cpmmodel\` files in \`plugins/FightBot/models/\` (or upload them in the editor) and each new bot
+wears one at random.
+
+**Emotes:** with [Emotecraft](https://modrinth.com/plugin/emotecraft), \`.json\` or \`.emotecraft\` files go in
+\`plugins/FightBot/emotes/\`, and \`/fightbot emote <bot> <name>\` plays one. Both are only seen by players who
+have that mod.
+
+**Capes:** Minecraft only shows capes Mojang gave an account, so they cannot be made from a picture. Bots wear
+capes that come with a borrowed skin — about 30 in 100 do (\`identity.capes\`).
+
+**Skins:** about 970 come built into 6.0.0, already signed, ready the moment the server starts.` },
   { id: "proxy", q: "Does it work on a network with a proxy?",
     a: `Yes, from 5.18.0. Put the same jar in your Velocity or BungeeCord proxy's \`plugins\` folder as well, and
 the servers link up to it by themselves. Only the servers you want bots on need FightBot.
@@ -117,7 +145,9 @@ export const DEFAULT_WIKI = [
 | Newer than 3.17.1 | 1.20.5 and up | Paper, or a fork like Purpur. Nothing else. |
 | 3.17.1 and older | 1.16 and up | LibsDisguises |
 
-Optional: **Simple Voice Chat**, for bots that talk (5.17.2 and up). See [Voice lines](#voice-lines-simple-voice-chat).
+Optional: **Simple Voice Chat**, for bots that talk (5.17.2 and up) and answer you with AI (6.0.0). See [Voice lines](#voice-lines-simple-voice-chat) and [AI voice chat](#ai-voice-chat).
+
+Optional: **Emotecraft** and **Customizable Player Models**, for emotes and models on bots (6.0.0). See [Emotes and player models](#emotes-and-player-models).
 
 Optional: a **Velocity or BungeeCord proxy** (5.18.0 and up). The same jar goes on the proxy too. See [Networks](#networks-velocity-and-bungeecord).
 
@@ -212,15 +242,16 @@ Bots fight like a person, not a machine:
 
 ## Mace
 
-Turn mace combat on with \`mace.enabled: true\` (or for one bot, with **Mace** in its settings menu). The bot uses the game's own mace, wind charges, elytra and fireworks, so damage, Density, Breach and Wind Burst all work as they do for you.
+Mace combat is **on by default** from 6.0.0 (\`mace.enabled\`). A config from before 6.0.0 is switched on once, when it updates; turn it off after that and it stays off. One bot can be changed with **Mace** in its settings menu. The bot uses the game's own mace, wind charges, elytra and fireworks, so damage, Density, Breach and Wind Burst all work as they do for you.
 
 - **Wind jump** (mace + wind charges): close in, it throws a wind charge at its feet, flies up and smashes you on the way down. With Wind Burst it can bounce up and smash again (\`mace.wind-chain-max\`).
 - **Elytra dive** (mace + elytra + firework rockets): from further away (up to 72 blocks), it takes off, climbs and flies over you, swaps the elytra for its chestplate and drops onto you from about \`mace.dive-height\` blocks. It aims for where you'll be when it gets there, not where you were.
+- **Elytra combo** (the dive, with a **Wind Burst** mace): the first hit is the full flight - up, round and down. After every smash that lands, Wind Burst throws it up; at the top it puts the elytra on and fires a rocket **straight back down** at you, swapping to its chestplate at the last moment to smash again. That repeats until one misses. After a miss, it does the full flight again, until the rockets run out. \`mace.elytra-combo: false\` turns this off.
 - **Pearl launch** (mace + ender pearls + wind charges): it throws a pearl up and towards you, wind-charges itself up after it, rides the pearl and smashes down. Turn it off with \`mace.pearl-launch: false\`.
-- **After a miss** it saves itself the way you would: a wind charge just before it lands, a water bucket, or the elytra again.
+- **After a miss** with no rockets left, it saves itself the way you would: a wind charge just before it lands, a water bucket, or the elytra again.
 - **Against you:** if you dive on a bot with a mace, it sidesteps, or raises its shield in time.
 
-\`mace.wind-jump\`, \`mace.elytra\` and \`mace.pearl-launch\` turn each move off, and \`mace.cooldown-seconds\` is the least time between mace attacks. \`mace.how-often\` sets how keen bots are on these moves: \`100\` is normal, \`50\` half as often, \`200\` twice as often (10 to 400). Normal pearl throws go by \`combat.pearl-cooldown-seconds\` instead.
+\`mace.wind-jump\`, \`mace.elytra\`, \`mace.elytra-combo\` and \`mace.pearl-launch\` turn each move off, and \`mace.cooldown-seconds\` is the least time between mace attacks. \`mace.how-often\` sets how keen bots are on these moves: \`100\` is normal, \`50\` half as often, \`200\` twice as often (10 to 400). Normal pearl throws go by \`combat.pearl-cooldown-seconds\` instead.
 
 ## Fighting back
 
@@ -285,14 +316,21 @@ It gets the shield up **in time**: about half a second before your swing is char
 - The jab, the charge and **Lunge** are all the game's own, so every spear and enchantment works as it does for you.
 - \`spear.charge: false\` turns charging off, and keeps the jabs.
 
+**Spear charges from the elytra.** With an **elytra and firework rockets** too, and elytra flying switched on, a spear bot charges from the air:
+
+- **You're on the ground:** it takes off, flies out and turns, then comes back in low and fast with the spear lowered. Then it pulls up and comes round for another pass, until its rockets run out (\`elytra.max-rockets\`), and lands beside you.
+- **You're flying:** it goes straight at you in the air with the spear lowered.
+- The damage comes from how fast it's going when the tip reaches you, so at elytra speed one hit can **pop a totem**, even through armour.
+- A bot with a **mace** dives with that instead. \`spear.elytra-charge: false\` turns spear charges from the elytra off.
+
 ## Elytra: chasing and air fights
 
 **Off for now:** turn it on with \`elytra.enabled: true\` (or for one bot, with **Elytra flying** in its settings). Then give a bot an **elytra and firework rockets** (anywhere in its inventory):
 
 - **Someone gets far away** (more than 24 blocks): it puts the elytra on, takes off, crosses to them on rockets, and glides down to land beside them. Its chestplate goes back on, and it fights on foot.
-- **Someone flies off on an elytra:** it goes after them in the air, leading where they're going, and hits them mid-flight with its weapon.
+- **Someone flies off on an elytra:** it goes after them in the air, leading where they're going, and hits them mid-flight with its weapon. A bot with a spear charges them with it. See Spears.
 - It levels off before the ground, so it lands without fall damage.
-- A **mace** bot dives on you from the elytra instead. See Mace.
+- A **mace** bot dives on you from the elytra instead. See Mace. A **spear** bot makes spear runs at you. See Spears.
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -417,7 +455,9 @@ Bot gear wears out and breaks like yours. A bot wearing **Mending** gear, with *
 
 - \`gear.mending-throw-speed\` (\`0.5\`): how hard it throws each bottle.
 - \`gear.mending-throw-angle\` (\`45\`): how far down it throws. \`0\` is straight ahead, \`90\` is at its feet.
-- \`gear.repair-after-fight-seconds\` (\`30\`): a bot standing about gets its gear back to full this long after its last fight. A bot that never fought, like a practice dummy, always has full gear.` },
+- \`gear.repair-after-fight-seconds\` (\`30\`): a bot standing about gets its gear back to full this long after its last fight. A bot that never fought, like a practice dummy, always has full gear.
+
+A bot mends until its Mending gear is back above 60%, or it runs out of bottles (20 seconds at most), backing off from you while it does. Hurt, it eats a gapple first, then goes back to the bottles. Bottles come in bursts with a short pause (\`gear.mending-burst\`).` },
   { id: "kits-and-saves", title: "Kits and saves", body:
 `\`/fb kits\` (or \`/fb saves\`) opens one screen, with **Kits** on one side and **Saves** on the other. Both hold up to five loadouts and survive restarts.
 
@@ -443,7 +483,9 @@ In the screen, click a kit, then click as many bots as you like. Each one drops 
 
 A save only remembers the settings you changed on that bot, so later config changes still reach everything else. Hover over a save to see which settings its bots spawn with.` },
   { id: "groups", title: "Groups", body:
-`A bot can be in one group at a time.
+`Bots **and players** can be in a group, one group at a time; adding one that's in another group moves it.
+
+**Teams.** Players in a group are on the team with its bots. In a group fight, the other side goes after them too, so 3 against 300 works: all 300 go after the 3. With \`groups.friendly-fire: false\` (the default), a bot never fights back against someone in its own group, player or bot. \`true\` lets teammates fight back.
 
 **Adding a bot to a group that's busy:** a free bot joins in with whatever the group is doing together: roaming, patrolling or a fight. A busy bot keeps at its own job and goes with the group's next order once it's free. With \`orders.must-stop-first: false\` it drops its job and joins in straight away. A bot can't join a group that the route it patrols is hunting.
 
@@ -451,14 +493,15 @@ A save only remembers the settings you changed on that bot, so later config chan
 |---|---|
 | \`/fb groups\` | Opens the groups screen. |
 | \`/fb groupcreate <name>\` | Makes a group. |
-| \`/fb groupadd <group> <bot>\` | Puts a bot in it. |
-| \`/fb groupremove <group> <bot>\` | Takes a bot out. |
+| \`/fb groupadd <group> <bot\\|player>\` | Puts a bot, or an online player, in it. |
+| \`/fb groupadd <group> --all\` | Puts every bot in it. |
+| \`/fb groupremove <group> <bot\\|player>\` | Takes a bot or a player out. |
 | \`/fb groupdel <group>\` | Deletes a group. Its bots are freed. |
 | \`/fb grouplist [group]\` | Lists groups, or one group's members. In game, this opens the screen. |
 | \`/fb groupcheck <bot>\` | Which group a bot is in. |
 | \`/fb groupchange <group> <new name>\` | Renames a group. |
 
-Groups keep their names across restarts, but they start empty, because bots don't survive a restart.
+Groups keep their names across restarts. Bots that come back after a restart are back in their group; players have to be added again.
 
 ## Group fights
 
@@ -511,7 +554,7 @@ A patrol walks a route and goes after **that route's targets**, and only those. 
 
 | Setting | What bots wear |
 |---|---|
-| \`random\` | FightBot's own skins: a list built into FightBot, plus real names with their own skins that it finds by itself. Downloaded from Mojang, so the server needs internet. There's nothing else to do. See Names with their own skins. |
+| \`random\` | FightBot's own skins: about 970 that come in the jar already signed (ready at once, nothing to download), a few looked up from Mojang, and real names with their own skins that it finds by itself. There's nothing else to do. See Names with their own skins. |
 | \`folder\` | Your own skin images. Put skin \`.png\` files (64×64, or old-style 64×32) in \`plugins/FightBot/skins/\`. |
 | \`mojang\` | The skins of real accounts. List their usernames under \`identity.skin-names\`. |
 | \`none\` | Plain Steve and Alex. This is the default. |
@@ -525,7 +568,7 @@ Minecraft only shows a skin that Mojang has signed. In \`folder\` mode, FightBot
 The free service takes a few images at a time. **When the console says the service asked FightBot to wait, that's normal.** Nothing is broken and there's nothing to do. FightBot waits for as long as it's asked, then carries on by itself until every image is signed, with a line like \`Signed skin 4 of 12\` for each one. If the service stays busy for a very long time, FightBot takes a break and signs the rest on the next restart or \`/fb reload\`.
 
 - Until the first image is signed, new bots look like Steve or Alex. After that, each new bot wears one of the images signed so far.
-- A bot keeps the skin it spawned with.
+- A bot keeps the skin it spawned with. One that comes back after a restart gets a new skin if its old one isn't from the current \`skin-source\`.
 - Want it faster? Get a free API key at [mineskin.org](https://mineskin.org) and put it in \`identity.skin-api-key\`.
 - If an image can't be signed, FightBot names it and says why. The usual reason is that it isn't a real 64×64 skin. Fix or remove the image, then \`/fb reload\`.
 - Added images while the server is running? Run \`/fb reload\`.
@@ -536,7 +579,7 @@ Already have signed skin data? Save it as a small \`.yml\` file in the skins fol
 
 With \`skin-source: random\`, FightBot finds more skins by itself. **While nobody is on your server** (bots don't count), every 10 seconds it:
 
-1. Makes up a few names, the same way it makes up bot names.
+1. Makes up a few names, the same way it makes up bot names (\`jake2011\`, \`SleepyPanda\`...).
 2. Asks Mojang which of them are real accounts, and what they wear.
 3. **No account, no skin, or one of the game's default skins** (Steve, Alex and the other seven)? It skips the name. A skin worn by lots of accounts is skipped too.
 4. **A skin of its own?** It keeps the name and its skin.
@@ -546,9 +589,12 @@ Then, with \`name-source: random\` (the default), **new bots get those names, ea
 - It keeps at most one name each time, so up to 360 an hour. Fewer when the names it tries have no skin of their own.
 - Everything it finds is kept in \`skins/cache/names.txt\`, so no name is checked twice. Delete the file to start over.
 - Until some are found, new bots get a made-up name and one of the built-in skins.
-- \`/fb skins\` shows how many it has found and what it's doing.
+- Names found by 5.20.3 and older came from the old Minecraft-themed made-up names (\`BlockBuddy22\`, \`CreeperKidYT\`). Bots don't get those names any more, but their skins are still worn. They don't count towards \`max\`, and they make room for new ones once it's reached.
+- **The console says when it finds some:** the first one straight away, then one line every 10 minutes at most (*"Found 8 more names with their own skin (42 in all)."*).
+- \`/fb skins\` shows how many it has found, how many are new since the server started, and what it's doing. If it's waiting for players to leave, it says who's on.
 - These are real people's names and skins. If the real owner joins your server, the bot steps aside, the same as with any other name.
 - Rather not see a certain skin? Add it to \`identity.skip-skins\`: the long code at the end of its \`textures.minecraft.net\` address, or the whole address.
+- **\`/fb skins names\`** lists every name it found, with a click-to-copy button, and saves them all to \`skins/found-names.txt\`.
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -559,13 +605,21 @@ Then, with \`name-source: random\` (the default), **new bots get those names, ea
 
 \`skin-source: name\` from 5.18.0 is now part of \`random\`. An old config is switched over by itself, and the names it found are kept.
 
+## Capes
+
+Minecraft only shows real capes, ones Mojang gave an account, so a cape can't be made from a picture. Bots wear capes that **come with a borrowed skin**: built-in skins, found names (\`random\`) and \`skin-names\` accounts (\`mojang\`) that had a cape on.
+
+- \`identity.capes.enabled\` (\`true\`): capes at all.
+- \`identity.capes.chance\` (\`30\`): how many bots in 100 wear one, as near as the skins it has allow.
+- \`/fb skins\` shows how many found names have a cape.
+
 \`mojang\` and \`random\` mode download skins in the background the same way. The first bots after a fresh start may look plain for a moment. Mojang also asks for a short wait sometimes, and that's normal too.` },
   { id: "names", title: "Names", body:
 `Choose how \`--random\` names are made with \`identity.name-source\`:
 
 | Setting | Names |
 |---|---|
-| \`random\` | Made-up, player-style names, like \`BlockRunner42\`. This is the default. |
+| \`random\` | Made-up names that look like real players' names, like \`jake2011\`, \`SleepyPanda\`, \`itz_ava\` or \`NoahPlays\`. Never a short "rare" name. This is the default. |
 | \`file\` | Picked from \`botnames.yml\`. |
 | \`numbers\` | Numbered names, from \`identity.number-format\`. |
 
@@ -596,7 +650,7 @@ FightBot notes this in the console the first time it happens.` },
 `FightBot checks what's installed at startup and says, in the console, anything that affects bots.
 
 - **AuthMe:** bots can't type a password, so FightBot logs its own bots in as they join. It only does this for bots, and no AuthMe accounts are made. A name that has an AuthMe account belongs to a real player, so it can't be used for a bot.
-- **nLogin:** nLogin only lets in names that have an account, so as each bot joins, FightBot gives it a throwaway nLogin account with a long random password that nobody is ever told, and logs it in. The account is deleted once the bot leaves. If the server stops with bots online, their accounts are deleted the next time it starts (\`plugins/FightBot/nlogin-bot-accounts.txt\` keeps track). A name that already has an nLogin account belongs to a real player, so it's never used for a bot.
+- **nLogin:** nLogin sets each player up while they connect, and a bot never connects the way a player does, so nLogin can't log it in. Instead, as each bot joins, FightBot puts its name on nLogin's list of names that skip the login (\`limbo.unrestricted.nicknames\`, which nLogin has for plugins that make players). The name is only in nLogin's memory, never written to its config, and it comes off the list when the bot leaves. Nothing goes into nLogin's accounts. A name that already has an nLogin account belongs to a real player, so it's never used for a bot. Tested with nLogin 2.0.24.
 - **SimpleLogin:** bots can't type a password, so FightBot marks its own bots logged in as they join, and takes off the blindness and frozen walking speed SimpleLogin puts on new players. Nothing goes into SimpleLogin's accounts. SimpleLogin keeps accounts by player ID, and a bot's ID is FightBot's own, so a bot can never use a real player's account.
 - **Other login plugins** (LoginSecurity, LibreLogin and others): these hold players who haven't logged in, and bots can't log in. If bots won't fight, that's why.
 - **PacketEvents** (on its own or inside GrimAC): it tries to kick players whose connection it can't hook, and bots have none. FightBot stops that kick, for bots only.
@@ -605,7 +659,8 @@ FightBot notes this in the console the first time it happens.` },
 - **Anticheats:** they judge players by what their game sends, and bots have no game. If one kicks a bot, FightBot says why.
 - **PvP turned off** in a world: FightBot warns at startup and when a bot's hits don't land.
 - **LuckPerms:** see LuckPerms below.
-- **Simple Voice Chat:** bots can talk. See [Voice lines](#voice-lines-simple-voice-chat).
+- **Simple Voice Chat:** bots can talk, and answer you with AI. See [Voice lines](#voice-lines-simple-voice-chat) and [AI voice chat](#ai-voice-chat).
+- **Emotecraft** and **Customizable Player Models:** emotes and models on bots. See [Emotes and player models](#emotes-and-player-models).
 - **PlugManX** and \`/reload\`: see [Reloading FightBot](#reloading-fightbot-plugmanx-reload) below.
 
 ## LuckPerms
@@ -621,7 +676,14 @@ Settings:
 - \`luckperms.group\` puts every bot in a LuckPerms group while it's here, on top of its own groups. Use it for a \`[Bot]\` prefix, or for permissions only bots should have. Make the group first with \`/lp creategroup bot\`. It's kept in memory only, never saved.
 - \`luckperms.enabled: false\` turns all of this off.
 
-If a bot is spawned with the name of someone LuckPerms already knows, \`/lp user <name>\` still means that player, not the bot.` },
+If a bot is spawned with the name of someone LuckPerms already knows, \`/lp user <name>\` still means that player, not the bot.
+
+**Selling longer AI chats:** chats with bots have no limit by default. Give \`fightbot.ai.limited\` to the players who should get \`ai.limited-replies\` answers (2), and take it off a rank you sell:
+
+\`\`\`
+/lp group default permission set fightbot.ai.limited true
+/lp group vip permission set fightbot.ai.limited false
+\`\`\`` },
   { id: "voice-lines-simple-voice-chat", title: "Voice lines (Simple Voice Chat)", body:
 `With the **Simple Voice Chat** plugin on the server, bots show up in voice chat like players, and they talk. Players hear them with the voice chat mod, coming from the bot, and can turn bots up or down with the **FightBot** slider in voice chat's volume settings. Without Simple Voice Chat, nothing changes. \`/fb vc\` shows whether it's working.
 
@@ -630,10 +692,10 @@ If a bot is spawned with the name of someone LuckPerms already knows, \`/lp user
 | | In voice chat | Says lines? |
 |---|---|---|
 | \`talks\` | Connected | Yes |
-| \`muted\` | Voice chat turned off (the crossed-out icon) | No |
+| \`deafened\` | Voice chat turned off (the crossed-out speaker) | No |
 | \`no-mod\` | Doesn't have the mod (the disconnected icon) | No |
 
-Change one bot with \`/fb vc presence <bot> <talks|muted|no-mod>\`. A bot with voice chat turned off, or without the mod, stays quiet like a player would, even when you tell it to say something.
+Change one bot with \`/fb vc presence <bot> <talks|deafened|no-mod>\`. A deafened bot, or one without the mod, stays quiet like a player would, even when you tell it to say something. (Voice Chat has no muted-microphone icon it can show above other players, so a quiet bot shows as deafened.) A bot wearing a CPM model always shows as connected and stays quiet - see Player models.
 
 **FightBot's own lines.** These come in the jar, and bots say them by themselves. Anyone can also play them with \`/fb vc <name>\`:
 
@@ -653,18 +715,67 @@ More come with updates. Each bot speaks in one voice, so it always sounds like t
 |---|---|---|
 | \`voice.enabled\` | \`true\` | Bots in voice chat at all. |
 | \`voice.on-their-own\` | \`true\` | Bots say FightBot's lines by themselves. \`false\`: only when played with \`/fb vc\`. |
-| \`voice.presence.talks\` / \`muted\` / \`no-mod\` | \`50\` / \`20\` / \`30\` | How bots show up, as chances. |
+| \`voice.presence.talks\` / \`deafened\` / \`no-mod\` | \`50\` / \`20\` / \`30\` | How bots show up, as chances. (\`muted\` from 6.0.0's test builds moves over by itself.) |
 | \`voice.distance\` | \`0\` | How far away bots are heard, in blocks. 0 is voice chat's own distance. |
 | \`voice.volume\` | \`1.0\` | How loud bots are (0.5 = half, 2.0 = twice). Every line is evened out to the same loudness first, so loud recordings don't blare. Players also get a FightBot slider in voice chat. |
 | \`voice.triggers.<what>\` | | \`enabled\`, \`chance\` (a % of each line's own odds: 100 = as set, 200 = twice as often) and \`cooldown\` (seconds) for each moment a bot talks about. |
 | \`voice.custom.enabled\` | \`true\` | Whether files added to the server can be played at all. |` },
+  { id: "ai-voice-chat", title: "AI voice chat", body:
+`Talk to a bot in Simple Voice Chat and it answers out loud, in a word or two ("Hi", "Good"), then gets back to fighting. It only answers greetings and short questions - no small talk. It uses your own key with an AI company: **Groq** (the default - it has a free plan), **Google Gemini** or **OpenAI**.
+
+**Setting it up (Groq):**
+
+1. Make a key at **console.groq.com** (API Keys > Create API Key).
+2. In \`config.yml\`: \`ai.enabled: true\`, \`ai.provider: groq\`, and the key in \`ai.api-key\`. The web editor can switch AI chat on, but it never shows or sets the key: that only ever goes in the file on your own server.
+3. \`/fb reload\`, then \`/fb ai\`: it should say **listening**.
+
+**Talking to a bot:** stand within 8 blocks (\`ai.range\`), look at it and say something short. Only bots that talk in voice chat answer (\`/fb vc presence <bot> talks\`), and not ones wearing a CPM model. The first time a player is near one, they're told that what they say to it goes to the AI company. Nothing else they say is used.
+
+| Setting | Default | What it does |
+|---|---|---|
+| \`ai.enabled\` | \`false\` | AI chat at all. |
+| \`ai.provider\` | \`groq\` | \`groq\`, \`gemini\` or \`openai\`. |
+| \`ai.api-key\` | | Your key from that company. Never shown or set from the web editor - put it in \`config.yml\` yourself. |
+| \`ai.model\`, \`ai.listen-model\`, \`ai.speak-model\`, \`ai.voice\` | blank | Blank: FightBot's defaults. Groq: \`openai/gpt-oss-20b\` thinks, \`whisper-large-v3-turbo\` listens, \`canopylabs/orpheus-v1-english\` talks in the voice \`autumn\`. |
+| \`ai.range\` | \`8\` | How close you stand, facing the bot (2-32 blocks). |
+| \`ai.replies\` | \`0\` | Answers per chat. \`0\`: no limit. |
+| \`ai.limited-replies\` | \`2\` | For players with \`fightbot.ai.limited\` (see LuckPerms). |
+| \`ai.words\` | \`3\` | Longest answer, in words (1-12). |
+| \`ai.chat-again-minutes\` | \`5\` | After this long, a new chat can start. |
+| \`ai.max-per-hour\` | \`120\` | Answers a server gives an hour at most (\`0\`: no limit). |
+
+When the key hits its limit, bots just stop answering and fight; FightBot pauses and tries again later. **\`/fb ai\`** shows whether it's listening, which bots can answer, the last thing it heard and the last answer. **\`/fb ai watch\`** shows each step live in your chat while you test - *hearing you*, what the AI heard, what the bot says, or why nothing happened. With debug on, every step goes in the debug log too.` },
+  { id: "emotes-and-player-models", title: "Emotes and player models", body:
+`Two mods that change how players look. Each needs its plugin on the server **and** the mod in the player's game - players without the mod see an ordinary bot.
+
+## Emotes
+
+With **Emotecraft** on the server, bots play emotes when you tell them to:
+
+| Command | What it does |
+|---|---|
+| \`/fb emote\` | Every emote bots can play. |
+| \`/fb emote <bot\\|--all\\|--group <group>> <emote>\` | Plays an emote. |
+| \`/fb emote <bot\\|--all\\|--group <group>> --stop\` | Stops it. |
+
+Put emote files (\`.json\` or \`.emotecraft\`) in \`plugins/FightBot/emotes/\` and \`/fb reload\`, or upload them in the web editor. An emote is named after its file. A bot told to fight stops its emote. \`emotes.enabled: false\` turns this off.
+
+## Player models
+
+With **Customizable Player Models** (CPM) on the server, each new bot wears one of the models in \`plugins/FightBot/models/\` at random. Put \`.cpmmodel\` files there and \`/fb reload\`, or upload them in the web editor.
+
+- \`identity.models.enabled\` (\`true\`) and \`identity.models.chance\` (\`100\`, how many bots in 100 wear one).
+- **A \`.cpmproject\` isn't a model.** It's the CPM editor's save file, which is how a lot of models are shared. Open it in the CPM editor (in game: **Open Skin Editor**), then File > Export with **Export mode: Model**, and use the \`.cpmmodel\` it makes.
+- **Bots wearing a model stay quiet in voice chat.** Right now the Simple Voice Chat and CPM mods crash a player's game when Voice Chat draws its icon above someone wearing a model, so those bots show as connected (no icon) and never speak. \`identity.models.voice-safe: false\` turns this off, once both mods have fixed it.
+- Turning models off with \`/fb reload\` takes them off the bots already wearing one.` },
   { id: "the-web-editor", title: "The web editor", body:
 `Change FightBot from your browser instead of the server files. Type \`/fb web\` in game (or the console) and click the link - it takes about 5 seconds to make (up to 30 on a slow connection). The editor at fightmc.xyz lets you:
 
 - **change any setting**, with each one explained, and saves and reloads it for you
 - **see the bots that are on**, with their health, what they're doing, their group and where, and stop or remove them
 - **run the bots**: make them fight, roam or patrol, groups, kits, and each bot's own settings (new bots are only spawned in game)
-- **upload skins** and **voice lines**
+- **upload skins**, **voice lines**, **emotes** and **player models**, and play emotes on bots
+- put bots **and players** in groups, or every bot at once
 - **read the debug logs**, follow one live, or download it
 
 **On a network** (Velocity or BungeeCord), each server still has its own editor with \`/fb web\`. Or type **\`/fbp web\` on the proxy** for one link that covers every server: the editor shows a server picker at the top, and each server's own editor opens from there. Anyone with that link can change FightBot on every server, so it's only given to people with \`fightbot.proxy\`. \`/fbp web stop\` closes all of it.
@@ -674,6 +785,7 @@ How it stays safe:
 - **The link is the key.** Anyone with it can change FightBot on your server, so don't share it. It stops working after \`web.idle-minutes\` unused (30), after \`web.max-hours\` (4), or when you type \`/fb web stop\`. \`/fb web new\` makes a fresh one.
 - **Nothing to open up on your server.** Your server and the page both connect out to a relay, and everything between them is encrypted with a key that's only in your link. The relay can't read any of it.
 - **Only FightBot's own things.** The editor can't run commands or touch other files, and every change is checked like a config edit. Everyone with \`fightbot.use\` is told in chat what was changed from the web, and by whose link.
+- **Slow from far away?** When the link opens, FightBot times the relay. Over 700 ms a message, it tells you in game, and the console always says how fast it was.
 - \`web.read-only: true\` lets the editor look at everything but change nothing. \`web.enabled: false\` turns it off. It needs the \`fightbot.web\` permission (ops have it).` },
   { id: "networks-velocity-and-bungeecord", title: "Networks: Velocity and BungeeCord", body:
 `## New to proxies?
@@ -801,8 +913,10 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`combat.axe.crit-chance\` | \`0.80\` | How often a bot jumps for a crit with an axe. |
 | \`combat.miss-chance\` | \`0.08\` | How often a swing misses, mostly at the edge of reach. |
 | \`combat.reaction.min-ticks\` / \`max-ticks\` | \`3\` / \`7\` | How long a bot takes to react to someone stepping into reach. |
-| \`mace.enabled\` | \`false\` | Mace combat: wind jumps, pearl launches and elytra dives. See Mace. |
+| \`mace.enabled\` | \`true\` | Mace combat: wind jumps, pearl launches and elytra dives. See Mace. |
 | \`mace.how-often\` | \`100\` | How keen bots are on the mace moves. \`50\` is half as often, \`200\` twice (10 to 400). |
+| \`mace.elytra-combo\` | \`true\` | After a Wind Burst smash: the elytra back on, a rocket, and another dive. See Mace. |
+| \`spear.elytra-charge\` | \`true\` | Spear charges from the elytra (needs \`elytra.enabled\` too). See Spears. |
 | \`orders.must-stop-first\` | \`true\` | A busy bot turns down a new order until it's stopped. \`false\`: new orders take over. |
 | \`gear.mending-throw-speed\` / \`mending-throw-angle\` | \`0.5\` / \`45\` | How hard and how far down bots throw XP bottles. See Wear and mending. |
 | \`gear.repair-after-fight-seconds\` | \`30\` | How long after a fight a bot standing about gets its gear back to full. |
@@ -814,7 +928,7 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`mining.enabled\` | \`false\` | Breaking blocks in the way with a pickaxe. |
 | \`head-movement.natural\` | \`false\` | \`true\` turns the head at a person's pace, with a little aim drift. |
 | \`ping.enabled\` | \`true\` | A realistic, wandering ping in the tab list. |
-| \`death.leave-message\` / \`sound\` | \`true\` | The "left the game" line and the death boom. |
+| \`death.leave-message\` / \`sound\` | \`true\` | The "left the game" line when a bot dies (sent like a player's) and the death boom. |
 | \`reload.keep-bots\` | \`true\` | Bots come back after a plugin reload, doing what they were. |
 | \`restart.keep-bots\` / \`max-bots\` | \`true\` / \`100\` | Bots come back after a server restart, where they stood. See Server restarts. |
 | \`luckperms.enabled\` / \`group\` | \`true\` / \`""\` | LuckPerms data for bots, and a group for every bot. |
@@ -828,12 +942,39 @@ Don't delete your config when you update. FightBot notices it came from an older
 Building is always a last resort. A bot looks for stairs, slopes and ways round first.
 
 - **Pillaring** (on by default): when you're above it and there's no way up, it crouches, jumps and places blocks under itself until it's level with you.
+- **Stuck down a pit or below a ledge:** it gets out the way you would. It throws an ender pearl up onto your level (landing on top of a block, not against the side), throws a wind charge under its feet, or walks to the side nearest you and builds up against it.
 - **Bridging** (off by default): when there's a gap or water in the way and no way round, it bridges across.
 
 \`building.blocks\` lists what they build with. Each bot picks one when it spawns.` },
   { id: "problems-and-answers", title: "Problems and answers", body:
-`**The skin signing service is "busy", or asked FightBot to wait.**
+`**My game crashes when a bot with a model is near.**
+That's the Simple Voice Chat and Customizable Player Models mods together: Voice Chat crashes drawing its icon above anyone wearing a CPM model. From 6.0.0, bots wearing a model never show an icon (\`identity.models.voice-safe\`), so update FightBot. A real player wearing a model can still set it off; that's for the mods to fix.
+
+**A bot doesn't answer when I talk to it.**
+Type \`/fb ai watch\`, then talk to it again. No *hearing you* at all: voice chat isn't sending your voice, so check your microphone in Voice Chat's settings. Otherwise it says why: not facing a bot that can answer, the bot is deafened or wears a model, the chat's over, or an error from the AI company. \`/fb ai\` shows whether it's listening at all.
+
+**The AI says Groq wants the terms accepted.**
+On console.groq.com, open the Playground, pick \`canopylabs/orpheus-v1-english\` and accept its terms. FightBot tries again by itself every 2 minutes.
+
+**My \`.cpmproject\` file does nothing.**
+It's the CPM editor's save file, not a model. Export it as a model first. See Player models.
+
+**Emotes or models don't show.**
+You need the mod in your own game, as well as the plugin on the server. If the console says *"Client doesn't support emotes"* when you join, Emotecraft in your game didn't connect - usually your game is on a different Minecraft version than the server.
+
+**The skin signing service is "busy", or asked FightBot to wait.**
 That's normal. FightBot waits and carries on by itself. \`/fb skins\` shows progress. See About signing.
+
+**"Found names" isn't going up, or nothing shows in the console.**
+- It only looks **while nobody is on the server** (bots don't count). \`/fb skins\` says who it's waiting for. To keep looking with players on, set \`identity.find-skins.only-when-empty: false\`.
+- It's slow on purpose, to stay inside Mojang's limits: at most one name every 10 seconds, so give it a few minutes.
+- Hiding the player count in the server list ("???") doesn't affect it.
+
+**Bot names look weird or fake.**
+Fixed in 5.20.4: made-up names look like real players' names (\`jake2011\`, \`SleepyPanda\`, \`itz_ava\`). Want your own? Set \`identity.name-source: file\` and list them in \`botnames.yml\`.
+
+**"No skin for 'TongZesu': no Minecraft account has that name."**
+Fixed in 5.20.3. TongZesu was one of FightBot's built-in skins, and that account no longer exists. Nothing was wrong with your config.
 
 **Bots look like Steve.**
 Type \`/fb skins\`. It tells you what's missing. The usual causes:
@@ -871,7 +1012,7 @@ Type \`/fb vc\`. Simple Voice Chat has to be on the server, and only bots that "
 FightBot tells you why in chat, and how to fix it on your version. Usually PvP is off, you're in creative, or a plugin such as WorldGuard blocks PvP there.
 
 **"X left the game" shows twice (or more) when a bot dies.**
-Fixed in 5.16.8: a bot that dies shows one "left the game" line, or none with \`death.leave-message: false\`.
+Fixed in 5.20.2: a bot that dies leaves once, the way a player does. You get one "left the game", or none with \`death.leave-message: false\`, and plugins that change or hide leave messages treat it like a player's. This includes servers with a plugin that kicks players when they die.
 
 **Bots stop at a river.**
 Fixed in 5.16.8: bots going after someone swim across. Free roamers stay on dry land on purpose.
