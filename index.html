@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Paper Fight Bot — PvP combat bots for Paper</title>
-<meta name="description" content="Real server-side player bots that path to you, crit, dodge, totem, pearl and clutch. Paper 1.20.5+, or a fork like Purpur. Free on Modrinth.">
+<meta name="description" content="Real server-side player bots that path to you, crit, dodge, totem, pearl and clutch. Paper 1.20.5+ or Spigot 26.1+. Free on Modrinth.">
 <meta property="og:title" content="Paper Fight Bot — PvP combat bots for Paper">
-<meta property="og:description" content="Real server-side player bots that path to you, crit, dodge, totem, pearl and clutch. Paper 1.20.5+, or a fork like Purpur. Free on Modrinth.">
+<meta property="og:description" content="Real server-side player bots that path to you, crit, dodge, totem, pearl and clutch. Paper 1.20.5+ or Spigot 26.1+. Free on Modrinth.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://fightmc.xyz/">
 <meta property="og:image" content="https://fightmc.xyz/assets/banner.png">
@@ -51,7 +51,7 @@
       <div class="stat"><dt data-downloads>1.2K</dt><dd>downloads</dd></div>
       <div class="stat"><dt>0</dt><dd>other plugins needed</dd></div>
       <div class="stat"><dt>200</dt><dd>bots from one command</dd></div>
-      <div class="stat"><dt>1.20.5+</dt><dd>Paper, or a fork like Purpur</dd></div>
+      <div class="stat"><dt>2</dt><dd>builds: Paper and Spigot</dd></div>
     </dl>
   </div>
 </section>
@@ -69,11 +69,11 @@
       </a>
       <a class="card" href="faq.html">
         <h3>FAQ</h3>
-        <p>Versions, dependencies, how many bots your server can take, and whether it works on Spigot.</p>
+        <p>Which build to download, how many bots your server can take, and what a bot can fight with.</p>
       </a>
       <a class="card" href="ai.html">
         <h3>Bots that talk back</h3>
-        <p>New in <span data-version>6.0.0</span>: say something to a bot in voice chat and it answers out loud. Ten minutes to set up.</p>
+        <p>New in 6.0.0: say something to a bot in voice chat and it answers out loud. Ten minutes to set up.</p>
       </a>
       <a class="card" href="editor/">
         <h3>The web editor</h3>
@@ -114,6 +114,14 @@
         <p>Armour and weapons take damage and break like yours. A bot in Mending gear with bottles o&rsquo; enchanting <em>throws them down and picks up the XP</em>, exactly the way you would.</p>
       </div>
       <div class="spec-row">
+        <h3>Crystal PvP</h3>
+        <p>Obsidian down, a crystal on top, and hit it &mdash; several times a second, for fast&#8209;crystal servers. Before each one it works out what the blast does to you <em>and to itself</em>, after armour, and takes the one that hurts you most for the least to it. It never sets off the one that would kill it.</p>
+      </div>
+      <div class="spec-row">
+        <h3>Cart PvP</h3>
+        <p>A cobweb to hold you, a rail laid beside you, a TNT minecart on it, and a burning arrow into the cart. <em>Every step is the game&rsquo;s own</em>, so the blast is a real one &mdash; give your bots totems.</p>
+      </div>
+      <div class="spec-row">
         <h3>Cobwebs</h3>
         <p>Places webs on you to lock you down, and knows how to get out of yours.</p>
       </div>
@@ -134,6 +142,14 @@
         <p>With Simple Voice Chat on the server, bots show up in voice chat like players and say lines when they join, start a fight, win one or go down. Add your own sounds too.</p>
       </div>
       <div class="spec-row">
+        <h3>Do exactly this</h3>
+        <p>&#8203;<span class="cmd">/fightbot action</span> gives you one move at a time &mdash; jump, crouch, left&#8209;click, right&#8209;click, walk, sprint, turn &mdash; with <em>nothing automatic</em>, so it bumps into walls and walks off ledges like a player would. For scripted scenes, that is the point.</p>
+      </div>
+      <div class="spec-row">
+        <h3>In formation</h3>
+        <p>&#8203;<span class="cmd">/fightbot march</span> lines them up in rows behind you and keeps them there as you walk, eyes left or eyes right. <span class="cmd">/fightbot surround</span> puts them in a ring. A bot that gets hit fights back, <em>then takes its place again</em>.</p>
+      </div>
+      <div class="spec-row">
         <h3>Settings menu</h3>
         <p>&#8203;<span class="cmd">/fightbot settings</span> opens a screen of every bot's head. Click one to change how that bot fights, hand it gear, or clone it, without touching the config.</p>
       </div>
@@ -143,15 +159,15 @@
       </div>
       <div class="spec-row">
         <h3>Give it anything</h3>
-        <p>Only armour, offhand and weapon have fixed slots. Everything else goes anywhere — an axe for shields, food, cobwebs, pearls, a water bucket, a mace, wind charges, an elytra. <em>The bot finds what it is carrying and uses it.</em></p>
+        <p>Only armour, offhand and weapon have fixed slots. Everything else goes anywhere — an axe for shields, food, cobwebs, pearls, a water bucket, a mace, wind charges, an elytra, a bow, TNT minecarts, end crystals. <em>The bot finds what it is carrying and uses it.</em></p>
       </div>
       <div class="spec-row">
         <h3>Change it from your browser</h3>
-        <p>&#8203;<span class="cmd">/fightbot web</span> hands you a link to <a href="editor/">the editor</a> on this site: every setting explained, the bots that are on, groups, kits, skins and voice lines, and the debug logs. <em>Nothing on your server gets opened up</em> &mdash; both ends dial out, and the key lives in the link.</p>
+        <p>&#8203;<span class="cmd">/fightbot web</span> hands you a link to <a href="editor/">the editor</a> on this site: every setting explained, the bots that are on, groups, kits, skins, emotes, models and voice lines, and the debug logs. <em>Nothing on your server gets opened up</em> &mdash; both ends dial out, and the key lives in the link.</p>
       </div>
       <div class="spec-row">
         <h3>Networks</h3>
-        <p>The same jar goes on a Velocity or BungeeCord proxy. Bots count in the player count, &#8203;<span class="cmd">/fbp</span> runs commands on any server from the proxy, and <em>a bot can walk to another server</em> with its gear, health and skin. Kits, skins and voice lines can be shared, and one editor link covers the whole network.</p>
+        <p>The Paper build&rsquo;s jar goes on a Velocity or BungeeCord proxy as well. Bots count in the player count, &#8203;<span class="cmd">/fbp</span> runs commands on any server from the proxy, and <em>a bot can walk to another server</em> with its gear, health and skin. Kits, skins and voice lines can be shared, and one editor link covers the whole network.</p>
       </div>
       <div class="spec-row">
         <h3>They come back</h3>
@@ -163,11 +179,11 @@
       </div>
       <div class="spec-row">
         <h3>What it needs</h3>
-        <p>Paper <span data-tested>1.20.5+</span>, or a fork like Purpur. Nothing else to install. Spigot, CraftBukkit and Folia are not supported, and FightBot says so at startup rather than half working.</p>
+        <p>Paper <span data-tested>1.20.5+</span>, or a fork like Purpur. Nothing else to install. <em>Spigot and CraftBukkit 26.1+ work too</em>, with the separate FightBot for Spigot build &mdash; same features, same config, same Modrinth page. Folia is not supported, and FightBot says so at startup rather than half working.</p>
       </div>
       <div class="spec-row">
         <h3>What it can use</h3>
-        <p>All optional, and each needs the plugin on the server and the mod in a player&rsquo;s game: <b>Simple Voice Chat</b> for bots that talk and answer you, <b>Emotecraft</b> for emotes, <b>Customizable Player Models</b> for models. A <b>Velocity or BungeeCord proxy</b> takes the same jar.</p>
+        <p>All optional, and each needs the plugin on the server and the mod in a player&rsquo;s game: <b>Simple Voice Chat</b> for bots that talk and answer you, <b>Emotecraft</b> for emotes, <b>Customizable Player Models</b> for models. A <b>Velocity or BungeeCord proxy</b> takes the Paper build&rsquo;s jar too.</p>
       </div>
     </div>
   </div>
@@ -175,16 +191,17 @@
 
 <section>
   <div class="wrap">
-    <h2>Being worked on</h2>
-    <p class="lede" style="margin-bottom:30px">Discord hears about these first.</p>
+    <h2>Off until you ask for them</h2>
+    <p class="lede" style="margin-bottom:30px">Nothing here changes your server until you turn it on.
+      Crystal PvP was the last thing still shelved, and it came back on in 6.0.11.</p>
     <div class="grid two">
       <div class="card">
-        <h3>Crystal PvP</h3>
-        <p>The one thing still switched off. It is being reworked and comes back in a later update. Everything else that was shelved &mdash; the mace, roaming, patrols &mdash; is back and working.</p>
+        <h3>Spears and elytra</h3>
+        <p>Both are finished and both are off by default. <span class="cmd">spear.enabled</span> gives you 2&#8209;to&#8209;4&#8209;block jabs and charges; <span class="cmd">elytra.enabled</span> has bots fly after you, fight in the air, and &mdash; with a spear &mdash; make runs at you from above.</p>
       </div>
       <div class="card">
-        <h3>Spears and elytra, to try</h3>
-        <p>Both are in and both are off by default, so nothing changes until you want it. Turn on <span class="cmd">spear.enabled</span> for 2&#8209;to&#8209;4&#8209;block jabs and charges, or <span class="cmd">elytra.enabled</span> to have bots fly after you &mdash; and, with a spear, make runs at you from the air.</p>
+        <h3>Changing your world</h3>
+        <p>Bridging (<span class="cmd">building.bridge</span>) and mining (<span class="cmd">mining.enabled</span>) are off, because both place or break blocks. Pillaring is on, and with <span class="cmd">building.only-own-blocks</span> a bot only builds with blocks you gave it.</p>
       </div>
     </div>
   </div>

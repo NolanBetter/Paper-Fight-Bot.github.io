@@ -1,7 +1,7 @@
 /* Paper Fight Bot. Change CONFIG and every page follows. */
 
 const CONFIG = {
-  version:  "6.0.0",
+  version:  "6.0.11",
   downloads: "1.2K",
   minecraft: "1.20.5+",
   modrinth: "https://modrinth.com/plugin/paper-fight-bot",

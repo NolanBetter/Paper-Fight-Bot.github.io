@@ -13,11 +13,27 @@ export const DEFAULT_FAQ = [
 
 3.17.1 and older ran bots as disguised zombies, so those need [LibsDisguises](https://www.spigotmc.org/resources/libs-disguises-free.81/). That is the version to use if your server is below 1.20.5.` },
   { id: "platforms", q: "What can I run it on?",
-    a: `**Paper 1.20.5 or newer, or a fork like Purpur.** Nothing else.
+    a: `**Paper 1.20.5 or newer**, or a fork like Purpur \u2014 that is the ordinary build.
 
-Spigot, CraftBukkit and Folia are not supported. FightBot checks at startup and says so in the console rather than half working.` },
-  { id: "why", q: "Why Paper and not Spigot?",
-    a: `Bots are real server side players now, not mobs wearing a disguise. They have real hitboxes, real physics, and every other plugin on your server sees them as players. They even show in the tab list with a realistic ping. That needs Paper's API.` },
+**Spigot and CraftBukkit 26.1 or newer** work too, from 6.0.9, with the separate **FightBot for Spigot** build.
+Both come out together with the same features, commands and config, from the same Modrinth page: the Spigot
+one's versions end in \`-spigot\`.
+
+Folia is not supported, and Spigot or CraftBukkit older than 26.1 cannot host bots. FightBot checks at startup
+and says so in the console rather than half working \u2014 and the Paper build on a Spigot server tells you to
+get the other one.` },
+  { id: "why", q: "Which build do I download?",
+    a: `**Paper, Purpur or another Paper fork:** the ordinary one, whose version is a plain number like
+\`6.0.11\`.
+
+**Spigot or CraftBukkit (26.1 and up):** the one ending in \`-spigot\`.
+
+Both are on the same Modrinth page and come out together. Pick the wrong one and FightBot says so at startup
+instead of half working, and if it is downloading updates for you it swaps in the right build at the next
+restart.
+
+Either way bots are **real server-side players**, not mobs in a disguise: real hitboxes, real physics, a place
+in the tab list with a realistic ping, and every other plugin on your server sees them as players.` },
   { id: "cost", q: "Does it cost anything?",
     a: `No. It is free on Modrinth.` },
   { id: "howmany", q: "How many bots can I run at once?",
@@ -26,8 +42,8 @@ Spigot, CraftBukkit and Folia are not supported. FightBot checks at startup and 
     a: `Yes. Put them in groups and use \`/fightbot groupfight <group> <target>\`, or set two groups on one another. Good for watching what a loadout actually does.` },
   { id: "gearmid", q: "Can I change their gear while they are fighting?",
     a: `No. The bot is moving items between its hands the whole time, so its inventory is closed while it fights. Run \`/fightbot stop <bot>\` first, then right click it in creative or use **Open gear** in its settings menu.` },
-  { id: "missing", q: "Where did crystal PvP go?",
-    a: `It is switched off while it is reworked, and comes back in a later update. Roaming and patrolling are back as of 5.17.0 \u2014 see [the wiki](wiki.html).` },
+  { id: "missing", q: "Can bots do crystal PvP?",
+    a: `Yes, from **6.0.11**, and it is on by default. Give a bot end crystals and obsidian (it uses obsidian or bedrock that is already there too) and within 5 blocks it places, hits and blows them the way a crystal player does \u2014 several a second, which suits fast-crystal servers (\`crystal.per-second\`).\n\nBefore each one it works out what the blast would do to its target and to itself, after armour and enchantments, and picks the spot that hurts them most for the least to it. It never sets one off that would kill it without a totem in hand. Give it armour and totems \u2014 crystals hurt both sides, and a bot with no armour will not crystal at all.\n\nRoaming and patrols, which were shelved alongside it, came back in 5.17.0.` },
   { id: "mace", q: "Does the mace work?",
     a: `Yes, and from 6.0.0 it is **on by default**. A config from before that is switched on once when it updates; turn it off after that and it stays off (\`mace.enabled\`, or **Mace** in one bot's settings).
 
@@ -95,6 +111,9 @@ enchantment works.
 - **Mace** (on from 6.0.0): wind jumps, pearl launches, and elytra dives that come round again after every Wind Burst smash.
 - **Spear** (off, 1.21.11 and up): it keeps 2 to 4 blocks off, jabs, and now and then lowers it and charges.
 - **Elytra** (off): it flies after anyone who gets far away, and fights in the air.
+- **Cart PvP** (on): TNT minecarts, rails, cobwebs and a bow. It webs you where you stand, lays a rail and a
+cart beside you, and shoots a burning arrow into it.
+- **Crystal PvP** (on from 6.0.11): end crystals and obsidian, placed and set off several times a second.
 
 Gear wears out and breaks like yours, and a bot with Mending gear and bottles o' enchanting mends itself.` },
   { id: "aichat", q: "Can I talk to the bots?",
@@ -121,6 +140,18 @@ have that mod.
 capes that come with a borrowed skin — about 30 in 100 do (\`identity.capes\`).
 
 **Skins:** about 970 come built into 6.0.0, already signed, ready the moment the server starts.` },
+  { id: "puppet", q: "Can I make a bot do exactly what I want?",
+    a: `From 6.0.11 there are two ways.
+
+**One move at a time.** \`/fightbot action <bot> <action>\` does the things a player does: \`jump\`,
+\`crouch\`, \`left-click\`, \`right-click\`, \`walk [forward|back|left|right] [seconds]\`, \`sprint\`,
+\`stop\` and \`turn\`. Nothing is automatic: walking is like holding a key down, so it bumps into walls and
+walks off ledges exactly as you would. Good for scripted scenes and recordings.
+
+**In formation.** \`/fightbot march <bot|--all|--group red> [player] [left|straight|right]\` lines bots up in
+rows behind you and keeps them there as you walk, with "eyes left" or "eyes right" if you want a parade.
+\`/fightbot surround\` puts them in a ring around you instead. A bot that gets hit fights back, then takes
+its place again. The spacing is all in \`formation.*\`.` },
   { id: "proxy", q: "Does it work on a network with a proxy?",
     a: `Yes, from 5.18.0. Put the same jar in your Velocity or BungeeCord proxy's \`plugins\` folder as well, and
 the servers link up to it by themselves. Only the servers you want bots on need FightBot.
@@ -136,22 +167,25 @@ On Velocity with modern forwarding there is nothing to set up. Otherwise paste t
 
 export const DEFAULT_WIKI = [
   { id: "requirements", title: "Requirements", body:
-`FightBot adds PvP bots to your Paper server. Each bot is a real server-side player: it has a real hitbox, real physics and a spot in the tab list, and every other plugin sees it as a player. Bots fight with swords, axes, shields, totems, pearls, cobwebs, water buckets and potions. They can also walk routes, patrol an area and fight in teams.
+`FightBot adds PvP bots to your Paper or Spigot server. Each bot is a real server-side player: it has a real hitbox, real physics and a spot in the tab list, and every other plugin sees it as a player. Bots fight with swords, axes, shields, totems, pearls, cobwebs, water buckets, potions, bows, TNT minecarts and end crystals. They can also walk routes, patrol an area and fight in teams.
 
 > **New here? In game, type \`/fb guide\`.** It walks you through everything below, one short step at a time.
 
-| FightBot version | Minecraft | Needs |
+| FightBot build | Minecraft | Needs |
 |---|---|---|
-| Newer than 3.17.1 | 1.20.5 and up | Paper, or a fork like Purpur. Nothing else. |
+| FightBot (the Paper build), newer than 3.17.1 | 1.20.5 and up | Paper, or a fork like Purpur. Nothing else. |
+| FightBot for Spigot (\`-spigot\` versions, 6.0.9 and up) | 26.1 and up | Spigot or CraftBukkit. Nothing else. |
 | 3.17.1 and older | 1.16 and up | LibsDisguises |
+
+Both builds come out together, with the same features, commands and config. They're published on the same Modrinth page: the Spigot build's versions end in \`-spigot\`. Each release is tested on every supported version.
 
 Optional: **Simple Voice Chat**, for bots that talk (5.17.2 and up) and answer you with AI (6.0.0). See [Voice lines](#voice-lines-simple-voice-chat) and [AI voice chat](#ai-voice-chat).
 
 Optional: **Emotecraft** and **Customizable Player Models**, for emotes and models on bots (6.0.0). See [Emotes and player models](#emotes-and-player-models).
 
-Optional: a **Velocity or BungeeCord proxy** (5.18.0 and up). The same jar goes on the proxy too. See [Networks](#networks-velocity-and-bungeecord).
+Optional: a **Velocity or BungeeCord proxy** (5.18.0 and up). The Paper build's jar goes on the proxy too. See [Networks](#networks-velocity-and-bungeecord).
 
-Spigot, CraftBukkit and Folia aren't supported. If one of those is your server, FightBot says so in the console at startup instead of half-working. If your server is older than 1.20.5, use 3.17.1 with LibsDisguises.` },
+Folia isn't supported, and Spigot or CraftBukkit older than 26.1 can't host bots (their internal names are scrambled). The Paper build on a Spigot server says to use FightBot for Spigot instead. Whatever the reason, FightBot says so in the console at startup instead of half-working. If your server is older than 1.20.5, use 3.17.1 with LibsDisguises.` },
   { id: "quick-start", title: "Quick start", body:
 `1. Put the jar in \`plugins/\` and start the server.
 2. In game, type \`/fb spawn\`. A bot appears where you're standing.
@@ -186,7 +220,8 @@ Rather click than type? \`/fb web\` gives you a link to change FightBot from you
 | \`/fb edit clone <bot> --random [count]\` | Up to 200 copies at once, with random names. |
 | \`/fb edit change <bot> <name\\|--random>\` | Renames a bot. |
 | \`/fb tp <bot\\|--all\\|--group <group>> <player\\|x y z>\` | Teleports bots. Sent to a player, they face the way that player faces. Sent to x y z, they face south. |
-| \`/fb look <bot\\|--all> <player\\|bot\\|--stop>\` | Bots watch someone until you say \`--stop\`, or until that player leaves or dies. A busy bot won't watch, so stop it first. |
+| \`/fb look <bot\\|--all> <player\\|bot\\|--stop>\` | Bots watch someone until you say \`--stop\`, or until that player leaves or dies. Busy bots watch too: roaming, marching, standing guard. Given another order, such as a fight, it looks at who it's fighting, then goes back to watching. \`/fb stop\` ends watching too. |
+| \`/fb action <bot\\|--all\\|--group <group>> <action>\` | The bot does what a player does with their keys and mouse. See Actions. |
 
 A bot never takes a name that belongs to someone else:
 
@@ -195,6 +230,53 @@ A bot never takes a name that belongs to someone else:
 - no banned name
 
 Player data is safe either way, because bots have IDs of their own. If a real player joins using a bot's name, the bot steps aside.
+
+## Actions
+
+\`/fb action <bot|--all|--group <group>> <action>\` makes bots do one thing a player does:
+
+| Action | What it does |
+|---|---|
+| \`jump\` | Jumps. |
+| \`crouch\` | Crouches. Again to stand up. |
+| \`left-click\` | A swing, hitting whatever it's looking at in reach. |
+| \`right-click\` | Uses the block it's looking at (a door, button, lever or chest), or else the item in its hand: a pearl or snowball thrown, food eaten, a bow drawn and shot, a shield raised. |
+| \`walk [forward\\|back\\|left\\|right] [seconds]\` | Walks that way, relative to where it faces (forward if you don't say), until \`stop\`, or for that many seconds. |
+| \`sprint [seconds]\` | Sprints forward. Sprinting only goes forward, as for a player; other directions walk. |
+| \`stop\` | Stops walking or sprinting. |
+| \`turn <left\\|right\\|around\\|degrees>\` | Turns it. Positive degrees turn right. |
+
+Walking and sprinting work like holding a key down: **nothing is automatic**. The bot doesn't step up blocks, stop at edges or go round anything. It bumps into walls and walks off ledges like a player would. Make it jump with \`/fb action <bot> jump\` while it moves, and a sprint plus a jump is a sprint-jump. Crouched, it crouch-walks; drawing a bow or eating slows it, like you. Speeds match a player's: about 4.3 blocks a second walking, 5.6 sprinting. \`/fb look\` or \`turn\` points it first, and \`/fb stop\` ends it.
+
+## Marching and surrounding
+
+| Command | What it does |
+|---|---|
+| \`/fb march <bot\\|--all\\|--group <group>> [player] [left\\|straight\\|right]\` | Bots march in rows behind you, or the player you name. Add \`left\` or \`right\` for "eyes left" or "eyes right". |
+| \`/fb surround <bot\\|--all\\|--group <group>> [player]\` | Bots stand in a ring round you, or the player you name. |
+| \`/fb march <…> --stop\` / \`/fb surround <…> --stop\` | Ends it. \`/fb stop\` does too. |
+
+**Marching:** behind you, the way you're walking, there's a gap (1 block), then the first row: one bot in the middle, one to its left and one to its right, shoulder to shoulder. The next row is straight behind it, and so on, so 7 bots make two full rows and one in the middle of a third. In a straight line the rows stay tight; when you turn, they swing round to their new places. Sprinting, the back rows trail a little (a bot can't go faster than you) and close up when you stop.
+
+**Where they look:** marching bots look at you (\`straight\`, the default). Add \`left\` or \`right\` and they turn their heads that way and a little up, like a parade's "eyes left", while they march straight on behind you: \`/fb march --all Nolan left\`. With no player named, you lead: \`/fb march --all right\`. Bots in a ring always look at you.
+
+**Surrounding:** an evenly spaced ring round you that follows you. With the radius left at \`0\`, the ring grows with the number of bots: 7 bots make a 2-block ring, 20 about 3 blocks.
+
+- A bot further than \`formation.teleport-distance\` (48 blocks) from its place, or in another world, is brought there.
+- It's a job, like roaming: a busy bot has to be stopped first (unless \`orders.must-stop-first\` is off). Bots already marching or surrounding can be switched straight to another formation, player or direction. A bot that's hit fights back, then takes its place again. If the player leaves, the bots wait where they are.
+
+| Setting | Default | What it does |
+|---|---|---|
+| \`formation.march.width\` | \`3\` | Bots side by side in each row (1 to 9). |
+| \`formation.march.gap\` | \`1\` | Empty blocks between you and the first row. |
+| \`formation.march.side-gap\` | \`0\` | Empty blocks between bots in a row. \`0\` is shoulder to shoulder. |
+| \`formation.march.row-gap\` | \`0\` | Empty blocks between one row and the next. |
+| \`formation.march.look-angle\` | \`45\` | Marching \`left\` or \`right\`: how far they turn their heads, in degrees (0 to 120). |
+| \`formation.march.look-up\` | \`10\` | Marching \`left\` or \`right\`: how far up they look, in degrees (-45 to 45). |
+| \`formation.surround.radius\` | \`0\` | \`0\`: the ring grows with the number of bots. Or a fixed radius, in blocks. |
+| \`formation.surround.spacing\` | \`1.0\` | Blocks from one bot to the next round the ring (radius \`0\`). |
+| \`formation.surround.min-radius\` | \`2.0\` | The smallest the ring gets (radius \`0\`). |
+| \`formation.teleport-distance\` | \`48\` | Further than this from its place, a bot is brought there. |
 
 ## Spawning somewhere else
 
@@ -240,6 +322,13 @@ Bots fight like a person, not a machine:
 - **A charged swing.** It waits for its weapon to charge up (the attack bar a player sees) before it swings, and times its crit jumps to come down just as it fills (\`combat.wait-for-charge\`). That matters most for slow weapons: a half-charged axe hit does far less.
 - **Hit them straight away.** A bot can be hit the moment it joins, teleports, pearls or changes world, like a player.
 
+## Moving like a player
+
+- **Sprint-jumping** (\`movement.sprint-jump\`): chasing someone on open, level ground, a bot sprint-jumps like a player, which is faster than running. Coming down from a jump, it lands critical hits.
+- **Gaps** (\`movement.jump-gaps\`): it jumps gaps up to 3 blocks wide, onto the same level or one block up, instead of placing blocks.
+- **A single missing block** in otherwise solid ground is walked round, not jumped. Trenches across its path are still jumped.
+- **Wider gaps** (\`movement.gap-blocks\`): chasing someone (or on a route that allows building), a bot crosses gaps of 4 to 12 blocks by placing blocks. Over 4, it sprint-jumps and puts a block down at the far end mid-jump to land on. Like a player, now and then it misses. On anything wider, it bridges out one block at a time until 3 are left, then jumps the rest. A bot roaming with no target never places blocks over gaps.
+
 ## Mace
 
 Mace combat is **on by default** from 6.0.0 (\`mace.enabled\`). A config from before 6.0.0 is switched on once, when it updates; turn it off after that and it stays off. One bot can be changed with **Mace** in its settings menu. The bot uses the game's own mace, wind charges, elytra and fireworks, so damage, Density, Breach and Wind Burst all work as they do for you.
@@ -247,11 +336,40 @@ Mace combat is **on by default** from 6.0.0 (\`mace.enabled\`). A config from be
 - **Wind jump** (mace + wind charges): close in, it throws a wind charge at its feet, flies up and smashes you on the way down. With Wind Burst it can bounce up and smash again (\`mace.wind-chain-max\`).
 - **Elytra dive** (mace + elytra + firework rockets): from further away (up to 72 blocks), it takes off, climbs and flies over you, swaps the elytra for its chestplate and drops onto you from about \`mace.dive-height\` blocks. It aims for where you'll be when it gets there, not where you were.
 - **Elytra combo** (the dive, with a **Wind Burst** mace): the first hit is the full flight - up, round and down. After every smash that lands, Wind Burst throws it up; at the top it puts the elytra on and fires a rocket **straight back down** at you, swapping to its chestplate at the last moment to smash again. That repeats until one misses. After a miss, it does the full flight again, until the rockets run out. \`mace.elytra-combo: false\` turns this off.
-- **Pearl launch** (mace + ender pearls + wind charges): it throws a pearl up and towards you, wind-charges itself up after it, rides the pearl and smashes down. Turn it off with \`mace.pearl-launch: false\`.
+- **Pearl launch** (mace + ender pearls + wind charges): from further off than a wind jump (about 7 to 22 blocks), it throws a pearl that lands right next to you, then wind-jumps from there and smashes down. Nothing but the game's own moves: the pearl takes it where it lands, like yours does. Turn it off with \`mace.pearl-launch: false\`.
 - **After a miss** with no rockets left, it saves itself the way you would: a wind charge just before it lands, a water bucket, or the elytra again.
-- **Against you:** if you dive on a bot with a mace, it sidesteps, or raises its shield in time.
+- **Against you** (\`combat.mace-defence\`, on by default): when you come down on a bot with a mace (a wind jump, a dive, a pearl in), it does something about it, but not every time, like a person. It gets its shield up in time, sprints out from under you and stays clear until you land (then comes for you), or pearls away. Now and then it doesn't react at all. It sees a mace on your hotbar too, so swapping to it at the last moment doesn't hide it.
 
 \`mace.wind-jump\`, \`mace.elytra\`, \`mace.elytra-combo\` and \`mace.pearl-launch\` turn each move off, and \`mace.cooldown-seconds\` is the least time between mace attacks. \`mace.how-often\` sets how keen bots are on these moves: \`100\` is normal, \`50\` half as often, \`200\` twice as often (10 to 400). Normal pearl throws go by \`combat.pearl-cooldown-seconds\` instead.
+
+## Cart PvP
+
+Give a bot **TNT minecarts, rails, cobwebs, arrows and a bow or crossbow**, plus **flint and steel** unless the bow has Flame (a crossbow can't have Flame, so it always needs flint and steel). Any rail works: plain, powered, detector or activator. Put them in the bot's **inventory**, not its hand. Close to its target (about 3 to 5 blocks), it does what a cart player does, quickly:
+
+1. A **cobweb** on them, so they're stuck.
+2. A **rail** right beside them, on its side, and a **TNT minecart** on the rail.
+3. With no Flame, **fire** on the ground just before the cart.
+4. A step back, then a **burning arrow** into the cart: a Flame bow lights its own arrow, otherwise the arrow catches fire going through the fire. The cart goes off.
+
+- A **crossbow** is kept loaded. It loads as the fight starts and again straight after each shot, so firing is a single click.
+- Every step is the game's own: the rail, cart and fire are placed by using the item on the block, the arrow comes from the real bow, and the game's explosion does the damage. A cart blast is big, for the bot too, so give it **totems** and good armour.
+- **Up close:** with its target right next to it, it cobwebs them where they stand, steps back to about 3 to 4 blocks, and goes from there. With no cobwebs it can't hold them, so it waits for a gap.
+- **Rain** puts a burning arrow out, as for anyone, so bots don't try carts in the rain.
+- It misses now and then, like a player, and has another go with a bow while the cart's still there.
+- \`cart.enabled\` turns it off, \`cart.cooldown\` (\`3\`) is the least time between carts in seconds, and **Cart PvP** in a bot's settings switches it for one bot.
+
+## Crystal PvP
+
+Give a bot **end crystals** and **obsidian** (it uses obsidian or bedrock that's already there too). Within \`crystal.range\` (5 blocks) of its target, it fights the way a crystal player does:
+
+- It puts obsidian down beside its target, places a crystal on top and hits it. Then the next one, several times a second.
+- Everything is the game's own: real placements, real hits and the game's real explosion, so armour, Blast Protection and totems all count.
+- Before each crystal it works out, the way the game does, how hard the blast would hit its target and itself: how far, and how much of each body the blast can see, after armour and enchantments. It picks the spot that hurts its target most for the least to itself.
+- It never sets one off that would kill it without a totem in its hand, or that would cost it more than \`crystal.max-self-damage\` health (unless that would finish its target). Low on health itself, it only takes crystals that cost it little, and eats a golden apple when it can.
+- It only places a crystal where it can also hit it (a player can place further than they can hit). If two in a row can't be set off, say because its target was knocked up out of the blast, it stops placing for a second instead of filling the ground with crystals.
+- Made for **fast-crystal servers**, where a crystal can be hit the moment it's placed: a place and a hit take two ticks. \`crystal.per-second\` (\`8\`) sets how fast it goes (1 to 20).
+- Give it **armour and totems**. Crystals hurt both sides, and a bot with no armour won't crystal at all, as nothing it could place would be worth it.
+- \`crystal.enabled\` turns it off, and **Crystal PvP** in a bot's settings switches it for one bot. A config from before 6.0.11 had crystals switched off while they were reworked; it's switched on once, when it updates.
 
 ## Fighting back
 
@@ -259,6 +377,10 @@ Bots fight back:
 
 - **Players:** when a player hits a bot, it hits back. This works whether the bot is standing about, roaming or patrolling. It never chases players in creative or spectator.
 - **Bots:** when another bot hits it **on purpose**, it hits back. A stray sword sweep meant for someone else doesn't count, so a crowd of bots stays on its target.
+
+**Caught off guard** (\`combat.first-hit-cap\`, \`50\`): a bot that isn't fighting anyone, and hasn't been hit for 15 seconds, can't lose more than half its health to the hit that starts a fight, a mace smash from the sky included. So it lives to fight back. Every hit after that is normal. Set the % it may lose (1 to 100); \`100\` turns this off.
+
+**One-hit players** (\`combat.one-hit-players\`, empty): player names listed here are killed by any hit from a bot, whatever the weapon. A bit of fun for a server's own players. Leave it empty for normal fights.
 
 Once that fight is over, the bot goes back to what it was doing. Turn either kind off in the config (\`combat.fight-back.players\` and \`combat.fight-back.bots\`), or for one bot in its settings menu. For practice dummies that just take hits, turn off \`players\`.
 
@@ -330,6 +452,7 @@ It gets the shield up **in time**: about half a second before your swing is char
 - **Someone gets far away** (more than 24 blocks): it puts the elytra on, takes off, crosses to them on rockets, and glides down to land beside them. Its chestplate goes back on, and it fights on foot.
 - **Someone flies off on an elytra:** it goes after them in the air, leading where they're going, and hits them mid-flight with its weapon. A bot with a spear charges them with it. See Spears.
 - It levels off before the ground, so it lands without fall damage.
+- **Won the fight in the air** (or told to stop)? It glides back down to where the fight was, circling down round the spot, and lands there with its chestplate back on, instead of drifting off. Stuck against a tree or a wall, it drops out of the glide and lands.
 - A **mace** bot dives on you from the elytra instead. See Mace. A **spear** bot makes spear runs at you. See Spears.
 
 | Setting | Default | What it does |
@@ -349,6 +472,7 @@ Give a bot a **bow or crossbow and some arrows** (anywhere in its inventory). It
 - It moves slowly while it draws, like you. When you come close, its weapon comes back out.
 - Its aim isn't perfect: it misjudges your speed a little and its hand isn't quite steady (\`ranged.aim-error\`).
 - Arrows it walks over go back in its inventory.
+- A bot carrying a cart PvP kit keeps its bow or crossbow for the carts.
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -356,6 +480,31 @@ Give a bot a **bow or crossbow and some arrows** (anywhere in its inventory). It
 | \`ranged.min-distance\` | \`8\` | Closer than this, it fights hand to hand. |
 | \`ranged.max-distance\` | \`40\` | Further than this, it doesn't shoot. |
 | \`ranged.aim-error\` | \`1.0\` | How unsteady its aim is, in degrees. \`0\` never misses a still target. |
+
+## Cobwebs
+
+Bots handle cobwebs like players do:
+
+- **Stuck in one**, a bot creeps at a quarter of its pace and can't jump out. Its water bucket washes out a web at its feet.
+- **No hitting through a cobweb.** A player's swing stops at the first block outline in the way: a cobweb, even one round your own head. Bots are the same. With a web in the way it **cuts it first**: about half a second with a sword or shears (it gets one out of its inventory if it has one), much longer by hand. Then it hits.
+- **Using them in a fight.** Give a bot cobwebs and it uses them now and then, like a good player (raise \`cobwebs.how-often\` for more):
+  - **Feet trap:** someone close (1 to 4 blocks) gets a cobweb at their feet. Stuck, they're slow and easy to hit.
+  - **Head trap:** straight after, one on top, round their head. They can't hit back until they cut it.
+  - **Ahead of runners:** one in the path of someone running off.
+  - **While healing:** one on someone chasing it while it backs off to heal.
+  - **Cutting itself free:** stuck in a cobweb with its target out of reach, it cuts its way out with a sword or shears.
+
+| Setting | Default | What it does |
+|---|---|---|
+| \`cobwebs.how-often\` | \`100\` | How keen bots are on cobwebs (10 to 400). \`100\` is now and then, \`50\` half as often. Above \`100\` a bot doesn't hold on to its webs: at \`200\` someone close gets webbed within about 2 seconds. |
+| \`cobwebs.cooldown-seconds\` | \`2\` | The least time between one cobweb and the next, at \`how-often: 100\`. |
+| \`cobwebs.trap-feet\` | \`true\` | Cobwebs at the feet of someone close. |
+| \`cobwebs.trap-head\` | \`true\` | Then one on their head. |
+| \`cobwebs.ahead-of-runners\` | \`true\` | Cobwebs in the way of someone running off. |
+| \`cobwebs.while-healing\` | \`true\` | Cobwebs on someone chasing it while it heals. |
+| \`cobwebs.cut-own\` | \`true\` | Cutting its way out of a cobweb it's stuck in. |
+
+The **Cobwebs** switch in each bot's settings turns all of this off for that bot.
 
 ## Knockback
 
@@ -401,6 +550,7 @@ Your \`config.yml\` sets how every bot behaves. These switches let one bot be di
 |---|---|
 | Ender pearls | Throwing pearls to chase and to escape. |
 | Cobwebs | Placing cobwebs to trap and slow players. |
+| Shield | Raising its shield to block hits. |
 | Shield breaking | Switching to an axe to break a raised shield. |
 | Water bucket | Washing out cobwebs and clutching big falls. |
 | Potions | Splashing potions for the buff. |
@@ -414,6 +564,8 @@ Your \`config.yml\` sets how every bot behaves. These switches let one bot be di
 | Bow & crossbow | Shooting players out of reach. |
 | Spear fighting | Jabbing and charging with a spear. |
 | Elytra flying | Flying after far-off players, and fighting in the air. |
+| Cart PvP | Cobwebbing players and blowing them up with a TNT minecart. |
+| Crystal PvP | Placing end crystals by players and setting them off. |
 
 - **Glowing means on.** Click to flip a switch.
 - **Right-click** hands a switch back to the server, so it follows \`config.yml\` again.
@@ -438,7 +590,7 @@ It's laid out like your own inventory:
 Only armour, the offhand and the weapon have fixed slots. Everything else can go **anywhere**, and the bot finds and uses what it carries:
 
 - an axe
-- food
+- food: eaten like a player eats it. Food fills its hunger, and the health comes back from that (fast while it's full up), so a hurt bot that isn't hungry heals by itself. In a fight it eats a golden apple first, for its effects; standing about, it saves them and eats ordinary food when it's hungry.
 - cobwebs
 - ender pearls
 - a water bucket
@@ -448,6 +600,8 @@ Only armour, the offhand and the weapon have fixed slots. Everything else can go
 - bottles o' enchanting, to mend Mending gear
 - a bow or crossbow, and arrows
 - a spear (it can be the weapon too)
+- TNT minecarts, rails and flint and steel, for cart PvP
+- end crystals and obsidian, for crystal PvP
 
 ## Wear and mending
 
@@ -481,7 +635,9 @@ In the screen, click a kit, then click as many bots as you like. Each one drops 
 | \`/fb save <1-5> [name\\|--random] [count]\` | Spawns bots from a save. |
 | \`/fb delsave <1-5>\` | Deletes a save. |
 
-A save only remembers the settings you changed on that bot, so later config changes still reach everything else. Hover over a save to see which settings its bots spawn with.` },
+A save only remembers the settings you changed on that bot, so later config changes still reach everything else. Hover over a save to see which settings its bots spawn with.
+
+**Potion effects:** saves and kits keep the bot's potion effects too, so a bot saved while invisible comes out invisible. Give the effect first, then save: \`/effect give <bot> invisibility infinite 0 true\` (\`true\` hides the particles), then \`/fb savegear <bot> 1\`. Effects keep their level and time left (or last forever, given with \`infinite\`). Bots also keep their effects over a restart or reload.` },
   { id: "groups", title: "Groups", body:
 `Bots **and players** can be in a group, one group at a time; adding one that's in another group moves it.
 
@@ -554,12 +710,16 @@ A patrol walks a route and goes after **that route's targets**, and only those. 
 
 | Setting | What bots wear |
 |---|---|
-| \`random\` | FightBot's own skins: about 970 that come in the jar already signed (ready at once, nothing to download), a few looked up from Mojang, and real names with their own skins that it finds by itself. There's nothing else to do. See Names with their own skins. |
+| \`random\` | **The default.** FightBot's own skins: about 970 that come in the jar already signed (ready at once, nothing to download), a few looked up from Mojang, and real names with their own skins that it finds by itself. There's nothing else to do. See Names with their own skins. |
 | \`folder\` | Your own skin images. Put skin \`.png\` files (64×64, or old-style 64×32) in \`plugins/FightBot/skins/\`. |
 | \`mojang\` | The skins of real accounts. List their usernames under \`identity.skin-names\`. |
-| \`none\` | Plain Steve and Alex. This is the default. |
+| \`none\` | Plain Steve and Alex. |
+
+\`random\` is the default from 6.0.1. A config still on \`none\`, the old default, is switched to \`random\` once when it updates. Set it back to \`none\` and it stays.
 
 **Type \`/fb skins\` in game at any time.** It shows your current setting, how many skins are ready, what's still in progress, and anything that went wrong.
+
+Skins work the same on both builds. On Spigot and CraftBukkit, the bot heads in the menus show each bot's skin too.
 
 ## About signing (the "wait" messages)
 
@@ -594,7 +754,7 @@ Then, with \`name-source: random\` (the default), **new bots get those names, ea
 - \`/fb skins\` shows how many it has found, how many are new since the server started, and what it's doing. If it's waiting for players to leave, it says who's on.
 - These are real people's names and skins. If the real owner joins your server, the bot steps aside, the same as with any other name.
 - Rather not see a certain skin? Add it to \`identity.skip-skins\`: the long code at the end of its \`textures.minecraft.net\` address, or the whole address.
-- **\`/fb skins names\`** lists every name it found, with a click-to-copy button, and saves them all to \`skins/found-names.txt\`.
+- **\`/fb skins names\`** lists every name it found, with a click-to-copy button (Paper build), and saves them all to \`skins/found-names.txt\`.
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -729,7 +889,7 @@ More come with updates. Each bot speaks in one voice, so it always sounds like t
 2. In \`config.yml\`: \`ai.enabled: true\`, \`ai.provider: groq\`, and the key in \`ai.api-key\`. The web editor can switch AI chat on, but it never shows or sets the key: that only ever goes in the file on your own server.
 3. \`/fb reload\`, then \`/fb ai\`: it should say **listening**.
 
-**Talking to a bot:** stand within 8 blocks (\`ai.range\`), look at it and say something short. Only bots that talk in voice chat answer (\`/fb vc presence <bot> talks\`), and not ones wearing a CPM model. The first time a player is near one, they're told that what they say to it goes to the AI company. Nothing else they say is used.
+**Talking to a bot:** stand within 8 blocks (\`ai.range\`), look at it and say something short. Only bots that talk in voice chat answer (\`/fb vc presence <bot> talks\`). With CPM on the server, bots stay quiet and don't answer (see Player models). The first time a player is near one, they're told that what they say to it goes to the AI company. Nothing else they say is used.
 
 | Setting | Default | What it does |
 |---|---|---|
@@ -766,7 +926,7 @@ With **Customizable Player Models** (CPM) on the server, each new bot wears one 
 
 - \`identity.models.enabled\` (\`true\`) and \`identity.models.chance\` (\`100\`, how many bots in 100 wear one).
 - **A \`.cpmproject\` isn't a model.** It's the CPM editor's save file, which is how a lot of models are shared. Open it in the CPM editor (in game: **Open Skin Editor**), then File > Export with **Export mode: Model**, and use the \`.cpmmodel\` it makes.
-- **Bots wearing a model stay quiet in voice chat.** Right now the Simple Voice Chat and CPM mods crash a player's game when Voice Chat draws its icon above someone wearing a model, so those bots show as connected (no icon) and never speak. \`identity.models.voice-safe: false\` turns this off, once both mods have fixed it.
+- **With CPM on the server, bots show no voice chat icon and stay quiet, by themselves.** Right now the Simple Voice Chat and CPM mods crash some players' games (Minecraft 26.3) when Voice Chat draws an icon above someone: any bot, wearing a model or not. So while CPM is on the server, every bot shows as connected to voice chat (no icon) and never speaks: no voice lines and no AI answers. \`/fb vc\` and \`/fb ai\` say so. Once both mods have fixed it, \`identity.models.voice-safe: false\` turns this off; each bot's own voice chat setting was kept for then.
 - Turning models off with \`/fb reload\` takes them off the bots already wearing one.` },
   { id: "the-web-editor", title: "The web editor", body:
 `Change FightBot from your browser instead of the server files. Type \`/fb web\` in game (or the console) and click the link - it takes about 5 seconds to make (up to 30 on a slow connection). The editor at fightmc.xyz lets you:
@@ -797,7 +957,7 @@ A proxy (Velocity or BungeeCord) is the **front door** of a network. Players con
 
 ## What it does
 
-Got a proxy in front of your servers? **Put the same FightBot jar in the proxy's \`plugins\` folder too.** It works on Velocity and BungeeCord, and their forks (like Waterfall). The servers link up to it by themselves. Then:
+Got a proxy in front of your servers? **Put the FightBot jar (the Paper build) in the proxy's \`plugins\` folder too.** It works on Velocity and BungeeCord, and their forks (like Waterfall). The servers link up to it by themselves. Then:
 
 - **Bots count as players** in the server list's player count, and show up in its hover list of names, alongside real players.
 - **Tab list** (Velocity only): bots on the other servers can show in everyone's tab list. Turn this on with \`tab-list: true\` in the proxy's FightBot config, if your network shows everyone in tab.
@@ -867,6 +1027,7 @@ Bots come back after a server restart too, and after a FightBot update, since th
 `When the server starts, and twice a day after, FightBot looks on Modrinth for the newest release made for your Minecraft version.
 
 - A newer one is downloaded into the server's update folder (\`plugins/update\`). FightBot checks it against Modrinth's checksum and makes sure it really is FightBot.
+- **It picks the right build for your server:** the Paper build on Paper and Purpur, FightBot for Spigot on Spigot and CraftBukkit. If the wrong build is installed, the right one is downloaded and swapped in at the next restart.
 - It goes in by itself the next time the server starts, or when FightBot is reloaded. Nothing changes while the server is running.
 - Admins (anyone with \`fightbot.use\`) are told in chat when they join, and the console says so too.
 - \`/fb update\` looks right away.
@@ -914,9 +1075,22 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`combat.miss-chance\` | \`0.08\` | How often a swing misses, mostly at the edge of reach. |
 | \`combat.reaction.min-ticks\` / \`max-ticks\` | \`3\` / \`7\` | How long a bot takes to react to someone stepping into reach. |
 | \`mace.enabled\` | \`true\` | Mace combat: wind jumps, pearl launches and elytra dives. See Mace. |
+| \`combat.first-hit-cap\` | \`50\` | The hit that starts a fight takes at most this % of a bot's health. \`100\`: off. See Fighting back. |
+| \`combat.one-hit-players\` | \`[]\` | Player names any bot kills in one hit, whatever the weapon. See Fighting back. |
+| \`combat.mace-defence\` | \`true\` | Bots do something about a mace coming down on them: a shield, out of the way, or a pearl away. See Mace. |
 | \`mace.how-often\` | \`100\` | How keen bots are on the mace moves. \`50\` is half as often, \`200\` twice (10 to 400). |
 | \`mace.elytra-combo\` | \`true\` | After a Wind Burst smash: the elytra back on, a rocket, and another dive. See Mace. |
 | \`spear.elytra-charge\` | \`true\` | Spear charges from the elytra (needs \`elytra.enabled\` too). See Spears. |
+| \`movement.sprint-jump\` | \`true\` | Sprint-jumping after players on open ground, and crits off the jump. See Moving like a player. |
+| \`movement.jump-gaps\` | \`true\` | Jumping gaps up to 3 blocks wide instead of placing blocks. |
+| \`movement.gap-blocks\` | \`true\` | Crossing gaps of 4 to 12 blocks by placing blocks, while after a target. |
+| \`cart.enabled\` / \`cooldown\` | \`true\` / \`3\` | Cart PvP, and the least seconds between carts. See Cart PvP. |
+| \`crystal.enabled\` | \`true\` | Crystal PvP. See Crystal PvP. |
+| \`crystal.per-second\` | \`8\` | Crystals placed and set off a second (1 to 20). Fast-crystal servers suit 8 and up. |
+| \`crystal.range\` | \`5\` | How close its target must be for crystals (3 to 8). |
+| \`crystal.max-self-damage\` | \`10\` | The most health one crystal may cost the bot (after armour), unless it would finish its target. |
+| \`formation.march.width\` / \`gap\` | \`3\` / \`1\` | Marching rows: bots across, and the gap behind you. See Marching and surrounding. |
+| \`formation.surround.radius\` | \`0\` | \`0\`: the ring grows with the bots. Or a fixed radius. |
 | \`orders.must-stop-first\` | \`true\` | A busy bot turns down a new order until it's stopped. \`false\`: new orders take over. |
 | \`gear.mending-throw-speed\` / \`mending-throw-angle\` | \`0.5\` / \`45\` | How hard and how far down bots throw XP bottles. See Wear and mending. |
 | \`gear.repair-after-fight-seconds\` | \`30\` | How long after a fight a bot standing about gets its gear back to full. |
@@ -925,6 +1099,9 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`web.enabled\` | \`true\` | The web editor (\`/fb web\`). |
 | \`building.pillar\` | \`true\` | Pillaring up to reach you. |
 | \`building.bridge\` | \`false\` | Bridging gaps and water. |
+| \`building.only-own-blocks\` | \`kit\` | Build only with blocks the bot carries. See Building. |
+| \`cobwebs.how-often\` / \`cooldown-seconds\` | \`100\` / \`2\` | How much bots use cobwebs. See Cobwebs. |
+| \`formation.march.look-angle\` / \`look-up\` | \`45\` / \`10\` | Marching eyes left or right: how far round and up. |
 | \`mining.enabled\` | \`false\` | Breaking blocks in the way with a pickaxe. |
 | \`head-movement.natural\` | \`false\` | \`true\` turns the head at a person's pace, with a little aim drift. |
 | \`ping.enabled\` | \`true\` | A realistic, wandering ping in the tab list. |
@@ -944,14 +1121,26 @@ Building is always a last resort. A bot looks for stairs, slopes and ways round 
 - **Pillaring** (on by default): when you're above it and there's no way up, it crouches, jumps and places blocks under itself until it's level with you.
 - **Stuck down a pit or below a ledge:** it gets out the way you would. It throws an ender pearl up onto your level (landing on top of a block, not against the side), throws a wind charge under its feet, or walks to the side nearest you and builds up against it.
 - **Bridging** (off by default): when there's a gap or water in the way and no way round, it bridges across.
+- **Gaps while chasing** (\`movement.gap-blocks\`, on): see Moving like a player.
 
-\`building.blocks\` lists what they build with. Each bot picks one when it spawns.` },
+**Only its own blocks** (\`building.only-own-blocks\`): a player can only build with blocks they're carrying, and bots can be the same. They use up the blocks they carry, and with none, they don't pillar, bridge or build over gaps; they go round or wait. Any full solid block works (not obsidian, TNT, or sand and gravel, which fall).
+
+| Value | What it does |
+|---|---|
+| \`kit\` (default) | Once a bot has been given anything (a kit, gear), it only builds with blocks it carries. A bot with an empty inventory builds as it always has. |
+| \`true\` | Always. A bot carrying nothing builds nothing. |
+| \`false\` | Never. Bots build without carrying blocks. |
+
+\`building.blocks\` lists what they build with (or prefer, carrying several). Each bot picks one when it spawns.` },
   { id: "problems-and-answers", title: "Problems and answers", body:
-`**My game crashes when a bot with a model is near.**
-That's the Simple Voice Chat and Customizable Player Models mods together: Voice Chat crashes drawing its icon above anyone wearing a CPM model. From 6.0.0, bots wearing a model never show an icon (\`identity.models.voice-safe\`), so update FightBot. A real player wearing a model can still set it off; that's for the mods to fix.
+`**My game crashes when a bot is near (with CPM on the server).**
+That's the Simple Voice Chat and Customizable Player Models mods together (Minecraft 26.3): Voice Chat crashes drawing its icon above someone. From 6.0.1, with CPM on the server, bots never show an icon and stay quiet (\`identity.models.voice-safe\`), so update FightBot. A real player can still set it off; that's for the mods to fix.
+
+**Bots stopped talking and answering.**
+CPM is on your server, so bots stay quiet: that keeps the Voice Chat and CPM mods from crashing players' games. \`/fb vc\` says so. Once both mods have fixed it, set \`identity.models.voice-safe: false\`.
 
 **A bot doesn't answer when I talk to it.**
-Type \`/fb ai watch\`, then talk to it again. No *hearing you* at all: voice chat isn't sending your voice, so check your microphone in Voice Chat's settings. Otherwise it says why: not facing a bot that can answer, the bot is deafened or wears a model, the chat's over, or an error from the AI company. \`/fb ai\` shows whether it's listening at all.
+Type \`/fb ai watch\`, then talk to it again. No *hearing you* at all: voice chat isn't sending your voice, so check your microphone in Voice Chat's settings. Otherwise it says why: not facing a bot that can answer, the bot is deafened, CPM is on the server (bots stay quiet), the chat's over, or an error from the AI company. \`/fb ai\` shows whether it's listening at all.
 
 **The AI says Groq wants the terms accepted.**
 On console.groq.com, open the Playground, pick \`canopylabs/orpheus-v1-english\` and accept its terms. FightBot tries again by itself every 2 minutes.
@@ -978,10 +1167,19 @@ Fixed in 5.20.3. TongZesu was one of FightBot's built-in skins, and that account
 
 **Bots look like Steve.**
 Type \`/fb skins\`. It tells you what's missing. The usual causes:
-- \`skin-source\` is still \`none\`
+- \`skin-source\` is \`none\`
 - the skins folder is empty
 - \`skin-names\` is empty
 - the skins are still signing
+
+**A bot never uses crystals.**
+It needs end crystals, obsidian (or obsidian or bedrock nearby) and a target within \`crystal.range\`. It also only places a crystal that hurts its target more than itself: with no armour, every crystal would cost it too much, so it doesn't crystal. Give it armour (Blast Protection helps) and totems. Check **Crystal PvP** in its settings and \`crystal.enabled\`.
+
+**A bot never uses carts.**
+It needs TNT minecarts, rails, arrows, and a bow or crossbow, plus flint and steel unless the bow has Flame (cobwebs help). It starts from about 3 to 5 blocks off, with room for a rail beside its target. It doesn't try in the rain, since rain puts burning arrows out. Check **Cart PvP** in its settings and \`cart.enabled\`.
+
+**Bots spawned near the world spawn instead of where I said (1.20.5 to 1.21.x).**
+Fixed in 6.0.10: bots appear exactly where they're spawned.
 
 **A server won't link to the proxy.**
 Type \`/fb network\` on that server. It says why. The usual causes:
@@ -1027,7 +1225,7 @@ It was killed, kicked or banned, and FightBot says which in chat. A name banned 
 That name was banned, perhaps by a death-ban plugin. Run \`/pardon <name>\`, or use another name.
 
 **The plugin loads, but bots won't spawn.**
-Check the console at startup. FightBot says whether your server can run bots and, if not, why. You need Paper 1.20.5 or newer.
+Check the console at startup. FightBot says whether your server can run bots and, if not, why. You need Paper 1.20.5 or newer with the Paper build, or Spigot or CraftBukkit 26.1 or newer with FightBot for Spigot.
 
 **A bot just stands there.**
 It hasn't been told to fight anyone. Try \`/fb fight <bot> <you>\`, or hit it. If it's chasing but stuck, it can't reach you. Pillaring gets it up to you. For gaps and water, turn on bridging.

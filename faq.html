@@ -54,12 +54,16 @@
       </details>
       <details>
         <summary>What can I run it on?</summary>
-        <p><strong>Paper 1.20.5 or newer, or a fork like Purpur.</strong> Nothing else.</p>
-<p>Spigot, CraftBukkit and Folia are not supported. FightBot checks at startup and says so in the console rather than half working.</p>
+        <p><strong>Paper 1.20.5 or newer</strong>, or a fork like Purpur — that is the ordinary build.</p>
+<p><strong>Spigot and CraftBukkit 26.1 or newer</strong> work too, from 6.0.9, with the separate <strong>FightBot for Spigot</strong> build. Both come out together with the same features, commands and config, from the same Modrinth page: the Spigot one&#39;s versions end in <code class="cmd">-spigot</code>.</p>
+<p>Folia is not supported, and Spigot or CraftBukkit older than 26.1 cannot host bots. FightBot checks at startup and says so in the console rather than half working — and the Paper build on a Spigot server tells you to get the other one.</p>
       </details>
       <details>
-        <summary>Why Paper and not Spigot?</summary>
-        <p>Bots are real server side players now, not mobs wearing a disguise. They have real hitboxes, real physics, and every other plugin on your server sees them as players. They even show in the tab list with a realistic ping. That needs Paper&#39;s API.</p>
+        <summary>Which build do I download?</summary>
+        <p><strong>Paper, Purpur or another Paper fork:</strong> the ordinary one, whose version is a plain number like <code class="cmd">6.0.11</code>.</p>
+<p><strong>Spigot or CraftBukkit (26.1 and up):</strong> the one ending in <code class="cmd">-spigot</code>.</p>
+<p>Both are on the same Modrinth page and come out together. Pick the wrong one and FightBot says so at startup instead of half working, and if it is downloading updates for you it swaps in the right build at the next restart.</p>
+<p>Either way bots are <strong>real server-side players</strong>, not mobs in a disguise: real hitboxes, real physics, a place in the tab list with a realistic ping, and every other plugin on your server sees them as players.</p>
       </details>
       <details>
         <summary>Does it cost anything?</summary>
@@ -78,8 +82,10 @@
         <p>No. The bot is moving items between its hands the whole time, so its inventory is closed while it fights. Run <code class="cmd">/fightbot stop &lt;bot&gt;</code> first, then right click it in creative or use <strong>Open gear</strong> in its settings menu.</p>
       </details>
       <details>
-        <summary>Where did crystal PvP go?</summary>
-        <p>It is switched off while it is reworked, and comes back in a later update. Roaming and patrolling are back as of 5.17.0 — see <a href="wiki.html" rel="noopener">the wiki</a>.</p>
+        <summary>Can bots do crystal PvP?</summary>
+        <p>Yes, from <strong>6.0.11</strong>, and it is on by default. Give a bot end crystals and obsidian (it uses obsidian or bedrock that is already there too) and within 5 blocks it places, hits and blows them the way a crystal player does — several a second, which suits fast-crystal servers (<code class="cmd">crystal.per-second</code>).</p>
+<p>Before each one it works out what the blast would do to its target and to itself, after armour and enchantments, and picks the spot that hurts them most for the least to it. It never sets one off that would kill it without a totem in hand. Give it armour and totems — crystals hurt both sides, and a bot with no armour will not crystal at all.</p>
+<p>Roaming and patrols, which were shelved alongside it, came back in 5.17.0.</p>
       </details>
       <details>
         <summary>Does the mace work?</summary>
@@ -129,7 +135,9 @@
 <p>Newer kit each has its own switch, in the config or in one bot&#39;s settings menu:</p>
 <ul><li><strong>Bow and crossbow</strong> (on by default): it shoots at anyone further off than 8 blocks, or somewhere it</li></ul>
 <p>cannot walk to. It allows for the drop and for where you are running, and the game does the shot, so every enchantment works.</p>
-<ul><li><strong>Mace</strong> (on from 6.0.0): wind jumps, pearl launches, and elytra dives that come round again after every Wind Burst smash.</li><li><strong>Spear</strong> (off, 1.21.11 and up): it keeps 2 to 4 blocks off, jabs, and now and then lowers it and charges.</li><li><strong>Elytra</strong> (off): it flies after anyone who gets far away, and fights in the air.</li></ul>
+<ul><li><strong>Mace</strong> (on from 6.0.0): wind jumps, pearl launches, and elytra dives that come round again after every Wind Burst smash.</li><li><strong>Spear</strong> (off, 1.21.11 and up): it keeps 2 to 4 blocks off, jabs, and now and then lowers it and charges.</li><li><strong>Elytra</strong> (off): it flies after anyone who gets far away, and fights in the air.</li><li><strong>Cart PvP</strong> (on): TNT minecarts, rails, cobwebs and a bow. It webs you where you stand, lays a rail and a</li></ul>
+<p>cart beside you, and shoots a burning arrow into it.</p>
+<ul><li><strong>Crystal PvP</strong> (on from 6.0.11): end crystals and obsidian, placed and set off several times a second.</li></ul>
 <p>Gear wears out and breaks like yours, and a bot with Mending gear and bottles o&#39; enchanting mends itself.</p>
       </details>
       <details>
@@ -144,6 +152,12 @@
 <p><strong>Emotes:</strong> with <a href="https://modrinth.com/plugin/emotecraft" rel="noopener">Emotecraft</a>, <code class="cmd">.json</code> or <code class="cmd">.emotecraft</code> files go in <code class="cmd">plugins/FightBot/emotes/</code>, and <code class="cmd">/fightbot emote &lt;bot&gt; &lt;name&gt;</code> plays one. Both are only seen by players who have that mod.</p>
 <p><strong>Capes:</strong> Minecraft only shows capes Mojang gave an account, so they cannot be made from a picture. Bots wear capes that come with a borrowed skin — about 30 in 100 do (<code class="cmd">identity.capes</code>).</p>
 <p><strong>Skins:</strong> about 970 come built into 6.0.0, already signed, ready the moment the server starts.</p>
+      </details>
+      <details>
+        <summary>Can I make a bot do exactly what I want?</summary>
+        <p>From 6.0.11 there are two ways.</p>
+<p><strong>One move at a time.</strong> <code class="cmd">/fightbot action &lt;bot&gt; &lt;action&gt;</code> does the things a player does: <code class="cmd">jump</code>, <code class="cmd">crouch</code>, <code class="cmd">left-click</code>, <code class="cmd">right-click</code>, <code class="cmd">walk [forward|back|left|right] [seconds]</code>, <code class="cmd">sprint</code>, <code class="cmd">stop</code> and <code class="cmd">turn</code>. Nothing is automatic: walking is like holding a key down, so it bumps into walls and walks off ledges exactly as you would. Good for scripted scenes and recordings.</p>
+<p><strong>In formation.</strong> <code class="cmd">/fightbot march &lt;bot|--all|--group red&gt; [player] [left|straight|right]</code> lines bots up in rows behind you and keeps them there as you walk, with &quot;eyes left&quot; or &quot;eyes right&quot; if you want a parade. <code class="cmd">/fightbot surround</code> puts them in a ring around you instead. A bot that gets hit fights back, then takes its place again. The spacing is all in <code class="cmd">formation.*</code>.</p>
       </details>
       <details>
         <summary>Does it work on a network with a proxy?</summary>

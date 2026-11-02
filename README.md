@@ -6,7 +6,7 @@ stylesheet, ES modules.
     index.html      home
     install.html    installation and first fight
     ai.html         setting up AI voice chat with Groq
-    wiki.html       the FightBot wiki, 6.0.0
+    wiki.html       the FightBot wiki, 6.0.11
     faq.html        common questions
     report.html     bug report form
     reports.html    your reports, and the reply threads
