@@ -11,6 +11,7 @@
   --ember:#e0342c;
   --grass:#5d8c3f;
   --gold:#c89b3c;
+  --yes:#86c552;   /* the green in the side-by-side tables: 9:1 on --pit */
 
   --display:"Pixelify Sans","Trebuchet MS",monospace;
   --body:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
@@ -405,3 +406,30 @@ html.locked{overflow:hidden}
 .lockband{background:var(--gold);color:#140f02;font-size:16.5px;padding:11px 18px;text-align:center;
   font-weight:500;position:relative;z-index:60}
 .lockband a{color:#140f02;text-decoration:underline}
+
+/* ---------- the side-by-side page ----------
+   Three columns of yes and no. The words carry the meaning, not the colour
+   alone, so it still reads with the colours off. */
+.grid.three{grid-template-columns:repeat(3,1fr)}
+@media(max-width:860px){.grid.three{grid-template-columns:1fr}}
+.cmp-who .card h3{color:#fff}
+.cmp-link{margin:14px 0 0}
+.cmp-link a{color:var(--iron);font-size:16px}
+
+table.cmp{font-size:16.5px}
+table.cmp th[scope=row]{text-align:left;color:#fff;font-weight:500;width:34%;min-width:230px}
+table.cmp thead th{color:var(--iron);font-family:var(--display);font-size:18px;white-space:nowrap}
+table.cmp td{vertical-align:top;width:22%}
+/* ours, picked out a little, since it is the one being measured */
+table.cmp td:first-of-type,table.cmp thead th:nth-child(2){background:#141119}
+table.cmp td.yes{color:var(--yes)}
+table.cmp td.no{color:var(--ash)}
+table.cmp td.dunno{color:var(--gold)}
+table.cmp td.yes::before{content:"\2713\00a0";font-weight:700}
+table.cmp td.no::before{content:"\2717\00a0";font-weight:700}
+table.cmp td.dunno::before{content:"?\00a0";font-weight:700}
+table.cmp td a{color:var(--iron)}
+/* the same three words, inline in the note above the tables */
+.note .yes{color:var(--yes);font-weight:500}
+.note .no{color:var(--ash);font-weight:500}
+.note .dunno{color:var(--gold);font-weight:500}

@@ -27,6 +27,7 @@
       <a href="install.html">Install</a>
       <a href="wiki.html">Wiki</a>
       <a href="faq.html">FAQ</a>
+      <a href="compare.html">Compare</a>
       <a href="report.html">Report</a>
       <a href="account.html">Account</a>
       <a href="#" data-modrinth>Download</a>
@@ -46,7 +47,7 @@
 <section class="tight">
   <div class="wrap">
     <div id="faqBody"><!-- faq:start -->
-<div class="qa">
+        <div class="qa">
       <details>
         <summary>Does it need any other plugins?</summary>
         <p>No, on anything newer than 3.17.1. It is one jar.</p>
@@ -55,7 +56,7 @@
       <details>
         <summary>What can I run it on?</summary>
         <p><strong>Paper 1.20.5 or newer</strong>, or a fork like Purpur — that is the ordinary build.</p>
-<p><strong>Spigot and CraftBukkit 26.1 or newer</strong> work too, from 6.0.9, with the separate <strong>FightBot for Spigot</strong> build. Both come out together with the same features, commands and config, from the same Modrinth page: the Spigot one&#39;s versions end in <code class="cmd">-spigot</code>.</p>
+<p><strong>Spigot and CraftBukkit 26.1 or newer</strong> work too, from 6.0.9, with the separate <strong>FightBot for Spigot</strong> build. Both come out together with the same features, commands and config, from the same Modrinth page: the Spigot one's versions end in <code class="cmd">-spigot</code>.</p>
 <p>Folia is not supported, and Spigot or CraftBukkit older than 26.1 cannot host bots. FightBot checks at startup and says so in the console rather than half working — and the Paper build on a Spigot server tells you to get the other one.</p>
       </details>
       <details>
@@ -89,7 +90,7 @@
       </details>
       <details>
         <summary>Does the mace work?</summary>
-        <p>Yes, and from 6.0.0 it is <strong>on by default</strong>. A config from before that is switched on once when it updates; turn it off after that and it stays off (<code class="cmd">mace.enabled</code>, or <strong>Mace</strong> in one bot&#39;s settings).</p>
+        <p>Yes, and from 6.0.0 it is <strong>on by default</strong>. A config from before that is switched on once when it updates; turn it off after that and it stays off (<code class="cmd">mace.enabled</code>, or <strong>Mace</strong> in one bot's settings).</p>
 <p>A bot with a mace and wind charges wind-jumps and smashes you on the way down. With an elytra and rockets it takes off, flies over you and dives — and with a Wind Burst mace, every smash throws it back up, the elytra goes on, and it rockets straight back down at you, again and again until it misses. If you dive on a bot, it sidesteps or gets its shield up.</p>
       </details>
       <details>
@@ -110,17 +111,17 @@
       </details>
       <details>
         <summary>Can I change settings without opening server files?</summary>
-        <p>Yes. Type <code class="cmd">/fightbot web</code> in game and open the link it gives you. It opens the <a href="#" rel="noopener">editor</a> on this site, where you can change any setting, run the bots that are already there — send them after someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot&#39;s own switches — upload skins and voice lines, and read the debug logs.</p>
+        <p>Yes. Type <code class="cmd">/fightbot web</code> in game and open the link it gives you. It opens the <a href="editor/" rel="noopener">editor</a> on this site, where you can change any setting, run the bots that are already there — send them after someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot's own switches — upload skins and voice lines, and read the debug logs.</p>
 <p>Making bots stays in game on purpose — FightBot refuses spawning, saves, and renaming or cloning from the web.</p>
 <p>Skins can be looked at properly: click one in the skins list and it turns into a model you can spin round, with the second layer on or off. From 6.0.0 there is an <strong>Emotes &amp; models</strong> tab too, for Emotecraft emotes (upload one, then play it on a bot, a group or every bot) and Customizable Player Models files.</p>
 <p>One thing the editor will not do: <strong>the AI key</strong>. It can switch AI chat on and change its settings, but the key itself is never shown there and cannot be set there — that only ever goes in <code class="cmd">config.yml</code> on your own server.</p>
-<p>On a network, <code class="cmd">/fbp web</code> on the proxy gives one link for every server at once: the editor puts a server picker at the top, and each server&#39;s own editor opens from there.</p>
+<p>On a network, <code class="cmd">/fbp web</code> on the proxy gives one link for every server at once: the editor puts a server picker at the top, and each server's own editor opens from there.</p>
 <p>The link is the key, so do not share it. It stops working after 30 minutes unused, after 4 hours, or when you type <code class="cmd">/fightbot web stop</code>. Nothing on your server has to be opened up, and everything between your server and the page is encrypted with a key that is only in the link.</p>
       </details>
       <details>
         <summary>Do the bots talk?</summary>
-        <p>With <a href="https://modrinth.com/plugin/simple-voice-chat" rel="noopener">Simple Voice Chat</a> on the server, yes. Bots show up in voice chat like players, and the ones that &quot;talk&quot; say lines by themselves when they join, start a fight, win one, get low or die.</p>
-<p>FightBot&#39;s own lines come in the jar: <code class="cmd">hello</code> and <code class="cmd">am_i_muted</code> as a bot joins, and <code class="cmd">grass</code> when a roaming bot pulls up grass. More come with updates, and <code class="cmd">voice.on-their-own: false</code> keeps bots quiet unless told.</p>
+        <p>With <a href="https://modrinth.com/plugin/simple-voice-chat" rel="noopener">Simple Voice Chat</a> on the server, yes. Bots show up in voice chat like players, and the ones that "talk" say lines by themselves when they join, start a fight, win one, get low or die.</p>
+<p>FightBot's own lines come in the jar: <code class="cmd">hello</code> and <code class="cmd">am_i_muted</code> as a bot joins, and <code class="cmd">grass</code> when a roaming bot pulls up grass. More come with updates, and <code class="cmd">voice.on-their-own: false</code> keeps bots quiet unless told.</p>
 <p>You can add your own <code class="cmd">.mp3</code> or <code class="cmd">.wav</code> files too. Those are <strong>never</strong> said by a bot on its own — only when someone types <code class="cmd">/fightbot vc &lt;name&gt;</code> — everyone nearby is told it is a file added by that server and who played it, and every play is logged.</p>
       </details>
       <details>
@@ -132,17 +133,17 @@
       <details>
         <summary>What can a bot fight with?</summary>
         <p>Give it the gear and it works out the rest. A sword or axe, a shield, a totem, pearls, cobwebs, a water bucket, splash potions, a pickaxe for mining and food to heal on.</p>
-<p>Newer kit each has its own switch, in the config or in one bot&#39;s settings menu:</p>
+<p>Newer kit each has its own switch, in the config or in one bot's settings menu:</p>
 <ul><li><strong>Bow and crossbow</strong> (on by default): it shoots at anyone further off than 8 blocks, or somewhere it</li></ul>
 <p>cannot walk to. It allows for the drop and for where you are running, and the game does the shot, so every enchantment works.</p>
 <ul><li><strong>Mace</strong> (on from 6.0.0): wind jumps, pearl launches, and elytra dives that come round again after every Wind Burst smash.</li><li><strong>Spear</strong> (off, 1.21.11 and up): it keeps 2 to 4 blocks off, jabs, and now and then lowers it and charges.</li><li><strong>Elytra</strong> (off): it flies after anyone who gets far away, and fights in the air.</li><li><strong>Cart PvP</strong> (on): TNT minecarts, rails, cobwebs and a bow. It webs you where you stand, lays a rail and a</li></ul>
 <p>cart beside you, and shoots a burning arrow into it.</p>
 <ul><li><strong>Crystal PvP</strong> (on from 6.0.11): end crystals and obsidian, placed and set off several times a second.</li></ul>
-<p>Gear wears out and breaks like yours, and a bot with Mending gear and bottles o&#39; enchanting mends itself.</p>
+<p>Gear wears out and breaks like yours, and a bot with Mending gear and bottles o' enchanting mends itself.</p>
       </details>
       <details>
         <summary>Can I talk to the bots?</summary>
-        <p>From 6.0.0, yes. With <a href="https://modrinth.com/plugin/simple-voice-chat" rel="noopener">Simple Voice Chat</a> on the server, stand within 8 blocks of a bot, look at it and say something short — it answers out loud in a word or two (&quot;Hi&quot;, &quot;Good&quot;) and then gets back to fighting. No small talk.</p>
+        <p>From 6.0.0, yes. With <a href="https://modrinth.com/plugin/simple-voice-chat" rel="noopener">Simple Voice Chat</a> on the server, stand within 8 blocks of a bot, look at it and say something short — it answers out loud in a word or two ("Hi", "Good") and then gets back to fighting. No small talk.</p>
 <p>It uses <strong>your own key</strong> with Groq (free plan), Google Gemini or OpenAI, so it costs whatever they charge. <a href="ai.html" rel="noopener">Setting it up</a> takes about five minutes.</p>
 <p>The key goes in <code class="cmd">config.yml</code> on your server and nowhere else — this site will not show it or set it. Players are told, the first time they are near a bot that answers, that what they say to it goes to that company. Nothing else they say is used.</p>
       </details>
@@ -157,15 +158,37 @@
         <summary>Can I make a bot do exactly what I want?</summary>
         <p>From 6.0.11 there are two ways.</p>
 <p><strong>One move at a time.</strong> <code class="cmd">/fightbot action &lt;bot&gt; &lt;action&gt;</code> does the things a player does: <code class="cmd">jump</code>, <code class="cmd">crouch</code>, <code class="cmd">left-click</code>, <code class="cmd">right-click</code>, <code class="cmd">walk [forward|back|left|right] [seconds]</code>, <code class="cmd">sprint</code>, <code class="cmd">stop</code> and <code class="cmd">turn</code>. Nothing is automatic: walking is like holding a key down, so it bumps into walls and walks off ledges exactly as you would. Good for scripted scenes and recordings.</p>
-<p><strong>In formation.</strong> <code class="cmd">/fightbot march &lt;bot|--all|--group red&gt; [player] [left|straight|right]</code> lines bots up in rows behind you and keeps them there as you walk, with &quot;eyes left&quot; or &quot;eyes right&quot; if you want a parade. <code class="cmd">/fightbot surround</code> puts them in a ring around you instead. A bot that gets hit fights back, then takes its place again. The spacing is all in <code class="cmd">formation.*</code>.</p>
+<p><strong>In formation.</strong> <code class="cmd">/fightbot march &lt;bot|--all|--group red&gt; [player] [left|straight|right]</code> lines bots up in rows behind you and keeps them there as you walk, with "eyes left" or "eyes right" if you want a parade. <code class="cmd">/fightbot surround</code> puts them in a ring around you instead. A bot that gets hit fights back, then takes its place again. The spacing is all in <code class="cmd">formation.*</code>.</p>
+      </details>
+      <details>
+        <summary>Can bots turn up by themselves, like players joining?</summary>
+        <p>Yes, from 6.0.15, and it is <strong>off by default</strong> so nothing changes until you want it. With <code class="cmd">joining.enabled: true</code>, every so often a bot joins the way a player does — the real "X joined the game" line — at the world spawn or a spot you pick, and gets on with what it came for: hunt a player, walk to a point, or both.</p>
+<p><code class="cmd">/fightbot join &lt;number&gt;</code> sends up to 20 in right now. When one is done it wanders about, logs off like a player, or goes hunting again, and if someone hits it on the way it fights back, ignores them or runs, whichever you set. The whole thing is the <code class="cmd">joining.*</code> part of the config, and <a href="wiki.html#bots-that-join-by-themselves" rel="noopener">the wiki</a> walks through it.</p>
+<p>Joined bots do not come back after a restart — new ones join instead, which is what a player would do.</p>
+      </details>
+      <details>
+        <summary>Can I make a bot die in one hit for a video?</summary>
+        <p>The other way round, and yes: put a player's name in <code class="cmd">combat.one-hit-players</code> and <strong>any</strong> hit from a bot kills them, whatever it is holding. It is meant for a server's own fun, so leave the list empty for real fights.</p>
+<p>For scripted scenes, the two things most people want with it are <code class="cmd">/fightbot action</code>, which gives you one move at a time, and a save slot, which spawns bots already wearing the gear and settings you set up.</p>
+      </details>
+      <details>
+        <summary>Can bots guard me?</summary>
+        <p>Yes, from 6.0.17. <code class="cmd">/fightbot protect --all</code> turns every bot into a bodyguard: they keep their places round you the way marchers do — behind you, ahead of you so they meet trouble first, or a line down each side — and they look where you look rather than at you.</p>
+<p>Hurt the player they are guarding and <strong>every one of them goes after whoever did it</strong>, whether it was a hit, an arrow or a crystal. Falling damage and fire set nothing off, since there is nobody to go after, and they leave anyone in that player's own group alone. Once the attacker is down, gone, or has left them alone for ten seconds, they fall back into place. <a href="wiki.html#protecting-a-player" rel="noopener">The wiki</a> has the settings.</p>
+<p>Marching, surrounding and guarding bots also never fight back against the player they follow, so you can turn round and hit your own column without starting a brawl. Set <code class="cmd">formation.ignore-leader: false</code> if you would rather they hit back.</p>
+      </details>
+      <details>
+        <summary>Do I have to gear up every bot myself?</summary>
+        <p>Not any more. Five loadouts come with FightBot from 6.0.17 — <code class="cmd">diamond-sword</code>, <code class="cmd">netherite-sword</code>, <code class="cmd">mace</code>, <code class="cmd">crystal</code> and <code class="cmd">cart</code> — on the bottom row of the kits and saves screens. Click one in Kits and pick the bots to give it to, or click one in Saves and a new bot spawns wearing it. <code class="cmd">/fightbot kit Bob mace</code> and <code class="cmd">/fightbot save crystal</code> work too.</p>
+<p>All the armour has Mending and Unbreaking III, every enchantment is at its normal maximum, and none of them put potion effects on a bot. They cannot be changed or deleted, so the ones you build yourself go in your own slots — <strong>seven kits and seven saves</strong>, up from five. <a href="wiki.html#ready-made-loadouts" rel="noopener">The wiki</a> lists what is in each one.</p>
       </details>
       <details>
         <summary>Does it work on a network with a proxy?</summary>
-        <p>Yes, from 5.18.0. Put the same jar in your Velocity or BungeeCord proxy&#39;s <code class="cmd">plugins</code> folder as well, and the servers link up to it by themselves. Only the servers you want bots on need FightBot.</p>
-<p>With the proxy linked up, bots count in the network&#39;s player count and hover list, <code class="cmd">/fbp &lt;server&gt; &lt;command&gt;</code> runs any FightBot command on any server from the proxy, and <code class="cmd">/fb send &lt;bot&gt; &lt;server&gt;</code> walks a bot over to another server with its gear, health, skin and settings. Kits, saves, skins and voice lines can be shared across the network, and <code class="cmd">/fbp web</code> gives one web editor link that covers every server.</p>
-<p>On Velocity with modern forwarding there is nothing to set up. Otherwise paste the proxy&#39;s <code class="cmd">link-secret.txt</code> into <code class="cmd">network.secret</code> on each server. <a href="wiki.html" rel="noopener">The wiki</a> has the whole setup.</p>
+        <p>Yes, from 5.18.0. Put the same jar in your Velocity or BungeeCord proxy's <code class="cmd">plugins</code> folder as well, and the servers link up to it by themselves. Only the servers you want bots on need FightBot.</p>
+<p>With the proxy linked up, bots count in the network's player count and hover list, <code class="cmd">/fbp &lt;server&gt; &lt;command&gt;</code> runs any FightBot command on any server from the proxy, and <code class="cmd">/fb send &lt;bot&gt; &lt;server&gt;</code> walks a bot over to another server with its gear, health, skin and settings. Kits, saves, skins and voice lines can be shared across the network, and <code class="cmd">/fbp web</code> gives one web editor link that covers every server.</p>
+<p>On Velocity with modern forwarding there is nothing to set up. Otherwise paste the proxy's <code class="cmd">link-secret.txt</code> into <code class="cmd">network.secret</code> on each server. <a href="wiki.html" rel="noopener">The wiki</a> has the whole setup.</p>
       </details></div>
-      <!-- faq:end --></div>
+        <!-- faq:end --></div>
 
     <div class="cta-row">
       <a class="btn" href="#" data-discord>Ask in Discord</a>

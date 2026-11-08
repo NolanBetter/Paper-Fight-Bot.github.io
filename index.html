@@ -27,6 +27,7 @@
       <a href="install.html">Install</a>
       <a href="wiki.html">Wiki</a>
       <a href="faq.html">FAQ</a>
+      <a href="compare.html">Compare</a>
       <a href="report.html">Report</a>
       <a href="account.html">Account</a>
       <a href="#" data-modrinth>Download</a>
@@ -78,6 +79,10 @@
       <a class="card" href="editor/">
         <h3>The web editor</h3>
         <p>&#8203;<span class="cmd">/fb web</span> in game hands you a link: every setting, the bots that are on, skins, emotes and the logs.</p>
+      </a>
+      <a class="card" href="compare.html">
+        <h3>How it compares</h3>
+        <p>FightBot beside FakePlayer and VexBot, line by line &mdash; including the places where they win.</p>
       </a>
       <a class="card" href="report.html">
         <h3>Found a bug?</h3>
@@ -147,7 +152,11 @@
       </div>
       <div class="spec-row">
         <h3>In formation</h3>
-        <p>&#8203;<span class="cmd">/fightbot march</span> lines them up in rows behind you and keeps them there as you walk, eyes left or eyes right. <span class="cmd">/fightbot surround</span> puts them in a ring. A bot that gets hit fights back, <em>then takes its place again</em>.</p>
+        <p>&#8203;<span class="cmd">/fightbot march</span> lines them up in rows behind you and keeps them there as you walk, eyes left or eyes right. <span class="cmd">/fightbot surround</span> puts them in a ring. <em>Turn round and hit your own column and they take it</em> and stay in line &mdash; anyone else who hits them still gets a fight.</p>
+      </div>
+      <div class="spec-row">
+        <h3>Bodyguards</h3>
+        <p>&#8203;<span class="cmd">/fightbot protect</span> keeps them close &mdash; behind you, ahead of you so they meet trouble first, or a line down each side &mdash; <em>looking where you look</em> rather than at you. Hurt the player they are guarding and every one of them goes after whoever did it, then falls back into place.</p>
       </div>
       <div class="spec-row">
         <h3>Settings menu</h3>
@@ -162,12 +171,20 @@
         <p>Only armour, offhand and weapon have fixed slots. Everything else goes anywhere — an axe for shields, food, cobwebs, pearls, a water bucket, a mace, wind charges, an elytra, a bow, TNT minecarts, end crystals. <em>The bot finds what it is carrying and uses it.</em></p>
       </div>
       <div class="spec-row">
+        <h3>Kitted out in one click</h3>
+        <p>Five loadouts come with it &mdash; diamond sword, netherite sword, mace, crystal and cart &mdash; so a bot is <em>geared up without filling a single slot</em>. Mending and Unbreaking on all the armour, and nothing enchanted past its normal maximum. Seven kit slots and seven save slots of your own on top.</p>
+      </div>
+      <div class="spec-row">
         <h3>Change it from your browser</h3>
         <p>&#8203;<span class="cmd">/fightbot web</span> hands you a link to <a href="editor/">the editor</a> on this site: every setting explained, the bots that are on, groups, kits, skins, emotes, models and voice lines, and the debug logs. <em>Nothing on your server gets opened up</em> &mdash; both ends dial out, and the key lives in the link.</p>
       </div>
       <div class="spec-row">
         <h3>Networks</h3>
         <p>The Paper build&rsquo;s jar goes on a Velocity or BungeeCord proxy as well. Bots count in the player count, &#8203;<span class="cmd">/fbp</span> runs commands on any server from the proxy, and <em>a bot can walk to another server</em> with its gear, health and skin. Kits, skins and voice lines can be shared, and one editor link covers the whole network.</p>
+      </div>
+      <div class="spec-row">
+        <h3>They turn up on their own</h3>
+        <p>Switch it on and bots join the server the way players do &mdash; the real &ldquo;joined the game&rdquo; line, at spawn or a spot you pick &mdash; then go hunting, walk to a point, and wander off or log out when they&rsquo;re done. <em>A quiet server never looks empty.</em></p>
       </div>
       <div class="spec-row">
         <h3>They come back</h3>
@@ -194,10 +211,14 @@
     <h2>Off until you ask for them</h2>
     <p class="lede" style="margin-bottom:30px">Nothing here changes your server until you turn it on.
       Crystal PvP was the last thing still shelved, and it came back on in 6.0.11.</p>
-    <div class="grid two">
+    <div class="grid">
       <div class="card">
         <h3>Spears and elytra</h3>
         <p>Both are finished and both are off by default. <span class="cmd">spear.enabled</span> gives you 2&#8209;to&#8209;4&#8209;block jabs and charges; <span class="cmd">elytra.enabled</span> has bots fly after you, fight in the air, and &mdash; with a spear &mdash; make runs at you from above.</p>
+      </div>
+      <div class="card">
+        <h3>Bots that join by themselves</h3>
+        <p>Off until you set <span class="cmd">joining.enabled: true</span>, so <span class="cmd">/fightbot spawn</span> behaves exactly as it always did. Turn it on and the server fills itself, on your terms: how often, how many, where, and what they come for.</p>
       </div>
       <div class="card">
         <h3>Changing your world</h3>

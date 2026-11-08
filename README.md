@@ -5,6 +5,7 @@ stylesheet, ES modules.
 
     index.html      home
     install.html    installation and first fight
+    compare.html    FightBot beside FakePlayer and VexBot
     ai.html         setting up AI voice chat with Groq
     wiki.html       the FightBot wiki, 6.0.11
     faq.html        common questions
@@ -83,6 +84,35 @@ whether one is set and nothing more.
 `assets/fightbot-web.js` does all the talking and is tested against the real
 plugin — change the page, not the library. Section 4 of FIREBASE-SETUP.md has
 the one-time database setup.
+
+## The wiki and the FAQ
+
+Both pages' text is built, not hand-written:
+
+    src/wiki-source.md     the wiki, exactly as the plugin chat sends it
+    src/faq.md             the FAQ, one question per "## " heading
+    src/commands-source.md the commands page, kept for reference
+    src/build.py           turns those into the three files below
+
+    python3 src/build.py
+
+writes `assets/defaults.js` (what the pages show before Firebase answers, and
+what the owner's "Restore built in text" button puts back) and the blocks
+between the marker comments in `wiki.html` and `faq.html` (so both pages read
+fine with JavaScript off).
+
+- A new wiki from the plugin chat: drop it on `src/wiki-source.md`, run the
+  script, read the diff.
+- An answer to change: edit `src/faq.md`, run the script. The `<!-- id: x -->`
+  comment above each question is what `faq.html#x` links to, so keep ids even
+  when the wording changes.
+- `FIXES` at the top of the script holds the handful of corrections this site
+  makes to the plugin chat's wiki. Each one must still match or the script
+  stops, which is how we notice when a correction has been fixed upstream and
+  should be deleted.
+
+Every heading gets an id, sub-headings included, so links into the middle of a
+section work.
 
 ## Locking the site
 

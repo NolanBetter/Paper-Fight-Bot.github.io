@@ -8,6 +8,12 @@
    fenced code blocks, links, images, unordered and ordered lists, tables,
    blockquotes and horizontal rules. */
 
+/** A heading's id, the same way the wiki's own section ids are made. */
+function slugify(text) {
+  return text.replace(/<[^>]*>/g, "").replace(/[&;#]/g, " ")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 function escapeHtml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
           .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -16,8 +22,13 @@ function escapeHtml(s) {
 /** Only http, https and relative links survive. No javascript: urls. */
 function safeUrl(url) {
   const clean = url.trim();
-  if (/^(https?:\/\/|\/|#|[a-z0-9._-]+\.html)/i.test(clean)) return clean;
-  return "#";
+  if (/^(https?:\/\/|mailto:)/i.test(clean)) return clean;
+  // Any other scheme - javascript:, data: and the rest - is thrown away.
+  // What is left is a link inside this site: #anchor, /path, faq.html,
+  // editor/ . The folder kind used to be thrown away too, which quietly
+  // turned every link to the editor into a dead one.
+  if (/^[a-z][a-z0-9+.-]*:/i.test(clean) || clean.startsWith("//")) return "#";
+  return clean;
 }
 
 function inline(text) {
@@ -81,7 +92,9 @@ export function renderMarkdown(src, opts) {
     if (h) {
       if (allowHeadings) {
         const level = Math.min(4, h[1].length + 1);   // # becomes h2, page owns h1
-        out.push(`<h${level}>${inline(h[2])}</h${level}>`);
+        // Sub-headings get an id as well, so a link can point at one. Without
+        // it, every link to a sub-section in the wiki went nowhere.
+        out.push(`<h${level} id="${slugify(h[2])}">${inline(h[2])}</h${level}>`);
       } else {
         out.push(`<p><strong>${inline(h[2])}</strong></p>`);
       }

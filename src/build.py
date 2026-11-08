@@ -1,0 +1,250 @@
+#!/usr/bin/env python3
+"""Build the wiki and FAQ into the site.
+
+    python3 src/build.py
+
+Reads
+    src/wiki-source.md    the wiki, exactly as the plugin chat sends it
+    src/faq.md            the FAQ, one question per "## " heading
+Writes
+    assets/defaults.js    what the pages show before Firebase answers, and
+                          what "Restore built in text" puts back
+    wiki.html, faq.html   the same text again, between the marker comments,
+                          so both pages read fine with no JavaScript at all
+
+Everything the site says about FightBot comes from here. When a new wiki
+arrives, drop it on src/wiki-source.md and run this; when an answer needs
+changing, edit src/faq.md and run this. Nothing else to remember.
+"""
+import json, pathlib, re, sys
+
+HERE = pathlib.Path(__file__).resolve().parent
+SITE = HERE.parent
+
+slug = lambda t: re.sub(r"[^a-z0-9]+", "-", t.lower()).strip("-")
+
+# ---------------------------------------------------------------- the wiki
+# Corrections to the file the plugin chat sends. They live here so the next
+# one gets them too, and each has to still match or this stops: when the
+# plugin chat fixes one upstream, the line below goes.
+FIXES = [
+    # fightmc.xyz will not set an AI key, whatever the plugin allows: it is
+    # somebody's account with Groq or OpenAI, and a link in a chat log is
+    # enough to spend their money with it.
+    ("2. In `config.yml`: `ai.enabled: true`, `ai.provider: groq`, and the key in `ai.api-key`. "
+     "Or set them in the web editor.",
+     "2. In `config.yml`: `ai.enabled: true`, `ai.provider: groq`, and the key in `ai.api-key`. "
+     "The web editor can switch AI chat on, but it never shows or sets the key: that only ever "
+     "goes in the file on your own server."),
+    ("| `ai.api-key` | | Your key from that company. Kept secret in the web editor. |",
+     "| `ai.api-key` | | Your key from that company. Never shown or set from the web editor - "
+     "put it in `config.yml` yourself. |"),
+]
+
+
+def read_wiki():
+    """The wiki, as a list of {id, title, body}.
+
+    The page prints each section's title as its own <h2> and lists them down
+    the side, so the file's own "# FightBot Wiki" title goes and the
+    paragraphs above the first "## " move into the first section. Only those
+    top level sections get an id on the page, so a link to one is kept and a
+    link to a sub heading is flattened to its own words.
+    """
+    md = (HERE / "wiki-source.md").read_text()
+    md = re.sub(r"\A#\s+[^\n]*\n+", "", md)
+    head, _, rest = md.partition("\n## ")
+    intro, rest = head.strip(), "## " + rest
+
+    for a, b in FIXES:
+        if a not in rest:
+            sys.exit("this correction no longer matches, so take it out of FIXES:\n  " + a[:110])
+        rest = rest.replace(a, b)
+
+    parts = re.split(r"^## ", rest, flags=re.M)[1:]
+    titles = [p.partition("\n")[0].strip() for p in parts]
+    # every heading gets an id on the page, sub-headings included, so a link
+    # to any of them is a link that works
+    known = {slug(t) for t in titles} | {slug(t) for t in re.findall(r"^#{3,6} (.+)$", rest, re.M)}
+
+    def links(text):
+        def one(m):
+            label, anchor = m.group(1), m.group(2)
+            return "[%s](#%s)" % (label, anchor) if anchor in known else label
+        return re.sub(r"\[([^\]]+)\]\(#([a-z0-9-]+)\)", one, text)
+
+    out = []
+    for i, part in enumerate(parts):
+        title, _, body = part.partition("\n")
+        body = body.strip()
+        if i == 0 and intro:
+            body = intro + "\n\n" + body
+        out.append({"id": slug(title.strip()), "title": title.strip(), "body": links(body)})
+    return out
+
+
+# ----------------------------------------------------------------- the FAQ
+def read_faq():
+    """The FAQ, as a list of {id, q, a}. Ids come from the comment above each
+    heading, so the links people have already shared keep working."""
+    md = (HERE / "faq.md").read_text()
+    out = []
+    for chunk in re.split(r"^<!-- id: ([a-z0-9-]+) -->\s*$", md, flags=re.M)[1:]:
+        if not out or "q" in out[-1]:
+            out.append({"id": chunk.strip()})
+            continue
+        title, _, body = chunk.strip().partition("\n")
+        out[-1]["q"] = title.removeprefix("## ").strip()
+        out[-1]["a"] = body.strip()
+    missing = [f for f in out if "q" not in f]
+    if missing:
+        sys.exit("an id comment with no question after it: " + missing[0]["id"])
+    return out
+
+
+# ------------------------------------------------------- assets/defaults.js
+def js(value):
+    """A JS string the browser reads back exactly, in a template literal."""
+    return "`" + value.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${") + "`"
+
+
+def write_defaults(wiki, faq):
+    lines = ["/* Built by src/build.py from src/wiki-source.md and src/faq.md.",
+             "   Do not edit this file: edit those and run the script again.",
+             "",
+             "   This is what the FAQ and wiki pages show before Firebase answers,",
+             "   and what the owner's \"Restore built in text\" button puts back. */",
+             "",
+             "export const DEFAULT_FAQ = ["]
+    for f in faq:
+        lines.append("  { id: %s, q: %s," % (json.dumps(f["id"]), json.dumps(f["q"])))
+        lines.append("    a: %s }," % js(f["a"]))
+    lines.append("];")
+    lines.append("")
+    lines.append("export const DEFAULT_WIKI = [")
+    for w in wiki:
+        lines.append("  { id: %s, title: %s," % (json.dumps(w["id"]), json.dumps(w["title"])))
+        lines.append("    body: %s }," % js(w["body"]))
+    lines.append("];")
+    (SITE / "assets" / "defaults.js").write_text("\n".join(lines) + "\n")
+
+
+# ------------------------------------------- the same text, in the pages
+def esc_text(t):
+    return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def md_to_html(md):
+    """The small Markdown the site uses, matching assets/md.js: headings,
+    tables, lists, quotes, code fences, and bold/italic/code/links."""
+    esc = lambda t: (t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+
+    def inline(t):
+        t = esc(t)
+        t = re.sub(r"`([^`]+)`", lambda m: '<code class="cmd">%s</code>' % m.group(1), t)
+        t = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", t)
+        t = re.sub(r"(?<![*\w])\*([^*\n]+)\*(?!\*)", r"<em>\1</em>", t)
+        # the same rule as safeUrl() in assets/md.js
+        def link(m):
+            label, url = m.group(1), m.group(2).strip()
+            if not re.match(r"^(https?://|mailto:)", url, re.I) and (
+                    re.match(r"^[a-z][a-z0-9+.-]*:", url, re.I) or url.startswith("//")):
+                url = "#"
+            return '<a href="%s" rel="noopener">%s</a>' % (url, label)
+        t = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", link, t)
+        return t
+
+    def cells(line):
+        HELD = "\u0000"
+        line = line.strip().strip("|")
+        return [c.strip().replace(HELD, "|")
+                for c in line.replace(r"\|", HELD).split("|")]
+
+    html, lines, i = [], md.split("\n"), 0
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith("```"):
+            body = []
+            i += 1
+            while i < len(lines) and not lines[i].startswith("```"):
+                body.append(esc(lines[i])); i += 1
+            html.append("<pre>%s</pre>" % "\n".join(body))
+        elif re.match(r"^\s*\|.*\|\s*$", line) and i + 1 < len(lines) \
+                and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i + 1]):
+            head = cells(line); i += 2
+            rows = []
+            while i < len(lines) and re.match(r"^\s*\|.*\|\s*$", lines[i]):
+                rows.append(cells(lines[i])); i += 1
+            i -= 1
+            html.append('<div class="tw"><table><thead><tr>%s</tr></thead><tbody>%s</tbody></table></div>' % (
+                "".join("<th>%s</th>" % inline(c) for c in head),
+                "".join("<tr>%s</tr>" % "".join("<td>%s</td>" % inline(c) for c in r) for r in rows)))
+        elif re.match(r"^#{3,6} ", line):
+            n = len(line) - len(line.lstrip("#"))
+            level = min(4, n + 1)          # as assets/md.js does it
+            title = line[n:].strip()
+            html.append('<h%d id="%s">%s</h%d>' % (level, slug(title), inline(title), level))
+        elif re.match(r"^\s*[-*] ", line) or re.match(r"^\s*\d+\. ", line):
+            ordered = bool(re.match(r"^\s*\d+\. ", line))
+            items = []
+            while i < len(lines) and (re.match(r"^\s*[-*] ", lines[i]) or re.match(r"^\s*\d+\. ", lines[i])):
+                items.append(inline(re.sub(r"^\s*(?:[-*]|\d+\.) ", "", lines[i]))); i += 1
+            i -= 1
+            tag = "ol" if ordered else "ul"
+            html.append("<%s>%s</%s>" % (tag, "".join("<li>%s</li>" % t for t in items), tag))
+        elif line.startswith(">"):
+            quote = []
+            while i < len(lines) and lines[i].startswith(">"):
+                quote.append(lines[i].lstrip("> ")); i += 1
+            i -= 1
+            html.append("<blockquote>%s</blockquote>" % inline(" ".join(quote)))
+        elif line.strip():
+            para = [line]
+            while i + 1 < len(lines) and lines[i + 1].strip() \
+                    and not re.match(r"^(#{1,6} |\s*[-*] |\s*\d+\. |>|```|\s*\|)", lines[i + 1]):
+                i += 1; para.append(lines[i])
+            html.append("<p>%s</p>" % inline(" ".join(para)))
+        i += 1
+    return "\n".join(html)
+
+
+def between(path, name, new):
+    """Replace what is between <!-- name:start --> and <!-- name:end -->."""
+    p = SITE / path
+    s = p.read_text()
+    a, b = "<!-- %s:start -->" % name, "<!-- %s:end -->" % name
+    if a not in s or b not in s:
+        sys.exit("%s has no %s markers" % (path, name))
+    before, _, rest = s.partition(a)
+    _, _, after = rest.partition(b)
+    p.write_text(before + a + "\n" + new + "\n        " + b + after)
+
+
+def write_pages(wiki, faq):
+    # the same shape assets/app.js builds when the text comes from Firebase,
+    # so the page looks identical either way
+    items = "".join('\n      <details>\n        <summary>%s</summary>\n        %s\n      </details>'
+                    % (esc_text(f["q"]), md_to_html(f["a"])) for f in faq)
+    between("faq.html", "faq", '        <div class="qa">' + items + "</div>")
+    between("wiki.html", "wiki-nav", "\n".join(
+        '          <a href="#%s">%s</a>' % (w["id"], esc_text(w["title"])) for w in wiki))
+    between("wiki.html", "wiki-body", "\n".join(
+        '        <h2 id="%s">%s</h2>\n%s' % (w["id"], esc_text(w["title"]), md_to_html(w["body"]))
+        for w in wiki))
+
+
+if __name__ == "__main__":
+    wiki, faq = read_wiki(), read_faq()
+    # Every id the page ends up with: the sections, and every sub-heading
+    # inside them. A link to anything else would land nowhere.
+    ids = {w["id"] for w in wiki}
+    for w in wiki:
+        ids |= set(re.findall(r'<h[2-6] id="([^"]+)"', md_to_html(w["body"])))
+    broken = sorted({(w["id"], m) for w in wiki + [{"id": f["id"], "body": f["a"]} for f in faq]
+                     for m in re.findall(r"\]\(#([a-z0-9-]+)\)", w["body"]) if m not in ids})
+    if broken:
+        sys.exit("links to headings that are not there: %s" % broken)
+    write_defaults(wiki, faq)
+    write_pages(wiki, faq)
+    print("%d wiki sections, %d questions" % (len(wiki), len(faq)))
+    print("wrote assets/defaults.js, wiki.html, faq.html")
