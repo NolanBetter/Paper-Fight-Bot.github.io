@@ -108,10 +108,11 @@
       <details>
         <summary>How do I report a bug?</summary>
         <p>Use the <a href="report.html" rel="noopener">report form</a>. It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.</p>
+<p>From 6.4.4, <code class="cmd">/fightbot debug report</code> writes everything we need into one file in <code class="cmd">plugins/FightBot/debug/</code>: your versions, plugins, worlds, bots, <code class="cmd">config.yml</code> with keys and passwords hidden, and FightBot's recent console lines. Turn on <code class="cmd">/fightbot debug on</code> first, make the problem happen, then run it, and send that file.</p>
       </details>
       <details>
         <summary>Can I change settings without opening server files?</summary>
-        <p>Yes, two ways. In game, <code class="cmd">/fightbot settings</code> (6.4.3 and newer) shows every setting as screens, each one explained: click a switch to flip it, and type numbers and names in a dialog box (1.21.7 and newer) or on a sign. It saves to <code class="cmd">config.yml</code> for you and applies straight away.</p>
+        <p>Yes, two ways. In game, <code class="cmd">/fightbot settings</code> (6.4.3 and newer) shows every setting as screens, each one explained, with the 18 settings most people change on a <strong>Popular settings</strong> screen first (6.4.4). Click a switch to flip it, and type numbers and names in a dialog box (1.21.7 and newer) or on a sign: nothing is typed in chat. It saves to <code class="cmd">config.yml</code> for you and applies straight away.</p>
 <p>Or type <code class="cmd">/fightbot web</code> in game and open the link it gives you. It opens the <a href="editor/" rel="noopener">editor</a> on this site, where you can change any setting, run the bots that are already there — send them after someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot's own switches — upload skins and voice lines, and read the debug logs.</p>
 <p>Making bots stays in game on purpose — FightBot refuses spawning, saves, and renaming or cloning from the web.</p>
 <p>Skins can be looked at properly: click one in the skins list and it turns into a model you can spin round, with the second layer on or off. From 6.0.0 there is an <strong>Emotes &amp; models</strong> tab too, for Emotecraft emotes (upload one, then play it on a bot, a group or every bot) and Customizable Player Models files.</p>
@@ -130,6 +131,7 @@
         <p>Yes, from 5.19.6. As the server stops, every bot is written down, and as it starts they come back where they stood, with the same inventory, skin, health, settings and group. That covers a FightBot update too, since those need a restart.</p>
 <p>They do not pick up what they were doing — fights and routes start afresh — and they come back a few at a time (<code class="cmd">restart.per-second</code>, 10) so a big army does not hold the start up. <code class="cmd">restart.max-bots</code> caps how many come back (100, or <code class="cmd">0</code> for all of them), and <code class="cmd">restart.keep-bots: false</code> turns it off.</p>
 <p>From 6.4.3 they come back in the world they were in, and a world that a plugin like Multiverse loads a moment late is waited for (<code class="cmd">restart.wait-for-world</code>, 120 seconds). They're also written down every minute, so they come back even after a crash.</p>
+<p>From 6.4.4 they also stay there when another plugin tries to move them: a world plugin that empties a world as the server stops, or one that sends new players to spawn (EssentialsX, Multiverse's first spawn, a lobby plugin). The console names the plugin that tried.</p>
 <p>A plugin reload is different: after <code class="cmd">/plugman reload FightBot</code> or <code class="cmd">/reload</code>, bots come back still doing what they were.</p>
       </details>
       <details>
@@ -205,11 +207,19 @@
       </details>
       <details>
         <summary>Can I play as one of the bots?</summary>
-        <p>Yes: <code class="cmd">/fightbot control &lt;bot&gt;</code>, even in the middle of a fight. You carry its gear and wear its skin, and its hits are yours. <code class="cmd">/fightbot stop</code> hands it back and puts you where you were.</p>
+        <p>Yes: <code class="cmd">/fightbot control &lt;bot&gt;</code>, even in the middle of a fight. You carry its gear and wear its skin, and its hits are yours. From 6.4.4, with Simple Voice Chat, your voice comes out of the bot too. <code class="cmd">/fightbot stop</code> hands it back and puts you where you were.</p>
       </details>
       <details>
         <summary>Can bots hunt players down?</summary>
         <p>Yes, from 6.4.3: <code class="cmd">/fightbot hunt &lt;bot&gt; &lt;player&gt;</code>, or leave the player out and each bot hunts whoever is nearest. They track the way a player does with the locator bar, so a player who crouches, wears a carved pumpkin or drinks invisibility gets away. <code class="cmd">/fightbot rtp</code> sends bots to random safe spots first.</p>
+      </details>
+      <details>
+        <summary>Can I save the commands I use a lot?</summary>
+        <p>Yes, from 6.4.4: <code class="cmd">/fightbot quick</code> opens a screen of quick actions, one click each. An action is a name, an icon and up to nine commands, run as whoever clicks it with their own permissions. Five come with it to try (ten mace bots, red against blue, march behind me, stop and remove every bot). Ops can add more: hold an item for the icon, click <strong>Add an action</strong>, then type a command or click <strong>Add your last command</strong>. <code class="cmd">{player}</code> becomes whoever clicks, and <code class="cmd">wait 20</code> waits a second. <code class="cmd">/fightbot quick run &lt;name&gt;</code> runs one from a command block.</p>
+      </details>
+      <details>
+        <summary>A bot dropped its mace with drops turned off.</summary>
+        <p>Update to 6.4.4. With a full pack, a bot swapping weapons mid-fight dropped the extra item, even with <code class="cmd">death.drop-items: never</code>. Now it waits on the bot and goes back in its pack when there's room. For one bot that drops nothing at all when it dies, turn off <strong>Drops items</strong> in its menu.</p>
       </details></div>
         <!-- faq:end --></div>
 

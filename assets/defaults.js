@@ -56,11 +56,16 @@ A bot with a mace and wind charges wind-jumps and smashes you on the way down. W
   { id: "video", q: "Can I use it in a video?",
     a: `Go ahead. A link back is appreciated but not required.` },
   { id: "bug", q: "How do I report a bug?",
-    a: `Use the [report form](report.html). It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.` },
+    a: `Use the [report form](report.html). It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.
+
+From 6.4.4, \`/fightbot debug report\` writes everything we need into one file in \`plugins/FightBot/debug/\`:
+your versions, plugins, worlds, bots, \`config.yml\` with keys and passwords hidden, and FightBot's recent
+console lines. Turn on \`/fightbot debug on\` first, make the problem happen, then run it, and send that file.` },
   { id: "webeditor", q: "Can I change settings without opening server files?",
     a: `Yes, two ways. In game, \`/fightbot settings\` (6.4.3 and newer) shows every setting as screens, each one
-explained: click a switch to flip it, and type numbers and names in a dialog box (1.21.7 and newer) or on a
-sign. It saves to \`config.yml\` for you and applies straight away.
+explained, with the 18 settings most people change on a **Popular settings** screen first (6.4.4). Click a
+switch to flip it, and type numbers and names in a dialog box (1.21.7 and newer) or on a sign: nothing is
+typed in chat. It saves to \`config.yml\` for you and applies straight away.
 
 Or type \`/fightbot web\` in game and open the link it gives you. It opens the
 [editor](editor/) on this site, where you can change any setting, run the bots that are already there — send
@@ -105,6 +110,10 @@ come back (100, or \`0\` for all of them), and \`restart.keep-bots: false\` turn
 From 6.4.3 they come back in the world they were in, and a world that a plugin like Multiverse loads a
 moment late is waited for (\`restart.wait-for-world\`, 120 seconds). They're also written down every minute,
 so they come back even after a crash.
+
+From 6.4.4 they also stay there when another plugin tries to move them: a world plugin that empties a world
+as the server stops, or one that sends new players to spawn (EssentialsX, Multiverse's first spawn, a lobby
+plugin). The console names the plugin that tried.
 
 A plugin reload is different: after \`/plugman reload FightBot\` or \`/reload\`, bots come back still doing
 what they were.` },
@@ -231,11 +240,22 @@ With WorldGuard or PvPManager, \`combat.avoid-no-pvp: true\` keeps fighting bots
 they wait at the edge for their target to come out.` },
   { id: "control", q: "Can I play as one of the bots?",
     a: `Yes: \`/fightbot control <bot>\`, even in the middle of a fight. You carry its gear and wear its skin, and its hits
-are yours. \`/fightbot stop\` hands it back and puts you where you were.` },
+are yours. From 6.4.4, with Simple Voice Chat, your voice comes out of the bot too. \`/fightbot stop\` hands it
+back and puts you where you were.` },
   { id: "hunt", q: "Can bots hunt players down?",
     a: `Yes, from 6.4.3: \`/fightbot hunt <bot> <player>\`, or leave the player out and each bot hunts whoever is nearest.
 They track the way a player does with the locator bar, so a player who crouches, wears a carved pumpkin or
 drinks invisibility gets away. \`/fightbot rtp\` sends bots to random safe spots first.` },
+  { id: "quick", q: "Can I save the commands I use a lot?",
+    a: `Yes, from 6.4.4: \`/fightbot quick\` opens a screen of quick actions, one click each. An action is a name, an
+icon and up to nine commands, run as whoever clicks it with their own permissions. Five come with it to try
+(ten mace bots, red against blue, march behind me, stop and remove every bot). Ops can add more: hold an item
+for the icon, click **Add an action**, then type a command or click **Add your last command**. \`{player}\` becomes
+whoever clicks, and \`wait 20\` waits a second. \`/fightbot quick run <name>\` runs one from a command block.` },
+  { id: "drops", q: "A bot dropped its mace with drops turned off.",
+    a: `Update to 6.4.4. With a full pack, a bot swapping weapons mid-fight dropped the extra item, even with
+\`death.drop-items: never\`. Now it waits on the bot and goes back in its pack when there's room. For one bot
+that drops nothing at all when it dies, turn off **Drops items** in its menu.` },
 ];
 
 export const DEFAULT_WIKI = [
@@ -277,6 +297,7 @@ Rather click than type? \`/fb web\` gives you a link to change FightBot from you
 | \`/fb guide\` | A short walkthrough. Pick a page: \`start\`, \`gear\`, \`fights\`, \`groups\`, \`army\`, \`routes\`, \`film\`, \`skins\`, \`names\`, \`voice\`, \`ai\`, \`web\`, \`network\`, \`which\`, \`lag\` or \`problems\`. |
 | \`/fb skins\` | Where your skins stand right now, and how to set them up. |
 | \`/fb help\` | Every command. |
+| \`/fb quick\` | Your [quick actions](#quick-actions): commands you've saved, one click each. |
 
 \`/fb start\` jumps straight to the getting-started page. On a brand-new server, anyone who can use FightBot gets a one-time "type /fb guide" message when they join, until the first bot is spawned.` },
   { id: "which-one-should-i-use", title: "Which one should I use?",
@@ -405,9 +426,9 @@ A **recording** is what one player did, for bots to act out. A **scene** is wher
 | \`/fb edit clone <bot> --name <name>\` | Copies a bot, gear and settings included. |
 | \`/fb edit clone <bot> --random [count]\` | Up to 200 copies at once, with random names. |
 | \`/fb edit change <bot> <--name <name>\\|--random>\` | Renames a bot. |
-| \`/fb tp <bot\\|--all\\|--group <group>> <player\\|x y z>\` | Teleports bots. Sent to a player, they face the way that player faces. Sent to x y z, they face south. |
+| \`/fb tp <bot\\|--all\\|--group <group>> <player\\|--bot <bot>\\|x y z>\` | Teleports bots. Sent to a player (or another bot), they face the way that player faces. Sent to x y z, they face south. |
 | \`/fb rtp <bot\\|--all\\|--group <group>> [world] [radius]\` | Sends each bot to its own random safe spot: on top of the ground, never into water, lava, cactus or fire, within \`rtp.radius\` (1000) blocks of the world's spawn and inside its border. In the Nether it's under the roof; in the End, on end stone. No world: the one each bot is in. |
-| \`/fb look <bot\\|--all\\|--group <group>> <player\\|bot>\` | Bots watch someone until you say \`--stop\`, or until that player leaves or dies. |
+| \`/fb look <bot\\|--all\\|--group <group>> <player\\|--bot <bot>>\` | Bots watch someone until you say \`--stop\`, or until that player leaves or dies. |
 | \`/fb look <…> <yaw> [pitch]\` | Bots face the way you give, in degrees. See [Facing a direction](#facing-a-direction). |
 | \`/fb look <…> <north\\|south\\|east\\|west\\|up\\|down\\|same>\` | Bots face a compass direction, or \`same\`: the way you're facing. |
 | \`/fb look <…> <x> <y> <z>\` | Bots look at a spot. |
@@ -415,6 +436,8 @@ A **recording** is what one player did, for bots to act out. A **scene** is wher
 | \`/fb action <bot\\|--all\\|--group <group>> <action>\` | The bot does what a player does with their keys and mouse. See [Actions](#actions). |
 
 **Tab shows each step.** After \`/fb spawn\` it offers \`--name\`, \`--random\`, \`--location\` and a few counts. After \`--random\` it offers a count or \`--location\`, and after a count or a name, \`--location\`. \`/fb save <slot>\` takes the same words.
+
+**A player or a bot? (6.4.4)** Wherever a command can take either, a plain name is a player and a bot goes after \`--bot\`, the way \`/fb fight\` has always worked: \`/fb look Bob Nolan\` watches the player Nolan, and \`/fb look Bob --bot Guard1\` watches the bot Guard1. It's the same for \`/fb tp\`, \`/fb march\`, \`/fb surround\`, \`/fb protect\` and a route's targets. Tab only offers players as plain names, and \`--bot\` (then the bots) after them; \`orders.bots-in-player-names: true\` brings the bots back. Groups are the other way round, since a group is mostly bots: \`/fb groupadd red Bob\` adds the bot Bob, and \`/fb groupadd red --player Steve\` adds the player Steve. The older ways still work, so command blocks and scripts don't need changing.
 
 A bot never takes a name that belongs to someone else:
 
@@ -452,7 +475,8 @@ Walking and sprinting work like holding a key down: **nothing is automatic**. Th
 | \`/fb look --all north\` | Face north. Also \`south\`, \`east\`, \`west\`, \`north-east\` and so on, \`up\` and \`down\`. |
 | \`/fb look --group army same\` | Face the same way you're facing right now. |
 | \`/fb look Bob 100 64 -20\` | Look at the spot x 100, y 64, z -20. \`~\` works for players: \`~ ~ ~5\`. |
-| \`/fb look Bob Nolan\` | Watch a player or another bot. |
+| \`/fb look Bob Nolan\` | Watch a player. |
+| \`/fb look Bob --bot Guard1\` | Watch another bot. |
 
 - **The numbers are the ones F3 shows.** Yaw: \`0\` south, \`90\` west, \`180\` north, \`-90\` east. Pitch: \`-90\` straight up, \`0\` level, \`90\` straight down.
 - A bot keeps looking where it was told until \`--stop\`, whatever else it's doing: standing, roaming, marching. In a fight it looks at who it's fighting, then looks back.
@@ -494,7 +518,7 @@ March, surround or protect? See [Following a player](#following-a-player).
 - **Bots in this picture:** left-click for one more, right-click for one fewer, shift for ten at a time. It only changes the picture, so you can see how 50 or 500 bots would line up. It starts at the number of bots you have.
 - **Back to the default:** 3 across, wider for crowds, no set length.
 
-The middle 9 columns and the first 4 rows fit on the screen; the info item says how wide and deep the whole march is. Everything is saved in \`config.yml\` the moment you set it, and marches already going change at once. The sign goes up just over your head while you type, nobody else sees it, and the block goes back as it was afterwards. If there's no room for it, you type the number in chat instead.
+The middle 9 columns and the first 4 rows fit on the screen; the info item says how wide and deep the whole march is. Everything is saved in \`config.yml\` the moment you set it, and marches already going change at once. On 1.21.7 and newer you type the number in a dialog box. On older versions a sign goes up just over your head while you type, nobody else sees it, and the block goes back as it was afterwards; if there's no room for it, step somewhere with open space above you.
 
 **If you fly or jump:** the rows stay on the ground under you and follow from there.
 
@@ -560,23 +584,25 @@ A typical scene: \`/fb formation width 10\`, \`/fb march --group army\`, walk th
 
 - A bot replaying walks its marks the way it walks anywhere, so blocks in the way stop it, and players can push it. One that falls too far behind is put straight back on its mark.
 - A bot acting a recording out doesn't fight back when it's hit (\`recording.fight-back: false\`), so it stays on script. With \`true\` it fights back, then goes back to where it was in the recording.
+- **At the end (6.4.4),** a bot walks back to where the recording starts, ready for the next take, and looks the way it did at the start. That's \`recording.at-end: walk-back\`. \`teleport-back\` puts it there at once, and \`stay\` leaves it where the recording ends, as before 6.4.4. A bot that can't walk back within 30 seconds is put there. A loop starts its next go from the start too.
 - Recordings are kept in \`plugins/FightBot/recordings/\`, one file each, up to \`recording.max-seconds\` long (10 minutes). Changing world stops a recording, and so does leaving.
 
 ### Saved scenes
 
-\`/fb scene save <name>\` writes down **every bot around you** (48 blocks, or give a radius, or \`all\`): where it stands and faces, its gear, skin, health, settings and group, and what it's doing, such as a formation, a route, a replay or where it's looking. Fights aren't kept, because a scene is how things stand before the action starts.
+\`/fb scene save <name>\` writes down **every bot**, or \`--group <group>\` for just the bots in one or more groups: where each stands and faces, its gear, skin, health, settings and group, and what it's doing, such as a formation, a route, a replay or where it's looking. Fights aren't kept, because a scene is how things stand before the action starts.
 
 \`/fb scene load <name>\` brings the scene back between takes. Bots of the scene still in the game are left as they are; the rest come back where they were and carry on with what they were doing.
 
 | Command | What it does |
 |---|---|
-| \`/fb scene save <name> [radius\\|all]\` | Saves the bots around you as a scene. Saving under the same name again replaces it. |
+| \`/fb scene save <name>\` | Saves every bot as a scene. Saving under the same name again replaces it. |
+| \`/fb scene save <name> --group <group> [--group <group>…]\` | Saves only those groups' bots. |
 | \`/fb scene load <name>\` | Brings back the scene's bots that aren't in the game. |
 | \`/fb scene remove <name>\` | Takes the scene's bots out of the game. The scene stays saved. |
 | \`/fb scene delete <name>\` | Deletes the scene. Its bots stay. |
 | \`/fb scene list\` | The scenes you have. |
 
-Scenes are kept in \`plugins/FightBot/scenes/\`. \`scenes.radius\` sets the radius used when you don't give one.
+Scenes are kept in \`plugins/FightBot/scenes/\`. Before 6.4.4 a scene saved the bots within a radius of you; that's gone, along with \`scenes.radius\`, since it was easy to leave someone out. A radius typed by an older script still works.
 
 ### Controlling a bot
 
@@ -589,6 +615,7 @@ Scenes are kept in \`plugins/FightBot/scenes/\`. \`scenes.radius\` sets the radi
 - **You carry its gear, and wear its skin.** Its armour, weapon and everything it carries are in your inventory, and you have its health and hunger. In third person (F5) and in your inventory screen you look like the bot (Paper and Purpur; on Spigot you still see your own skin there, but everyone else sees the bot either way). Your own things and your own skin come back when you hand it back.
 - **It does everything you do**, 20 times a second: where you go and look, crouching, sprinting and every swing. It wears and holds what you do.
 - **Your hits are its hits.** Whoever you hit is hit by the bot, so a bot you hit fights back against it, and kills go to the bot. Arrows you shoot are its arrows too. What you type in chat, the bot says. Commands stay yours.
+- **Your voice comes out of the bot (6.4.4).** With Simple Voice Chat, players near the bot hear what you say from the bot, not from where you're hidden, and whispering stays a whisper. In a voice chat group you're heard by your group as normal. \`control.voice: false\` turns it off.
 - **What happens to it happens to you.** When it's hit, you lose the health, your screen jolts, and you're knocked back just as far as a player would be. Its armour wears down and its totems go off in your hands.
 - **When it ends**, the gear goes back to the bot as it is by then, used up or worn down, and you get your own things, health, hunger and game mode back. You're put back where you were when you took it over (\`control.go-back: false\` leaves you where the bot is). It ends if the bot dies or is removed, or if you leave. Your own things are written to \`plugins/FightBot/control/\` first, so they come back the next time you join even if the server stops while you're controlling a bot.
 - A bot being controlled doesn't fight back or do anything by itself, and orders for it are turned down until you hand it back. Its gear screen stays shut meanwhile.
@@ -670,7 +697,28 @@ To keep a server safe, FightBot stops a command block when it:
 - spawns more than 200 bots within 20 ticks (one second), or
 - would have more than 200 of its bots in the game at once.
 
-A stopped command block can't spawn bots again until \`/fb reload\`. Ops are told which one it was and where it is.` },
+A stopped command block can't spawn bots again until \`/fb reload\`. Ops are told which one it was and where it is.
+
+### Quick actions
+
+\`/fb quick\` (6.4.4) opens a screen of **commands you've saved, one click each**, so you don't have to type them out again. It's also on the bottom row of \`/fb settings\`.
+
+An action is a name, an icon and up to 9 commands, run one after another. **Click one to run it.** Its commands run as whoever clicks it, with that person's own permissions, so an action can't do anything they couldn't type themselves.
+
+A new server comes with five, to show how it works: ten mace bots, red against blue (two groups of five and a group fight), march behind me, stop every bot, and remove every bot. Change them or delete them as you like.
+
+**Making one** (needs \`fightbot.quick.edit\`, which ops have):
+
+1. Hold the item you want as its icon and click **Add an action**.
+2. Click **Add a command** and type it, without the \`/\`. Or run the FightBot command first, then click **Add your last command** to save it without typing.
+3. **Rename it** and **Run it now** to try it.
+
+On an action's screen, click a command to change it, or right-click to take it out. **Change its icon** takes the item in your hand. **Delete this action** needs a shift-click. In the list, right-click an action to change it.
+
+- \`{player}\` in a command becomes whoever clicks: \`fb march --all {player}\`.
+- A line \`wait 20\` waits 20 ticks (a second) before the next command, for bots to finish spawning before they're grouped, say.
+- \`/fb quick run <name>\` (or its number) runs one from the console or a command block, and \`/fb quick list\` lists them.
+- They're kept in \`plugins/FightBot/quick-actions.yml\`, up to 45 of them.` },
   { id: "fighting", title: "Fighting",
     body: `| Command | What it does |
 |---|---|
@@ -943,11 +991,14 @@ Bots swim. A bot going after someone across a river swims over and climbs out on
 - Free roamers stay on dry land. One that ends up in the water anyway, knocked in say, swims to the nearest place it can get out.
 - With building on, a bot may put a block down to climb out of a river with steep banks. It only does this when it's after a target, or on a route it's allowed to build along.` },
   { id: "the-settings-screens", title: "The settings screens",
-    body: `\`/fb settings\` (or \`/fb edit\`) on its own opens **every setting in \`config.yml\` as screens**:
+    body: `\`/fb settings\` (or \`/fb edit\`) on its own opens **every setting in \`config.yml\` as screens**. Since 6.4.4 the first screen is laid out so a new server owner isn't faced with everything at once:
 
-- **The eight groups** the config is in (Fighting, Weapons and PvP styles, and so on). Each one opens its sections, and each section its settings, with what each one does, what it is now and its default. A setting you've changed is yellow.
+- **Popular settings** comes first: the 18 settings most people change, on one screen. Health, damage, pearls, shields, maces, crystals, carts, drops, hardcore, skins, names, march width, bridging, whether a busy bot has to be stopped first, how many bots players see, staff notices, what a bot does after a replay, and keeping bots over a restart.
+- **Every bot's switches** and **One bot's settings** sit beside it (below).
+- **The eight groups** the config is in (Fighting, Weapons and PvP styles, and so on) are underneath, for everything else. Each one opens its sections, and each section its settings, with what each one does, what it is now and its default. A setting you've changed is yellow.
+- **Quick actions** and the **Web editor** are along the bottom.
 - **Click a setting to change it.** A switch flips, a choice moves on to the next (shift-click: the one before), and anything else you type: a number, a name, a list (commas between), a key. **Right-click** puts it back to its default. A secret such as \`ai.api-key\` is never shown; shift-right-click clears it.
-- **Typing it:** on 1.21.7 and newer a **dialog box** opens, with what the setting does, a box to type in, and Save and Cancel. On older versions you type a number on a sign, and anything longer in chat (nobody else sees it).
+- **Typing it:** on 1.21.7 and newer a **dialog box** opens, with what the setting does, a box to type in, and Save and Cancel. On older versions a **sign** goes up over your head (nobody else sees it, and the block goes back afterwards): a number goes on the first line, and longer text, like a list or a command, can run across all four. Something too long for a sign, like an AI key, says to use \`/fb web\` or \`config.yml\` instead. Nothing is typed in chat any more.
 - **It's saved at once:** written into \`config.yml\` with its comments kept, and the config is read again, as \`/fb reload\` would. Health, speed and damage only apply to bots spawned after. Staff are told what was changed, and by whom.
 - **Every bot's switches:** the same switches as in a bot's own menu (pearls, shield, mace, hardcore...), for every bot at once. \`/fb settings global\` goes straight there. A bot whose switch you changed in its own menu keeps its own, and the screen says how many have.
 - **One bot's settings:** pick a bot, for its own menu (below).
@@ -961,7 +1012,7 @@ Hover over the head at the top to see the bot's health, group, what it's doing a
 |---|---|
 | **Bring here** | Teleports the bot to you, facing the way you are. |
 | **Go to bot** | Teleports you to the bot. |
-| **Rename** | You type the new name in chat. Type \`random\` for a made-up one, or \`cancel\`. |
+| **Rename** | A dialog box (1.21.7 and newer) or a sign asks for the new name. Type \`random\` for a made-up one; leave it as it is, or Cancel, to keep the name. |
 | **Clone** | A copy with a random name, the same gear and the same settings. Stays open, so you can keep clicking. |
 | **Change group** | Moves it to another group, or **No group**. |
 | **Open gear** | Its inventory. Stop it first if it's busy. |
@@ -1000,6 +1051,7 @@ Your \`config.yml\` sets how every bot behaves. These switches let one bot be di
 | Crystal PvP | Placing end crystals by players and setting them off. |
 | Hardcore | Staying in the game as a spectator when it dies, instead of leaving. |
 | On the locator bar | Showing on players' locator bar (1.21.6+), so they can hunt it down. Off unless \`performance.locator-bar\` is on. |
+| Drops items (6.4.4) | Dropping its gear when it dies. It starts out following \`death.drop-items\` and the world's keepInventory. Off, it drops nothing at all: everything it had just goes. |
 
 - **Glowing means on.** Click to flip a switch.
 - **Right-click** hands a switch back to the server, so it follows \`config.yml\` again.
@@ -1101,10 +1153,10 @@ A save only remembers the settings you changed on that bot, so later config chan
 |---|---|
 | \`/fb groups\` | Opens the groups screen. |
 | \`/fb groupcreate <name>\` | Makes a group. |
-| \`/fb groupadd <group> <bot\\|player>\` | Puts a bot, or an online player, in it. |
+| \`/fb groupadd <group> <bot\\|--player <player>>\` | Puts a bot, or an online player, in it. A plain name is a bot; a player goes after \`--player\` (6.4.4). |
 | \`/fb groupadd <group> --all\` | Puts in every bot that isn't in a group yet. Bots already in a group stay where they are. |
 | \`/fb groupadd <group> --group <other>\` | Moves everyone in another group, bots and players, into this one. The other group stays, empty. |
-| \`/fb groupremove <group> <bot\\|player>\` | Takes a bot or a player out. |
+| \`/fb groupremove <group> <bot\\|--player <player>>\` | Takes a bot or a player out. |
 | \`/fb groupdel <group>\` | Deletes a group. Its bots are freed. |
 | \`/fb grouplist [group]\` | Lists groups, or one group's members, marking any that are dead or not in the game. In game, this opens the screen. |
 | \`/fb groupcheck <bot>\` | Which group a bot is in. |
@@ -1167,6 +1219,7 @@ Free roamers now and then stop to look at a bit of grass. With Mining on, they s
 - \`roaming.free-radius\` sets how far a free roamer strays.
 - \`pause-min-seconds\` and \`pause-max-seconds\` set how long it stands about between strolls.
 - \`point-pause-seconds\` sets how long a route walker waits at each point.
+- \`stop-at-points: false\` (6.4.4) walks a route straight on through each point, turning as it goes, without stopping or waiting. It reads as someone walking a path rather than going from mark to mark. The end of the route still loops, turns back or stops as you said.
 
 ### Patrolling
 
@@ -1174,7 +1227,7 @@ A patrol walks a route and goes after **that route's targets**, and only those. 
 
 | Command | What it does |
 |---|---|
-| \`/fb patrollingtargetadd <route> <player\\|bot\\|group>\` | Gives the route's patrols a target. |
+| \`/fb patrollingtargetadd <route> <player\\|--bot <bot>\\|--group <group>>\` | Gives the route's patrols a target. A plain name is a player (6.4.4). |
 | \`/fb patrollingtargetdel <route> <name>\` | Removes a target. |
 | \`/fb patrollingtargetlist <route>\` | Who the route's patrols hunt. |
 | \`/fb patrollingstart <bot\\|--all\\|--group <group>> <route> [loop\\|back\\|stop]\` | Patrols the route. |
@@ -1509,7 +1562,9 @@ The proxy's own settings are in \`config.yml\` in its FightBot folder:
 Bots come back after a server restart too, and after a FightBot update, since that needs a restart.
 
 - As the server stops, every bot is written down. As it starts, they come back where they stood, **in the world they were in**, with the same inventory, skin, health, settings and group. This works on Spigot too from 6.4.3; before, a Spigot server brought none back.
-- **A world that loads late:** a world plugin (Multiverse, or one that resets a world) may load its worlds a moment after FightBot starts. A bot in one of those waits, and comes back there the moment it loads. After \`restart.wait-for-world\` seconds (120) without it, it comes back at the main world's spawn instead (\`restart.missing-world: remove\` leaves it out). The console says which bots are waiting, and for which world.
+- **A world that loads late:** a world plugin (Multiverse, or one that resets a world) may load its worlds a moment after FightBot starts. A bot in one of those waits, and comes back there the moment it loads. After \`restart.wait-for-world\` seconds (120) without it, it comes back at the main world's spawn instead (\`restart.missing-world: remove\` leaves it out). \`restart.missing-world: wait\` (6.4.4) keeps it waiting however long it takes, for worlds that only load when someone goes there. The console says which bots are waiting, and for which world.
+- **A world plugin that empties a world as the server stops** (Multiverse and others can) used to send the bots to the main world just before they were written down, so they came back there. Since 6.4.4 FightBot writes down where they really were, and the console names the plugin that moved them.
+- **A plugin that sends new players to spawn** (EssentialsX's spawn on join, Multiverse's first spawn, lobby plugins) sees every bot coming back as a new player, and used to move it there a moment later. Since 6.4.4, for \`restart.hold-in-place-seconds\` (10) after it's brought back, a bot stays where FightBot put it, and the console names the plugin, once. Bots you spawn yourself aren't held. \`0\` turns this off.
 - **A world that was reset** while the server was down: if a bot's spot is inside blocks now, in lava or over nothing, it comes back on top of the ground there (or at the world's spawn).
 - **After a crash:** the bots are also written down every \`restart.save-every-seconds\` (60), so a server that crashes, or is killed without a proper stop, still brings them back from the last time.
 - They **don't** carry on with what they were doing. Fights and routes start afresh.
@@ -1586,13 +1641,15 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`performance.locator-bar\` | \`false\` | Bots on players' locator bars (1.21.6+), so players can hunt them. One bot: **On the locator bar** in its menu. |
 | \`rtp.radius\` | \`1000\` | How far from a world's spawn \`/fb rtp\` sends bots, in blocks. See [Spawning and managing bots](#spawning-and-managing-bots). |
 | \`control.go-back\` / \`stop-hands-back\` | \`true\` / \`true\` | After \`/fb control\`, you go back to your spot; \`/fb stop\` hands a bot you control back. See [Controlling a bot](#controlling-a-bot). |
-| \`restart.wait-for-world\` / \`missing-world\` / \`save-every-seconds\` | \`120\` / \`spawn\` / \`60\` | After a restart: how long a bot waits for its world to load, what then, and how often the bots are written down meanwhile. See [Server restarts](#server-restarts). |
+| \`control.voice\` | \`true\` | With Simple Voice Chat, your voice comes out of the bot you're controlling. |
+| \`restart.wait-for-world\` / \`missing-world\` / \`save-every-seconds\` | \`120\` / \`spawn\` / \`60\` | After a restart: how long a bot waits for its world to load, what then (\`spawn\`, \`remove\` or \`wait\`), and how often the bots are written down meanwhile. See [Server restarts](#server-restarts). |
+| \`restart.hold-in-place-seconds\` | \`10\` | After a restart, how long a bot that's been brought back stays where FightBot put it, whatever other plugins do. \`0\`: off. |
 | \`performance.rest-when-idle\` | \`true\` | A bot with nothing to do is checked twice a second instead of twenty times. |
 | \`performance.quiet-steps\` | \`true\` | A bot no player is within 24 blocks of makes no footstep sounds, and in a crowd the 16 bots nearest each player make them. |
 | \`performance.max-visible-bots\` | \`0\` | The most bots each player is sent, nearest first. \`0\`: all of them. For players whose game slows down in a crowd. See [Performance](#performance). |
 | \`combat.use-pearls\`, \`use-cobwebs\`, \`use-shield\`, \`use-axe-swap\`, \`use-water-bucket\` | \`true\` | Which tricks bots use. Each is also a switch in a bot's own settings. |
 | \`combat.pearl-away-distance\` | \`0\` | How far a bot pearls to get away, in blocks (4 to 35), never over a wall. \`0\`: a full-strength throw. See [Ender pearls](#ender-pearls). |
-| \`orders.bots-in-player-names\` | \`false\` | \`/fb fight\` offers only real players as plain names when you press Tab; bots come after \`--bot\`. \`true\`: bots with the players too. |
+| \`orders.bots-in-player-names\` | \`false\` | Tab offers only real players as plain names (in \`/fb fight\`, \`look\`, \`tp\`, \`march\` and the rest); bots come after \`--bot\`. \`true\`: bots with the players too. |
 | \`messages.staff-notices\` | \`true\` | FightBot tells staff in chat when something happens by itself (a bot kicked, an update out...). \`false\`: console only, for scripted or recorded servers. |
 | \`messages.author-notice\` | \`true\` | When Funnyfam14, FightBot's author, joins, he's told privately that the server runs FightBot: the version, how many bots there are and any update waiting. Nobody else sees it, it gives no permissions and nothing leaves the server. \`false\` to turn it off. |
 | \`combat.wait-for-charge\` | \`true\` | Bots wait for their weapon to charge before they swing. |
@@ -1604,7 +1661,7 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`combat.damage-percent\` | \`100\` | How hard bots hit, as a % of the same hit from a player (10 to 200). See [Fighting back](#fighting-back). |
 | \`mace.damage-percent\` | \`100\` | The same for mace hits only, on top of \`combat.damage-percent\`. |
 | \`recording.max-seconds\` / \`fight-back\` | \`600\` / \`false\` | The longest recording, and whether a bot acting one out fights back. See [Recording and replaying](#recording-and-replaying). |
-| \`scenes.radius\` | \`48\` | Blocks round you that \`/fb scene save\` takes in. See [Saved scenes](#saved-scenes). |
+| \`recording.at-end\` | \`walk-back\` | After a replay: \`walk-back\` to where it starts, \`teleport-back\`, or \`stay\` where it ends. |
 | \`anticheat.npc-tag\` | \`auto\` | The NPC tag on bots: \`auto\` when an anticheat is installed, \`true\` always, \`false\` never. See [Other plugins](#other-plugins). |
 | \`combat.one-hit-players\` | \`[]\` | Player names any bot kills in one hit, whatever the weapon. See [Fighting back](#fighting-back). |
 | \`combat.mace-defence\` | \`true\` | Bots do something about a mace coming down on them: a shield, out of the way, or a pearl away. See [Mace](#mace). |
@@ -1623,10 +1680,11 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`formation.march.width\` / \`gap\` | \`3\` / \`1\` | Marching rows: bots across (\`/fb formation width\` in game), and the gap behind you. See [Marching and surrounding](#marching-and-surrounding). |
 | \`formation.march.widen\` | \`true\` | A crowd marches wider than \`width\`, so it isn't a long thin line. |
 | \`formation.surround.radius\` | \`0\` | \`0\`: the ring grows with the bots. Or a fixed radius. |
+| \`roaming.stop-at-points\` | \`true\` | Route walkers stop at each point. \`false\`: straight on through, turning as they go. |
 | \`orders.must-stop-first\` | \`true\` | A busy bot turns down a new order until it's stopped. \`false\`: new orders take over. |
 | \`gear.mending-throw-speed\` / \`mending-throw-angle\` | \`0.5\` / \`45\` | How hard and how far down bots throw XP bottles. See [Wear and mending](#wear-and-mending). |
 | \`gear.repair-after-fight-seconds\` | \`30\` | How long after a fight a bot standing about gets its gear back to full. |
-| \`death.drop-items\` | \`auto\` | What a bot drops when it dies: \`auto\` (like a player), \`always\` or \`never\`. |
+| \`death.drop-items\` | \`auto\` | What a bot drops when it dies: \`auto\` (like a player), \`always\` or \`never\`. One bot: **Drops items** in its menu. |
 | \`death.hardcore\` | \`false\` | A bot that dies stays in the game as a spectator. See [Hardcore](#hardcore-dead-bots-stay-as-spectators). |
 | \`voice.enabled\` | \`true\` | Bots in voice chat, when Simple Voice Chat is on the server. |
 | \`web.enabled\` | \`true\` | The web editor (\`/fb web\`). |
@@ -1839,8 +1897,8 @@ Fixed in 6.4.3. A bot teleported a long way down, from a tower to the ground or 
 **On Spigot, a bot teleported far away was "not in the game" a moment later.**
 Fixed in 6.4.3. The ground under it could unload, and Spigot counts a bot there as gone, so orders said "None of them are in the game." Its ground now goes with it when it's teleported.
 
-**After a restart, bots didn't come back in the world they were in.**
-Fixed in 6.4.3. On Spigot they didn't come back at all, and a bot in a world that a plugin loads a moment late (Multiverse, a world that resets) was left out. Now it waits for that world. See [Server restarts](#server-restarts).
+**After a restart, bots didn't come back in the world they were in, or came back in the main world.**
+Update to 6.4.4. In 6.4.3: on Spigot they didn't come back at all, and a bot in a world that a plugin loads a moment late (Multiverse, a world that resets) was left out; now it waits for that world. In 6.4.4: two kinds of plugin still moved them to the main world. One empties a world as the server stops; the other sends new players to spawn (EssentialsX, Multiverse's first spawn, a lobby plugin). FightBot now works round both, and the console names the plugin that tried. See [Server restarts](#server-restarts). Still happening? Run \`/fb debug on\`, restart, and send a [debug report](#still-stuck-send-a-debug-log).
 
 **"'Name' is banned on this server."**
 That name was banned, perhaps by a death-ban plugin. Run \`/pardon <name>\`, or use another name.
@@ -1860,13 +1918,21 @@ Settings belong to the bot, so they're lost when it dies or the server restarts.
 **Config changes did nothing.**
 Run \`/fb reload\`. Health, speed and damage only apply to bots spawned after that. Also check the bot's own menu, because a changed switch there beats the config.
 
+**A bot dropped its mace (or another item) in a fight, with drops off.**
+Update to 6.4.4. With a full pack, swapping weapons mid-fight dropped the extra item. Now it waits on the bot and goes back in its pack when there's room. To have one bot drop nothing at all when it dies, turn off **Drops items** in its menu.
+
+**Bots don't show on the locator bar.**
+Update to 6.4.4; before, \`performance.locator-bar: true\` didn't actually put them on it. The locator bar needs 1.21.6 or newer.
+
 ### Still stuck? Send a debug log
 
 \`\`\`
 /fb debug on
 \`\`\`
 
-Make the problem happen, then run \`/fb debug off\`. (\`/fb debug\` on its own shows whether it's on.) The log is in \`plugins/FightBot/debug/\`. It records what each bot saw, chose and did, and why. Send the newest file along with your server version, your FightBot version and anything the console printed.
+Make the problem happen, then run \`/fb debug off\`. (\`/fb debug\` on its own shows whether it's on.) The log is in \`plugins/FightBot/debug/\`. It records what each bot saw, chose and did, and why. Since 6.4.4 it also records every FightBot command, settings changed in \`/fb settings\`, bots changing world and who moved them, worlds loading, what's saved and brought back over a restart, scenes, and voice chat while you control a bot.
+
+**Then run \`/fb debug report\` (6.4.4).** It writes one file to \`plugins/FightBot/debug/\` with everything we need in one place: your FightBot, server and Java versions, every plugin, every world, every bot and what it's doing, \`config.yml\` (with keys, secrets and passwords hidden), FightBot's recent console lines and the end of the debug log. It only writes a file; nothing is sent anywhere. Send us that file.
 
 More at [fightmc.xyz](https://www.fightmc.xyz)` },
 ];

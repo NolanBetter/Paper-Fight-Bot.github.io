@@ -93,12 +93,17 @@ Go ahead. A link back is appreciated but not required.
 
 Use the [report form](report.html). It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.
 
+From 6.4.4, `/fightbot debug report` writes everything we need into one file in `plugins/FightBot/debug/`:
+your versions, plugins, worlds, bots, `config.yml` with keys and passwords hidden, and FightBot's recent
+console lines. Turn on `/fightbot debug on` first, make the problem happen, then run it, and send that file.
+
 <!-- id: webeditor -->
 ## Can I change settings without opening server files?
 
 Yes, two ways. In game, `/fightbot settings` (6.4.3 and newer) shows every setting as screens, each one
-explained: click a switch to flip it, and type numbers and names in a dialog box (1.21.7 and newer) or on a
-sign. It saves to `config.yml` for you and applies straight away.
+explained, with the 18 settings most people change on a **Popular settings** screen first (6.4.4). Click a
+switch to flip it, and type numbers and names in a dialog box (1.21.7 and newer) or on a sign: nothing is
+typed in chat. It saves to `config.yml` for you and applies straight away.
 
 Or type `/fightbot web` in game and open the link it gives you. It opens the
 [editor](editor/) on this site, where you can change any setting, run the bots that are already there — send
@@ -149,6 +154,10 @@ come back (100, or `0` for all of them), and `restart.keep-bots: false` turns it
 From 6.4.3 they come back in the world they were in, and a world that a plugin like Multiverse loads a
 moment late is waited for (`restart.wait-for-world`, 120 seconds). They're also written down every minute,
 so they come back even after a crash.
+
+From 6.4.4 they also stay there when another plugin tries to move them: a world plugin that empties a world
+as the server stops, or one that sends new players to spawn (EssentialsX, Multiverse's first spawn, a lobby
+plugin). The console names the plugin that tried.
 
 A plugin reload is different: after `/plugman reload FightBot` or `/reload`, bots come back still doing
 what they were.
@@ -314,7 +323,8 @@ they wait at the edge for their target to come out.
 ## Can I play as one of the bots?
 
 Yes: `/fightbot control <bot>`, even in the middle of a fight. You carry its gear and wear its skin, and its hits
-are yours. `/fightbot stop` hands it back and puts you where you were.
+are yours. From 6.4.4, with Simple Voice Chat, your voice comes out of the bot too. `/fightbot stop` hands it
+back and puts you where you were.
 
 <!-- id: hunt -->
 ## Can bots hunt players down?
@@ -322,3 +332,19 @@ are yours. `/fightbot stop` hands it back and puts you where you were.
 Yes, from 6.4.3: `/fightbot hunt <bot> <player>`, or leave the player out and each bot hunts whoever is nearest.
 They track the way a player does with the locator bar, so a player who crouches, wears a carved pumpkin or
 drinks invisibility gets away. `/fightbot rtp` sends bots to random safe spots first.
+
+<!-- id: quick -->
+## Can I save the commands I use a lot?
+
+Yes, from 6.4.4: `/fightbot quick` opens a screen of quick actions, one click each. An action is a name, an
+icon and up to nine commands, run as whoever clicks it with their own permissions. Five come with it to try
+(ten mace bots, red against blue, march behind me, stop and remove every bot). Ops can add more: hold an item
+for the icon, click **Add an action**, then type a command or click **Add your last command**. `{player}` becomes
+whoever clicks, and `wait 20` waits a second. `/fightbot quick run <name>` runs one from a command block.
+
+<!-- id: drops -->
+## A bot dropped its mace with drops turned off.
+
+Update to 6.4.4. With a full pack, a bot swapping weapons mid-fight dropped the extra item, even with
+`death.drop-items: never`. Now it waits on the bot and goes back in its pack when there's room. For one bot
+that drops nothing at all when it dies, turn off **Drops items** in its menu.

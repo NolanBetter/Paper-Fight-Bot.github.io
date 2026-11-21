@@ -1089,6 +1089,19 @@ function fightArg(t) {
   return t;
 }
 
+/** A player in /fightbot groupadd and groupremove: after --player from 6.4.4,
+    where a plain name is a bot. Older servers take the plain name. */
+const playerArg = n => atLeast("6.4.4") ? "--player " + n : n;
+
+/** A patrol target: from 6.4.4 a plain name is a player, a bot goes after
+    --bot and a group after --group. Older servers take the plain name. */
+function targetArg(t) {
+  if (!atLeast("6.4.4")) return t;
+  if (isGroup(t)) return "--group " + groupKey(t);
+  if (findBot(t)) return "--bot " + t;
+  return t;
+}
+
 $("botFight").addEventListener("click", () => {
   const t = $("botTarget").value;
   if (!t) return toast("Nobody to fight: no players, bots or groups.", true);
@@ -1347,7 +1360,7 @@ function groupPanel(body) {
     inBox.append(botRow(n, "Take out", () => run("groupremove " + name + " " + n), true));
   }
   for (const n of players) {
-    inBox.append(playerRow(n, "Take out", () => run("groupremove " + name + " " + n),
+    inBox.append(playerRow(n, "Take out", () => run("groupremove " + name + " " + playerArg(n)),
       { quiet: true, sub: "a player, on this group's side" }));
   }
   body.append(inBox);
@@ -1427,7 +1440,7 @@ function groupPanel(body) {
       : "Nobody else is online. A player has to be on the server to join a group."));
   }
   for (const n of whoIsFree) {
-    playBox.append(playerRow(n, "Add", () => run("groupadd " + name + " " + n)));
+    playBox.append(playerRow(n, "Add", () => run("groupadd " + name + " " + playerArg(n))));
   }
   body.append(playBox);
 
@@ -1500,7 +1513,7 @@ function routePanel(body) {
       avatar(t.value),
       el("div", { class: "nm" }, t.label),
       el("button", { class: "btn sm", disabled: readOnly, text: "Add",
-        onclick: () => run("patrollingtargetadd " + route.name + " " + t.value) })));
+        onclick: () => run("patrollingtargetadd " + route.name + " " + targetArg(t.value)) })));
   }
   body.append(aBox);
 
