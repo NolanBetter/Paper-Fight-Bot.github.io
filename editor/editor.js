@@ -1069,10 +1069,31 @@ function closeBot() {
 
 $("botBack").addEventListener("click", closeBot);
 
+/** Is the server running at least this FightBot ("6.4.0")? A Spigot build
+    says "6.4.0-spigot", which counts the same. */
+function atLeast(want) {
+  const have = String((status && status.fightbot) || "0").split("-")[0].split(".").map(Number);
+  const need = want.split(".").map(Number);
+  for (let i = 0; i < need.length; i++) {
+    if ((have[i] || 0) !== need[i]) return (have[i] || 0) > need[i];
+  }
+  return true;
+}
+
+/** Who a fight is against, the way /fightbot fight says it from 6.4.0: a
+    player by name, a bot after --bot, a group after --group. Before 6.4.0 a
+    bot went by its plain name, and a group couldn't be fought from here. */
+function fightArg(t) {
+  if (isGroup(t)) return "--group " + groupKey(t);
+  if (findBot(t) && atLeast("6.4.0")) return "--bot " + t;
+  return t;
+}
+
 $("botFight").addEventListener("click", () => {
   const t = $("botTarget").value;
   if (!t) return toast("Nobody to fight: no players, bots or groups.", true);
-  run("fight " + viewingBot + " " + t);
+  if (isGroup(t) && !atLeast("6.4.0")) return toast("Fighting a whole group needs FightBot 6.4.0 or newer on the server.", true);
+  run("fight " + viewingBot + " " + fightArg(t));
 });
 $("botStop").addEventListener("click", () => run("stop " + viewingBot));
 $("botRoam").addEventListener("click", () => {
@@ -1351,7 +1372,33 @@ function groupPanel(body) {
 
   const free = botList.filter(b => !listHas(members, b.name));
   body.append(el("h3", { class: "ed-sub", text: "Add a bot" }));
-  if (free.length > 1) {
+  if (atLeast("6.4.0")) {
+    // 6.4.0: "--all" is every bot that isn't in a group yet, and a whole
+    // group can be moved in. "Every bot" is the old --all, one at a time.
+    const loose = free.filter(b => !b.group);
+    const others = groupNames().filter(g => !same(g, name));
+    const row = el("div", { class: "ed-row" });
+    if (loose.length) {
+      row.append(btn("Add every free bot (" + loose.length + ")", () => run("groupadd " + name + " --all")));
+    }
+    if (free.length > loose.length) {
+      row.append(ghost("Add every bot (" + free.length + ")", async () => {
+        if (!confirm("Put all " + free.length + " bots in " + name + "? Bots in other groups move here.")) return;
+        for (const b of free) await run("groupadd " + name + " " + b.name, { refresh: false });
+        await refreshAll();
+      }));
+    }
+    if (others.length) {
+      const from = picker(others.map(g => ({ value: g, label: g })), "group to move in", "group-move");
+      row.append(from, ghost("Move that group in", () => from.value
+        && run("groupadd " + name + " --group " + from.value)));
+    }
+    if (row.firstChild) {
+      body.append(el("p", { class: "ed-hint", text: "Free bots aren't in any group. "
+        + "Moving a group in brings its bots and players here, and leaves that group empty." }));
+      body.append(row);
+    }
+  } else if (free.length > 1) {
     body.append(el("p", { class: "ed-hint" },
       free.length + " bots are not in this group.", " ",
       el("button", { class: "btn sm", disabled: readOnly, text: "Put every bot in it",
@@ -1389,7 +1436,8 @@ function groupPanel(body) {
   const target = picker(targetList().filter(t => !same(t.value, name)), "who to fight", "group-target");
   body.append(el("div", { class: "ed-row" }, target,
     btn("Set them on this", () => target.value
-      ? run("groupfight " + name + " " + target.value)
+      ? run(atLeast("6.4.0") ? "fight --group " + name + " " + fightArg(target.value)
+          : "groupfight " + name + " " + target.value)
       : toast("Nobody to fight.", true)),
     ghost("Stop them", () => run("groupstop " + name))));
 

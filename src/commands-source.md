@@ -1,43 +1,97 @@
 ## FightBot Commands
 
-Main command: `/fightbot` (alias: `/fb`). Permission: `fightbot.use` (OP by default). Two more, also OP by default: `fightbot.web` for the web editor, and `fightbot.voice.custom` to play sound files added to the server.
+Main command: `/fightbot` (alias: `/fb`). Permission: `fightbot.use` (OP by default). Four more, also OP by default: `fightbot.settings` to change settings in the game (`/fb settings`), `fightbot.web` for the web editor, `fightbot.control` to play as a bot, and `fightbot.voice.custom` to play sound files added to the server. Players with `fightbot.hunt.exempt` (nobody by default) are never hunted.
 
 > **New? Type `/fb guide` in game.** It walks you through setup one step at a time. `/fb help` lists every command.
 
 ### Help
-- `/fb guide` — A quick walkthrough. Topics: `start`, `skins`, `names`, `gear`, `groups`, `routes`, `voice`, `web`, `problems`
-- `/fb guide <topic>` — One topic, e.g. `/fb guide skins`
+- `/fb guide` — A quick walkthrough. Pages: `start`, `gear`, `fights`, `groups`, `army`, `routes`, `film`, `skins`, `names`, `voice`, `ai`, `web`, `network`, `which`, `lag`, `problems`
+- `/fb guide <page>` — One page, e.g. `/fb guide skins`
 - `/fb skins` — Where your skins stand right now, and how to set them up
 - `/fb skins names` — Every name FightBot found with its own skin, to copy (click to copy in game; all of them are saved to `skins/found-names.txt`)
 - `/fb help` — Every command
 
+### Which one should I use?
+Some commands do nearly the same job. Pick by what you want:
+
+| You want | Use | Not this |
+|---|---|---|
+| Bots, right now | `/fb spawn 10` | |
+| Bots that arrive geared and ready | `/fb save mace --random 10` (a ready-made loadout), or a save of your own | `/fb spawn`: a new bot carries nothing |
+| To change the gear on bots you already have | A kit: `/fb kit --all mace` | A save: that only spawns new bots |
+| To keep a bot's gear **and** its settings for later | A save: `/fb savegear <bot>` | A kit: that keeps gear only |
+| More of one bot you set up by hand | `/fb edit clone <bot> --random 5` | |
+| The same bots back in place between takes | `/fb scene save <name>`, then `/fb scene load <name>` | |
+| Bots to attack certain players | `/fb fight --all <player>` | |
+| Bots to track a player down, wherever they are | `/fb hunt --all <player>` | `/fb fight`: that knows exactly where they are |
+| Bots scattered round a world | `/fb rtp --all` | `/fb tp`: that puts them all on one spot |
+| Two sides fighting a battle | `/fb groupfight red blue` | `/fb fight --all`: every bot mobs the same players |
+| An army to attack whoever is near | `/fb charge --all` | `/fb fight`: that needs names |
+| Bots that only defend one player | `/fb protect --all <player>` | |
+| Guards for a place | A patrol: `/fb patrollingtargetadd`, `/fb patrollingstart` | Roaming: roamers don't go looking for a fight |
+| An army walking behind you | `/fb march --all` | |
+| Bots holding a spot for filming | `/fb march --all here` | `/fb march --all`: the rows follow you |
+| Wider or narrower rows | `/fb formation` (a screen with heads) or `/fb formation width 10` | |
+| A ring round someone | `/fb surround --all <player>` | |
+| A place that looks lived in | `/fb roamingfree --all` | |
+| Bots walking a path you choose | A route: `/fb pointtool park`, then `/fb roamingstart <bot> park` | |
+| A bot doing exactly what you did | `/fb record <name>`, then `/fb replay <bot> <name>` | A route: it walks from point to point, it doesn't act |
+| To play as a bot yourself, live | `/fb control <bot>` | A recording: that plays back later, the same every time |
+| Bots to stop, but stay | `/fb stop` | `/fb remove`: they leave the game |
+| One bot to behave differently | `/fb settings <bot>` | The config: that changes every bot |
+| To change a setting for every bot, in the game | `/fb settings` | Editing config.yml and `/fb reload` |
+
+**Kit or save?** A kit changes the gear on bots you have. A save spawns new bots, gear and settings together. `saveload` stores a kit and `savegear` stores a save; `kit` gives a kit and `save` spawns from a save.
+
 ### Spawning
 - `/fb spawn` — One bot with a random name, where you stand, facing the way you face
-- `/fb spawn <count>` — Up to 200 bots with random names (20 a tick, so the server keeps up)
-- `/fb spawn <name>` — One bot with the name you choose
+- `/fb spawn <count>` — Up to 200 bots with random names (a few each tick, so the server keeps up)
+- `/fb spawn --name <name>` — One bot with the name you choose (Tab offers a few ideas). If it's a real Minecraft account, the bot wears that account's skin (`identity.skin-from-name`, on at first): `/fb spawn --name Dream`. Spawn yourself from an alt and it looks just like you. `/fb spawn <name>` is the short way, for scripts
 - `/fb spawn --random [count]` — The long way of writing `/fb spawn <count>`
-- `/fb spawn [name|count] --location <x> <y> <z> [world] [yaw pitch]` — Spawn somewhere else. Works like `/tp`: `~` is where you are (`~5` is 5 more), `^ ^ ^3` is 3 blocks ahead of where you look. `--location` goes last
+- `/fb spawn [count|--name <name>] --location <x> <y> <z> [world] [yaw pitch]` — Spawn somewhere else. Works like `/tp`: `~` is where you are (`~5` is 5 more), `^ ^ ^3` is 3 blocks ahead of where you look. `--location` goes last
 
 > **Command blocks** can spawn bots too (`~` counts from the block). A command block that spawns more than 200 bots within 20 ticks, or has more than 200 of its bots in the game at once, is stopped until `/fb reload`, and ops are told where it is.
 
 ### Fighting
 - `/fb fight <bot> <player...>` — One bot fights one or more players
-- `/fb fight --all <player...>` — Every bot fights them
-- `/fb fight --group <group> <player...>` — A whole group fights them (several groups work too)
-- `/fb fight --group <group> <group>` — Two groups fight each other as one-on-one duels
+- `/fb fight <bot> --bot <bot>` — One bot fights another bot
+- `/fb fight <bot> --group <group>` — One bot fights a whole group
+- `/fb fight --all <player|--bot <bot>|--group <group>>` — Every bot fights them
+- `/fb fight --group <group> <player|--bot <bot>>` — A whole group fights them
+- `/fb fight --group <group> --group <group>` — Two groups fight each other as one-on-one duels
+- `/fb hunt <bot|--all|--group <group>> [player]` — Bots hunt a player down, the way a player would with the locator bar: they know which way, not where, and fight once they see them. No name: whoever is nearest. After a kill they go on hunting. They can't track anyone invisible, crouching, or wearing a carved pumpkin or mob head
+- `/fb hunt <bot|--all|--group <group>> --stop` — Stop hunting (`/fb stop` does too)
+
+A player is named on their own, a bot after `--bot`, a group after `--group`. Tab offers only real players as plain names (`orders.bots-in-player-names: true` adds the bots back). The older forms still work for scripts: `/fb fight Bot1 Bot2` and `/fb fight --group red blue`.
 - `/fb stop` (or `stop --all`) — Every bot stops: fights, roaming and patrolling
 - `/fb stop <bot>` — One bot stops, whatever it's doing
+- `/fb stop --group <group>` — Everyone in a group stops
 
 ### Managing bots
 - `/fb list` — Every bot (in game: their heads; click one for its menu)
-- `/fb remove <bot|--all>` — Remove bots
+- `/fb remove <bot|--all|--group <group>>` — Remove bots: one, all, or everyone in a group
+- `/fb remove --dead` — Remove only the bots that died and are spectating (hardcore)
+
+**Recording, replaying and scenes**
+- `/fb record <name>` — Copy yourself exactly (where you go, where you look, crouching, sprinting, every swing) until `/fb record stop`
+- `/fb record list` / `/fb record delete <name>` — The recordings you have, and deleting one
+- `/fb control <bot>` — Play as a bot, even one in the middle of a fight: you're hidden, you carry its gear and wear its skin, and it does everything you do (your hits, arrows and chat are its). When it's hit, you're knocked back
+- `/fb control --stop` — Hand the bot back and be yourself again, back where you were (`control.go-back`). A bot handed back mid-fight carries the fight on. While you're controlling a bot, `/fb stop` hands it back too (`control.stop-hands-back`)
+- `/fb replay <bot|--all|--group <group>> <recording> [here] [loop]` — Bots act a recording out. `here`: from where each bot stands. `loop`: over and over. `--stop` (or `/fb stop`) ends it
+- `/fb scene save <name> [radius|all]` — Save every bot around you: where it stands, gear, skin, settings, group and what it's doing
+- `/fb scene load <name>` — Bring back the scene's bots that aren't in the game
+- `/fb scene remove <name>` / `/fb scene delete <name>` / `/fb scene list` — Take its bots out, delete the scene, list scenes
 - `/kick <bot>` — Removes the bot, like `/fb remove`
 - `/ban <bot>` — Removes the bot; its name can't be spawned again until `/pardon <bot>`
-- `/fb edit clone <bot> <newName|--random>` — Copy a bot, gear and settings included
+- `/fb edit clone <bot> <--name <name>|--random>` — Copy a bot, gear and settings included
 - `/fb edit clone <bot> --random <count>` — Up to 200 copies at once
-- `/fb edit change <bot> <newName|--random>` — Rename a bot
+- `/fb edit change <bot> <--name <name>|--random>` — Rename a bot
 - `/fb tp <bot|--all|--group <group>> <player|x y z>` — Teleport bots; sent to a player, they face the way that player faces
-- `/fb look <bot|--all> <player|bot|--stop>` — Bots watch someone until you say `--stop`, or until they leave or die. Works on busy bots too (roaming, marching…). Given another order, such as a fight, they look at their opponent, then go back to watching
+- `/fb rtp <bot|--all|--group <group>> [world] [radius]` — Each bot to its own random safe spot in a world (the one it's in if you don't say), within `rtp.radius` (1000) blocks of its spawn
+- `/fb look <bot|--all|--group <group>> <player|bot|--stop>` — Bots watch someone until you say `--stop`, or until they leave or die. Works on busy bots too (roaming, marching…). Given another order, such as a fight, they look at their opponent, then go back to watching
+- `/fb look <bot|--all|--group <group>> <yaw> [pitch]` — Bots face that way, in degrees, as F3 shows them: yaw `0` south, `90` west, `180` north, `-90` east; pitch `-90` up to `90` down (e.g. `/fb look Bob 90 -20`)
+- `/fb look <bot|--all|--group <group>> <north|south|east|west|up|down|same>` — Face a compass direction, or `same`: the way you're facing
+- `/fb look <bot|--all|--group <group>> <x> <y> <z>` — Look at a spot (`~` works for players)
 
 ### Actions — make a bot do what a player does
 `/fb action <bot|--all|--group <group>> <action>`
@@ -53,8 +107,15 @@ Main command: `/fightbot` (alias: `/fb`). Permission: `fightbot.use` (OP by defa
 Moving by hand works like holding a key down: **nothing is automatic.** It doesn't step up blocks, stop at edges or go round anything. Make it jump with `/fb action <bot> jump` while it moves, for sprint-jumps too. Crouching while walking makes it crouch-walk. Turn it with `/fb look` or `turn` first. `/fb stop` also ends it.
 
 ### Marching and surrounding
-- `/fb march <bot|--all|--group <group>> [player] [left|straight|right]` — Bots march in rows behind you (or the player you name): a 1-block gap, then a row of 3 (one in the middle, one either side), then the next row straight behind, and so on. They look at you (`straight`, the default), or add `left` / `right` for a parade's "eyes left" / "eyes right" (e.g. `/fb march --all Nolan left`; with no player, you lead: `/fb march --all left`)
-- `/fb surround <bot|--all|--group <group>> [player]` — Bots stand in a ring round you (or the player you name), looking at you. The more bots, the bigger the ring
+- `/fb march <bot|--all|--group <group>> [player] [left|straight|right]` — Bots march in rows behind you (or the player you name): a 1-block gap, then a row of 3 (one in the middle, one either side; `/fb formation width` changes how many), then the next row straight behind, and so on. A crowd marches wider, so it isn't a long thin line (1000 bots: 23 across; `formation.march.widen`). They look at you (`straight`, the default), or add `left` / `right` for a parade's "eyes left" / "eyes right" (e.g. `/fb march --all Nolan left`; with no player, you lead: `/fb march --all left`)
+- `/fb march <bot|--all|--group <group>> here` — Rows where you stand, facing the way you face, and they hold it, so you can move away and film them
+- `/fb surround <bot|--all|--group <group>> [player|here]` — Bots stand in a ring round you (or the player you name), looking at you. The more bots, the bigger the ring. `here`: a ring round the spot you stand on, held
+- `/fb formation` — A screen showing how a march lines up, with heads: you at the top, the bots in rows below. Click a sign to type how many across, or how many rows long; switch widening for crowds on or off; and change how many bots the picture shows. It's all saved in the config at once
+- `/fb formation width <1-64>` — How many bots across each row of a march (3 at first). Saved in the config as `formation.march.width`, and marches that are already going change straight away. (The formation shapes from before 6.3.0 are gone: a march, a surround or `march … here` does what they did)
+- `/fb formation length <0-64>` — Or how many rows long a march is: it's then as wide as it needs to be (`formation.march.rows`). `0` goes back to the width
+- `/fb formation widen <on|off>` — Whether a crowd marches wider than the width (`formation.march.widen`)
+- `… spacing <blocks>` — On the end of a march or surround: blocks of gap between bots, 0 to 16 (e.g. `/fb march --all here spacing 2`)
+- `/fb charge <bot|--all|--group <group>> [radius] [players|bots|everyone]` — The bots leave their formation and attack everyone within the radius (32 blocks if you don't say; 4 to 128), each going for whoever is nearest. Never you, the player they were following, or one another
 - `/fb march <bot|--all|--group <group>> --stop` (or `surround … --stop`, or `/fb stop`) — End it
 - `/fb protect <bot|--all|--group <group>> [player] [behind|front|side]` — Bodyguards: bots keep close to you (or the player you name), behind, in front or down each side, and go after anyone who hurts them. They look where the player looks. `--stop`, or `/fb stop`, ends it
 
@@ -63,10 +124,10 @@ They keep their places as you walk and run, and get to them round trees, walls a
 ### Bots that join by themselves (off by default)
 - `/fb join <number>` — That many bots join like players ("X joined the game") at `joining.at` (the world spawn by default). What they do is `joining.objective`: go after a player (`hunt`), walk to `joining.point` (`point`), or both. Up to 20 at a time. Needs `joining.enabled: true`; with `joining.on-their-own` they also join by themselves now and then. The rest is in `joining.*` in the config
 
-### Bot settings
-- `/fb settings` — Pick a bot, then open its own settings menu
-- `/fb settings <bot>` — Open that bot's settings straight away
-- `/fb edit` / `/fb edit <bot>` — The same menu
+### Settings
+- `/fb settings` (or `/fb edit`, `/fb config`) — Every setting in config.yml as screens: the eight groups, their sections, and each setting with what it does, what it is now and its default. Click to change it, right-click for the default. Numbers and text are typed in a dialog box (1.21.7+), on a sign or in chat. Saved at once, comments kept. Needs `fightbot.settings`
+- `/fb settings global` — Every bot's switches: the same switches as a bot's own menu, for every bot at once (also in `/fb settings`)
+- `/fb settings <bot>` (or `/fb edit <bot>`) — That bot's own settings menu
 
 From the menu you can:
 - bring the bot to you, or go to it
@@ -83,6 +144,8 @@ It also has **per-bot switches**, so one bot can behave differently from the res
 - fights back: players, and fights back: bots
 - pillaring, bridging, mining
 - realistic ping
+- hardcore (it stays as a spectator when it dies)
+- on the locator bar (players can hunt it; 1.21.6+)
 
 Switches that are on glow. Click one to flip it, or right-click to hand it back to the server's setting. Changes apply as you click.
 
@@ -94,10 +157,12 @@ Bots can walk a route, or wander about freely, when they aren't fighting. Routes
 - `/fb roamingroutechange <route> <newName>` — Rename a route
 - `/fb roamingroutelist` — Every route
 - `/fb roamingpointset <route>` — Add a point where you're standing
+- `/fb pointtool <route>` (or `roamingpointtool`) — Make points by walking: an emerald puts a point where you stand, red dye takes the last one back, lime dye is done, a barrier cancels. The route is drawn in the air while you work, and your hotbar comes back when you're done
 - `/fb roamingpointset <route> <number>` — Move that point to where you're standing
 - `/fb roamingpointdel <route> <number>` — Delete a point
 - `/fb roamingstart <bot|--all|--group <group>> <route> [loop|back|stop]` — Walk a route. At the end it loops, walks back, or stops. A group walks it together as a squad
-- `/fb roamingfree <bot|--all|--group <group>>` — Wander about freely near where it is
+- `/fb roamingfree <bot|--all|--group <group>>` — Wander about freely near where it is. A group wanders together as a squad
+- `/fb roamingfree --group <group> apart` — Every bot in the group wanders its own way, in random directions
 - `/fb roamingstop <bot|--all|--group <group>>` — Stop roaming
 
 ### Patrolling
@@ -115,7 +180,8 @@ Bots fight back when a player hits them, or when another bot hits them on purpos
 A bot does one job at a time: fighting, roaming or patrolling. To give a busy bot a new job, or to open its gear, stop it first. FightBot tells you when. With `orders.must-stop-first: false` in the config, a new order takes over instead (opening its gear still needs it stopped).
 
 ### Kits & saves
-- `/fb kits` (or `saves`) — One screen, with kits on one side and saves on the other. Seven of each, plus five ready-made loadouts underneath: `diamond-sword`, `netherite-sword`, `mace`, `crystal` and `cart`
+- `/fb kits` (or `kit`) — One screen with both: kits on one side, saves on the other. Seven of each, plus five ready-made loadouts underneath: `diamond-sword`, `netherite-sword`, `mace`, `crystal` and `cart`
+- `/fb loads` (or `load`) — Straight to the kits. `/fb saves` (or `save`) — straight to the saves. Each has a door (Back) to the screen with both; Esc closes it
 
 ### Kits — re-gear bots you already have
 - `/fb saveload <bot> [1-7]` — Store a bot's gear and potion effects (like invisibility) as a kit (no number: the first free slot)
@@ -128,17 +194,20 @@ In the kits screen, pick a kit, then pick as many bots as you like. Each one dro
 
 ### Saves — spawn new bots with stored gear and settings
 - `/fb savegear <bot> [1-7]` — Store a bot's gear, settings and potion effects (like invisibility) in a save slot (no number: the first free slot)
-- `/fb save <1-7|ready-made> [name|--random] [count] [--location <x> <y> <z> ...]` — Spawn bots from a save, or wearing a ready-made loadout (`/fb save crystal`)
+- `/fb save <1-7|ready-made> [count|--name <name>] [--location <x> <y> <z> ...]` — Spawn bots from a save, or wearing a ready-made loadout (`/fb save crystal`, `/fb save mace 10`, `/fb save mace --name Steve`)
 - `/fb delsave <1-7>` — Delete a save
 
 ### Groups
 - `/fb groups` — Open the groups screen
 - `/fb groupcreate <name>` — Create a group
 - `/fb groupadd <group> <bot|player>` — Add a bot, or an online player. Each is in one group at a time, so adding one that's in another group moves it. If the group is roaming, patrolling or fighting together, a free bot joins in. A busy bot keeps at its own job until it's free (or joins in straight away with `orders.must-stop-first: false`).
-- `/fb groupadd <group> --all` — Put every bot in the group
+- `/fb groupadd <group> --all` — Put in every bot that isn't in a group yet (bots in other groups stay put)
+- `/fb groupadd <group> --group <other>` — Move everyone in another group into this one (the other group stays, empty)
+
+In the groups screen, **Add a bot** also has **Add every free bot**, **Add every bot** and **Move another group in**.
 - `/fb groupremove <group> <bot|player>` — Take a bot or a player out
 - `/fb groupdel <group>` — Delete a group; its bots are freed
-- `/fb grouplist [group]` — List groups, or one group's members (in game: opens the screen)
+- `/fb grouplist [group]` — List groups, or one group's members, marking any that are dead (in game: opens the screen)
 - `/fb groupcheck <bot>` — See which group a bot is in
 - `/fb groupchange <group> <newName>` — Rename a group
 
@@ -146,7 +215,7 @@ Players in a group are on the team with its bots. With `groups.friendly-fire: fa
 
 ### Group fights
 - `/fb groupfight <group> <group>` — Two groups fight as one-on-one duels: each bot takes one opponent until one of them falls, then picks the next. Players in either group are in the fight too, so 3 against 300 works
-- `/fb groupfight <group> <player|bot>` — A whole group goes after one target
+- A group after one player or bot: `/fb fight --group <group> <player>` or `/fb fight --group <group> --bot <bot>` (`/fb groupfight <group> <player>` still works for older scripts)
 - `/fb groupstop <group> [group]` — Stop one group, or both sides of a fight
 
 ### Voice lines (needs Simple Voice Chat)
@@ -209,15 +278,19 @@ Only the servers where you want bots need FightBot. Bots count in the network's 
 >
 > **Kicks and bans:** `/kick`, `/ban` and ban plugins (including death-ban plugins) remove bots, like players. A name banned with `/ban` can't be spawned until `/pardon <name>`.
 >
+> **Hardcore:** with `death.hardcore: true` (or a bot's own Hardcore switch), a bot that dies stays in the game as a spectator where it fell, instead of leaving. `/fb list` shows who's dead, and `/fb remove --dead` takes them out.
+>
 > **LuckPerms:** bots get their groups, permissions and prefixes like players, and `/lp user <bot> ...` works on them. Set `luckperms.group` to put every bot in a group (say, for a [Bot] prefix).
 >
 > **Reloads:** after `/plugman reload FightBot` or `/reload`, bots come straight back, still doing what they were.
+>
+> **Restarts:** bots come back where they stood, in the world they were in. One in a world a plugin loads a little late (Multiverse, a world that resets) waits for it (`restart.wait-for-world`, 2 minutes), then comes back at spawn. They're written down every minute too, so they come back after a crash.
 >
 > **Updates:** FightBot downloads new releases from Modrinth by itself, ready for the next restart, and tells admins. It picks the right build for the server (the Paper build on Paper and Purpur, FightBot for Spigot on Spigot and CraftBukkit), and swaps a wrong one at the next restart. Turn downloads off with `updates.download: false`.
 >
 > **Shields and knockback:** bots block with a shield and take knockback exactly like players. A shield only blocks from the front, once it's been up a quarter of a second, and an axe knocks it out for 5 seconds, so stun slams work.
 >
-> **Movement:** bots sprint-jump after players on open ground and crit off the jump, jump gaps up to 3 blocks wide, walk round a single missing block, and cross wider gaps by placing blocks (a block mid-jump over 4, bridging down to 3 on anything wider). See `movement.*` in the config.
+> **Movement:** bots sprint-jump after players on open ground and crit off the jump, jump gaps up to 3 blocks wide, walk round a single missing block, and cross wider gaps by placing blocks (a block mid-jump over 4, bridging down to 3 on anything wider). Bridging, they turn round, crouch and back out over the edge, like a player. See `movement.*` in the config.
 >
 > **Cart PvP:** a bot with TNT minecarts, rails, cobwebs, arrows and a bow or crossbow (plus flint and steel, unless the bow has Flame) cobwebs its target, puts a rail beside them and a TNT minecart on it, then shoots a burning arrow into the cart. Without Flame it lights fire just before the cart and shoots through it. A crossbow is kept loaded, so the shot is one click. Up close, it cobwebs you and steps back first. Any rail works. Rain puts burning arrows out, so bots don't try it in the rain. Give bots totems: a cart blast is big.
 >

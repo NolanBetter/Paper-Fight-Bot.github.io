@@ -73,7 +73,7 @@
       <b>How to read this.</b> <span class="yes">Yes</span> means the project says it does that.
       <span class="no">No</span> means it says it does not, or it plainly is not what the plugin is for.
       <span class="dunno">Not stated</span> means its page does not say either way &mdash; so treat it as
-      unknown rather than missing. Checked <b>8 November 2026</b>. If a line here is wrong or has gone out
+      unknown rather than missing. Checked <b>21 November 2026</b>. If a line here is wrong or has gone out
       of date, <a href="#" data-discord style="color:var(--iron)">tell us in Discord</a> and it gets fixed.
     </div>
 
@@ -146,6 +146,14 @@
             <td class="yes">Yes, and players can join a group</td><td class="no">No</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Marching and surrounding you</th>
             <td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Bots hunt a player down across the world</th>
+            <td class="yes">Yes &mdash; the way the locator bar would</td><td class="no">No &mdash; it looks at players near it</td><td class="dunno">Not stated &mdash; it has auto-targeting, unexplained</td></tr>
+          <tr><th scope="row">Spears</th>
+            <td class="yes">Yes, with the Lunge dash</td><td class="dunno">Not stated</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Keeps out of regions with PvP off (WorldGuard, PvPManager)</th>
+            <td class="yes">Yes</td><td class="dunno">Not stated</td><td class="dunno">Not stated</td></tr>
+          <tr><th scope="row">Hardcore: dead bots stay as spectators</th>
+            <td class="yes">Yes</td><td class="dunno">Not stated</td><td class="dunno">Not stated</td></tr>
           <tr><th scope="row">Guard a player, and fight whoever hurts them</th>
             <td class="yes">Yes</td><td class="no">No</td><td class="dunno">Not stated &mdash; it has follow and revenge modes, unexplained</td></tr>
           <tr><th scope="row">Bots join the server by themselves</th>
@@ -173,8 +181,16 @@
             <td class="yes">Yes, ~970 built in</td><td class="yes">Copies a player&rsquo;s</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Emotes and custom player models</th>
             <td class="yes">Yes</td><td class="no">No</td><td class="dunno">Not stated</td></tr>
-          <tr><th scope="row">Bots survive a server restart</th>
+          <tr><th scope="row">Play as a bot, from inside it</th>
+            <td class="yes">Yes &mdash; its hits are yours, even mid-fight</td><td>By commands only</td><td>By commands only, like Carpet</td></tr>
+          <tr><th scope="row">Record your moves, and a bot acts them out</th>
             <td class="yes">Yes</td><td class="dunno">Not stated</td><td class="dunno">Not stated</td></tr>
+          <tr><th scope="row">Every setting in game, as screens</th>
+            <td class="yes">Yes</td><td>By command (<span class="cmd">/fp config</span>)</td><td class="dunno">An in-world control panel, unexplained</td></tr>
+          <tr><th scope="row">Updates itself</th>
+            <td class="yes">Yes</td><td class="dunno">Not stated</td><td class="dunno">Not stated</td></tr>
+          <tr><th scope="row">Bots survive a server restart</th>
+            <td class="yes">Yes, in their own world</td><td class="dunno">Not stated</td><td class="dunno">Not stated</td></tr>
           <tr><th scope="row">Works across a Velocity or Bungee network</th>
             <td class="yes">Yes</td><td class="dunno">Not stated</td><td class="dunno">Not stated</td></tr>
           <tr><th scope="row">Record what a bot sees</th>
@@ -190,8 +206,11 @@
       <div class="spec-row">
         <h3>You want something to fight</h3>
         <p>FightBot or VexBot. Both do real PvP. FightBot runs on <em>Spigot and CraftBukkit as well</em>,
-          needs nothing else installed, and is changed from a web page rather than an in-game menu. VexBot
-          also runs in singleplayer and on Fabric, which FightBot does not.</p>
+          needs nothing else installed, and is built to be simple: one command does a whole job
+          (<span class="cmd">/fightbot spawn 10</span>, <span class="cmd">/fightbot march --all</span>,
+          <span class="cmd">/fightbot fight --group red --group blue</span>), Tab only offers what fits, and
+          there&rsquo;s a screen or a web page for most things. VexBot also runs in singleplayer and on Fabric,
+          which FightBot does not.</p>
       </div>
       <div class="spec-row">
         <h3>You want a body to hold a chunk</h3>
@@ -200,9 +219,10 @@
       </div>
       <div class="spec-row">
         <h3>You are filming or scripting</h3>
-        <p>FightBot. &#8203;<span class="cmd">/fightbot action</span> moves a bot one key at a time with
-          nothing automatic, five built&#8209;in loadouts kit a bot in one click, and bots can walk on to the
-          server by themselves while you record.</p>
+        <p>FightBot. &#8203;<span class="cmd">/fightbot record</span> and <span class="cmd">replay</span> have
+          bots act out what you did, the same on every take; saved scenes put them back between takes; and
+          <span class="cmd">/fightbot control</span> lets you play one yourself. <span class="cmd">/fightbot action</span>
+          moves a bot one key at a time with nothing automatic, and five built&#8209;in loadouts kit a bot in one click.</p>
       </div>
     </div>
 

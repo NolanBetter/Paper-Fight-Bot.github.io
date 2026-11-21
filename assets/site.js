@@ -1,8 +1,8 @@
 /* Paper Fight Bot. Change CONFIG and every page follows. */
 
 const CONFIG = {
-  version:  "6.0.17",
-  downloads: "6.5K",
+  version:  "6.4.3",      // what the pages say until Modrinth answers (see liveFromModrinth)
+  downloads: "9.8K",
   minecraft: "1.20.5+",
   modrinth: "https://modrinth.com/plugin/paper-fight-bot",
   discord:  "https://discord.gg/Gc3TDyFup5",
@@ -27,7 +27,34 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-year]").forEach(el => el.textContent = new Date().getFullYear());
 
   wikiFollow();
+  liveFromModrinth();
 });
+
+/* The newest release and the download count, straight from Modrinth's public
+   API, so the home page never says an old version again. Only the numbers are
+   read: nothing is sent, no sign in. If Modrinth doesn't answer, the pages keep
+   what CONFIG says. The Spigot build ships under the same version number with
+   "-spigot" on the end, so that suffix is left off. */
+function liveFromModrinth() {
+  const shows = document.querySelector("[data-version], [data-downloads]");
+  if (!shows) return;
+  const api = "https://api.modrinth.com/v2/project/paper-fight-bot";
+  const short = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M"
+    : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n);
+
+  fetch(api, { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(p => {
+    if (!p || typeof p.downloads !== "number") return;
+    document.querySelectorAll("[data-downloads]").forEach(el => el.textContent = short(p.downloads));
+  }).catch(() => {});
+
+  fetch(api + "/version", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(list => {
+    if (!Array.isArray(list)) return;
+    const rel = list.find(v => v.version_type === "release") || list[0];
+    if (!rel || !rel.version_number) return;
+    const v = String(rel.version_number).replace(/-spigot$/i, "");
+    document.querySelectorAll("[data-version]").forEach(el => el.textContent = v);
+  }).catch(() => {});
+}
 
 /* On the wiki, mark the section you are reading in the list down the side,
    and keep it in view as you go. The list is long enough to scroll on its

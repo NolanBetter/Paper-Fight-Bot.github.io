@@ -85,7 +85,7 @@
           <pre>/fightbot spawn
 
 <span class="c"># or name it yourself</span>
-/fightbot spawn <span class="k">Kade</span>
+/fightbot spawn --name <span class="k">Kade</span>
 
 <span class="c"># or a whole crowd, up to 200</span>
 /fightbot spawn <span class="k">10</span></pre>
@@ -94,7 +94,7 @@
       <div class="step">
         <div>
           <h3>Gear it up</h3>
-          <p>Run <span class="cmd">/fightbot settings</span> for a screen of every bot's head, click one, then <b>Open gear</b>. Or switch to creative and right&#8209;click the bot. Give it armour, a weapon, and anything else you want it using. Or skip this and fight it bare&#8209;handed.</p>
+          <p>The quickest way is a ready&#8209;made loadout: <span class="cmd">/fightbot kit Kade netherite-sword</span> (or <span class="cmd">diamond-sword</span>, <span class="cmd">mace</span>, <span class="cmd">crystal</span>, <span class="cmd">cart</span>). To pick the gear yourself, switch to creative and right&#8209;click the bot, or run <span class="cmd">/fightbot settings Kade</span> and click <b>Open gear</b>. Or skip this and fight it bare&#8209;handed.</p>
           <p>Full slot list is in the <a href="wiki.html#equipment" style="color:var(--iron)">wiki</a>.</p>
         </div>
       </div>
@@ -113,6 +113,12 @@
     <div class="note gold" style="margin-top:34px">
       <b>Permission:</b> everything sits under <span class="cmd">fightbot.use</span>, which defaults to OP.
       Grant it in your permissions plugin to let other people spawn bots.
+    </div>
+
+    <div class="note" style="margin-top:18px">
+      <b>Updates look after themselves.</b> FightBot checks Modrinth when the server starts and twice a day,
+      downloads a new version, and puts it in at the next restart. Your config is updated for you.
+      <span class="cmd">updates.download: false</span> turns the downloading off.
     </div>
 
     <div class="note" style="margin-top:18px">

@@ -41,7 +41,7 @@
   <div class="wrap">
     <h1 style="position:absolute;left:-9999px">Paper Fight Bot</h1>
     <img class="lockup" src="assets/wordmark.png" alt="Paper Fight Bot" width="900" height="197">
-    <p class="tagline"><i></i>Version <span data-version>4.9.0-beta</span> &middot; free on Modrinth</p>
+    <p class="tagline"><i></i>Version <span data-version>6.4.3</span> &middot; free on Modrinth</p>
     <p class="lede">PvP bots that actually fight. They path across your world to find you, crit and sprint&#8209;attack, dodge, pop totems, throw pearls, clutch with a water bucket and bridge over the gap you just jumped. Spawn one, or two hundred.</p>
     <div class="cta-row" style="justify-content:center">
       <a class="btn" href="#" data-modrinth>Download on Modrinth</a>
@@ -49,7 +49,7 @@
     </div>
 
     <dl class="stats">
-      <div class="stat"><dt data-downloads>1.2K</dt><dd>downloads</dd></div>
+      <div class="stat"><dt data-downloads>9.8K</dt><dd>downloads</dd></div>
       <div class="stat"><dt>0</dt><dd>other plugins needed</dd></div>
       <div class="stat"><dt>200</dt><dd>bots from one command</dd></div>
       <div class="stat"><dt>2</dt><dd>builds: Paper and Spigot</dd></div>
@@ -151,16 +151,36 @@
         <p>&#8203;<span class="cmd">/fightbot action</span> gives you one move at a time &mdash; jump, crouch, left&#8209;click, right&#8209;click, walk, sprint, turn &mdash; with <em>nothing automatic</em>, so it bumps into walls and walks off ledges like a player would. For scripted scenes, that is the point.</p>
       </div>
       <div class="spec-row">
-        <h3>In formation</h3>
-        <p>&#8203;<span class="cmd">/fightbot march</span> lines them up in rows behind you and keeps them there as you walk, eyes left or eyes right. <span class="cmd">/fightbot surround</span> puts them in a ring. <em>Turn round and hit your own column and they take it</em> and stay in line &mdash; anyone else who hits them still gets a fight.</p>
+        <h3>Armies</h3>
+        <p>&#8203;<span class="cmd">/fightbot march</span> lines them up in rows behind you and keeps them there as you walk, eyes left or eyes right &mdash; <em>a thousand of them</em>, widening as the crowd grows. <span class="cmd">/fightbot formation</span> shows how they line up, with heads, and <span class="cmd">/fightbot surround</span> puts them in a ring. Then <span class="cmd">/fightbot charge</span> sends them in. Turn round and hit your own column and they take it and stay in line.</p>
       </div>
       <div class="spec-row">
         <h3>Bodyguards</h3>
         <p>&#8203;<span class="cmd">/fightbot protect</span> keeps them close &mdash; behind you, ahead of you so they meet trouble first, or a line down each side &mdash; <em>looking where you look</em> rather than at you. Hurt the player they are guarding and every one of them goes after whoever did it, then falls back into place.</p>
       </div>
       <div class="spec-row">
-        <h3>Settings menu</h3>
-        <p>&#8203;<span class="cmd">/fightbot settings</span> opens a screen of every bot's head. Click one to change how that bot fights, hand it gear, or clone it, without touching the config.</p>
+        <h3>Play as a bot</h3>
+        <p>&#8203;<span class="cmd">/fightbot control</span> puts you inside a bot, even in the middle of a fight. You carry its gear and wear its skin, <em>its hits are your hits</em>, and when it&rsquo;s hit you&rsquo;re knocked back. Everyone else just sees the bot.</p>
+      </div>
+      <div class="spec-row">
+        <h3>Filming</h3>
+        <p>&#8203;<span class="cmd">/fightbot record</span> copies everything you do, and <span class="cmd">/fightbot replay</span> has bots <em>act it out the same way on every take</em>. Saved scenes put your bots back where they stood between takes, and <span class="cmd">/fightbot look</span> points them exactly where the shot needs.</p>
+      </div>
+      <div class="spec-row">
+        <h3>The hunt</h3>
+        <p>&#8203;<span class="cmd">/fightbot hunt</span> sends bots after a player anywhere in the world, the way a player does with the locator bar: they know <em>which way you are, not where</em>, so crouch, wear a pumpkin or drink invisibility and they lose you. <span class="cmd">/fightbot rtp</span> scatters them to random safe spots first.</p>
+      </div>
+      <div class="spec-row">
+        <h3>Arenas</h3>
+        <p>With WorldGuard or PvPManager, fighting bots <em>stay out of regions with PvP off</em> and wait at the edge. Their escape pearls can be kept short, and never go through a wall, so they stay inside your arena.</p>
+      </div>
+      <div class="spec-row">
+        <h3>Settings in the game</h3>
+        <p>&#8203;<span class="cmd">/fightbot settings</span> shows every setting as screens, each one explained, with <em>a dialog box to type values in</em> on 1.21.7 and newer. One bot&rsquo;s own switches are a click away, so a boss can throw pearls while the rest don&rsquo;t.</p>
+      </div>
+      <div class="spec-row">
+        <h3>Light on the server</h3>
+        <p>A bot doesn&rsquo;t cost the server what a player does: idle bots rest, mobs don&rsquo;t spawn round them, and less of the world stays loaded. <em>A thousand bots fighting held 17.9 TPS</em> on our test server, and a limit on how many each player is sent keeps their FPS up in a crowd.</p>
       </div>
       <div class="spec-row">
         <h3>Dressed up</h3>
@@ -188,7 +208,7 @@
       </div>
       <div class="spec-row">
         <h3>They come back</h3>
-        <p>Restart the server and your bots are still there &mdash; same place, same gear, health, skin, settings and group. <em>An army survives a restart and a FightBot update</em>, a few at a time so the start isn&rsquo;t held up.</p>
+        <p>Restart the server and your bots are still there &mdash; same world, same place, same gear, health, skin, settings and group. <em>An army survives a restart and a FightBot update</em>, a few at a time so the start isn&rsquo;t held up. And FightBot <em>updates itself</em>: a new version downloads and goes in at the next restart.</p>
       </div>
       <div class="spec-row">
         <h3>Actually a player</h3>

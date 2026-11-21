@@ -96,7 +96,11 @@ Use the [report form](report.html). It takes your debug log and plugin list, and
 <!-- id: webeditor -->
 ## Can I change settings without opening server files?
 
-Yes. Type `/fightbot web` in game and open the link it gives you. It opens the
+Yes, two ways. In game, `/fightbot settings` (6.4.3 and newer) shows every setting as screens, each one
+explained: click a switch to flip it, and type numbers and names in a dialog box (1.21.7 and newer) or on a
+sign. It saves to `config.yml` for you and applies straight away.
+
+Or type `/fightbot web` in game and open the link it gives you. It opens the
 [editor](editor/) on this site, where you can change any setting, run the bots that are already there — send
 them after someone, set them roaming or patrolling, make groups, hand out kits, and flip any one bot's own
 switches — upload skins and voice lines, and read the debug logs.
@@ -141,6 +145,10 @@ update too, since those need a restart.
 They do not pick up what they were doing — fights and routes start afresh — and they come back a few at
 a time (`restart.per-second`, 10) so a big army does not hold the start up. `restart.max-bots` caps how many
 come back (100, or `0` for all of them), and `restart.keep-bots: false` turns it off.
+
+From 6.4.3 they come back in the world they were in, and a world that a plugin like Multiverse loads a
+moment late is waited for (`restart.wait-for-world`, 120 seconds). They're also written down every minute,
+so they come back even after a crash.
 
 A plugin reload is different: after `/plugman reload FightBot` or `/reload`, bots come back still doing
 what they were.
@@ -278,3 +286,39 @@ the network, and `/fbp web` gives one web editor link that covers every server.
 
 On Velocity with modern forwarding there is nothing to set up. Otherwise paste the proxy's
 `link-secret.txt` into `network.secret` on each server. [The wiki](wiki.html) has the whole setup.
+
+<!-- id: vanish -->
+## My bots are invisible, or disappeared.
+
+Update first: before 6.3.2, an invisibility potion on a bot could last until it was removed. A bot that is
+really gone was killed, kicked or banned, and FightBot says which in chat.
+
+If you still can't see a bot that is right next to you, another plugin has hidden it (a vanish plugin, say).
+From 6.4.3 FightBot notices, and says in the console and to staff which plugin it was.
+
+<!-- id: fps -->
+## My game lags near lots of bots.
+
+That's your game drawing them, not the server. Set `performance.max-visible-bots: 150` and `/fightbot reload`:
+each player is only sent the bots nearest them. In your own game, turn Entity Distance down and Entity
+Shadows off. [The wiki](wiki.html#performance) has the rest.
+
+<!-- id: arena -->
+## How do I keep bots inside my arena?
+
+`combat.pearl-away-distance: 8` keeps their escape pearls short, and a pearl never takes a bot through a wall.
+With WorldGuard or PvPManager, `combat.avoid-no-pvp: true` keeps fighting bots out of regions with PvP off:
+they wait at the edge for their target to come out.
+
+<!-- id: control -->
+## Can I play as one of the bots?
+
+Yes: `/fightbot control <bot>`, even in the middle of a fight. You carry its gear and wear its skin, and its hits
+are yours. `/fightbot stop` hands it back and puts you where you were.
+
+<!-- id: hunt -->
+## Can bots hunt players down?
+
+Yes, from 6.4.3: `/fightbot hunt <bot> <player>`, or leave the player out and each bot hunts whoever is nearest.
+They track the way a player does with the locator bar, so a player who crouches, wears a carved pumpkin or
+drinks invisibility gets away. `/fightbot rtp` sends bots to random safe spots first.
