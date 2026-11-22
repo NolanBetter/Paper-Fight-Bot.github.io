@@ -40,8 +40,10 @@ Rather click than type? `/fb web` gives you a link to change FightBot from your 
 |---|---|
 | `/fb guide` | A short walkthrough. Pick a page: `start`, `gear`, `fights`, `groups`, `army`, `routes`, `film`, `skins`, `names`, `voice`, `ai`, `web`, `network`, `which`, `lag` or `problems`. |
 | `/fb skins` | Where your skins stand right now, and how to set them up. |
-| `/fb help` | Every command. |
+| `/fb help` | Commands by topic: the basics, moving bots, filming, gear, groups, routes, voice, and the server. Each says what it does, with an example. Click one in game to put it in your chat box. `/fb help <command>` explains one (`/fb help fight`), and `/fb help all` lists every command. |
 | `/fb quick` | Your [quick actions](#quick-actions): commands you've saved, one click each. |
+
+A command typed wrong shows how it's written and says which `/fb help` explains it (6.4.5).
 
 `/fb start` jumps straight to the getting-started page. On a brand-new server, anyone who can use FightBot gets a one-time "type /fb guide" message when they join, until the first bot is spawned.
 
@@ -163,8 +165,8 @@ A **recording** is what one player did, for bots to act out. A **scene** is wher
 
 | Command | What it does |
 |---|---|
-| `/fb spawn` | One bot with a random name, where you stand, facing the way you face. |
-| `/fb spawn <count>` | Up to 200 bots with random names, spread out a little. A big batch arrives over a few seconds, a few bots each tick, so the server keeps up. Run it again for more: the next batch spawns round the first instead of on top of it. |
+| `/fb spawn` | One bot with a random name, exactly where you stand, facing the way you face. Spawn them one at a time to line them up on a ledge (6.4.5: before, each new bot moved a block or two away from bots already there; `orders.spawn-apart: true` brings that back). |
+| `/fb spawn <count>` | Up to 200 bots with random names, spread out a little. A big batch arrives over a few seconds, a few bots each tick, so the server keeps up. Run it again and the next batch lands in the same spots; with `orders.spawn-apart: true` it spreads out round the first instead. |
 | `/fb spawn --name <name>` | One bot with the name you give it. A real account's name wears that account's skin: see [A name you type](#a-name-you-type). Press Tab after `--name` for a few ideas. `/fb spawn <name>` is the short way, and scripts can keep using it. |
 | `/fb spawn --random [count]` | The long way of writing `/fb spawn <count>`. With no number, one bot. |
 | `/fb spawn [count\|--name <name>] --location <x> <y> <z> [world] [yaw pitch]` | Spawns them somewhere else. See [Spawning somewhere else](#spawning-somewhere-else). |
@@ -186,6 +188,8 @@ A **recording** is what one player did, for bots to act out. A **scene** is wher
 **Tab shows each step.** After `/fb spawn` it offers `--name`, `--random`, `--location` and a few counts. After `--random` it offers a count or `--location`, and after a count or a name, `--location`. `/fb save <slot>` takes the same words.
 
 **A player or a bot? (6.4.4)** Wherever a command can take either, a plain name is a player and a bot goes after `--bot`, the way `/fb fight` has always worked: `/fb look Bob Nolan` watches the player Nolan, and `/fb look Bob --bot Guard1` watches the bot Guard1. It's the same for `/fb tp`, `/fb march`, `/fb surround`, `/fb protect` and a route's targets. Tab only offers players as plain names, and `--bot` (then the bots) after them; `orders.bots-in-player-names: true` brings the bots back. Groups are the other way round, since a group is mostly bots: `/fb groupadd red Bob` adds the bot Bob, and `/fb groupadd red --player Steve` adds the player Steve. The older ways still work, so command blocks and scripts don't need changing.
+
+**Nicknames (6.4.5).** A player can be named by their nickname too (EssentialsX `/nick` and other nick plugins): `/fb fight Bob Nolan` works while Nolan is nicked, and so does every other command that takes a player. A real name always comes first, and a nickname two players share isn't used. Tab offers nicknames as well.
 
 A bot never takes a name that belongs to someone else:
 
@@ -528,6 +532,9 @@ Bots throw pearls to chase someone who runs, to get out of a pit, and to get awa
 - **Ledges:** a bot won't walk off a drop of 3 blocks or more unless its target is below it. In a fight, with its target level with it or higher on the far side of a dip, it waits about a second and a half for a way round, then hops down if the fall won't cost it much (4 blocks or less, or deeper while it would still have 5 hearts left), and comes up the other side. It never drops onto lava, fire, magma or cactus.
 - **Holes:** a bot that falls into a hole it can't jump out of, with no way worked out to its target, places a block or two under itself and climbs out (Pillaring must be on). With pearls, it may pearl out instead.
 - **Wider gaps** (`movement.gap-blocks`): chasing someone (or on a route that allows building), a bot crosses gaps of 4 to 12 blocks by placing blocks. Over 4, it sprint-jumps and puts a block down at the far end mid-jump to land on. Like a player, now and then it misses. On anything wider, it bridges out one block at a time until 3 are left, then jumps the rest. A bot roaming with no target never places blocks over gaps.
+- **Deadly drops (6.4.5):** a bot never steps, drifts or is pushed off an edge where the fall would kill it: the void, 24 blocks or more, or more than its health can take. Bots shoving each other in a crowd, a jump for a critical hit and flowing water all stop at the edge. A gap over a deadly drop is never jumped, however short: with bridging on it's bridged all the way across, crouched; otherwise the bot goes round. Ten bots can bridge side by side over the End void.
+- **Sprinting (6.4.5):** a bot running at full speed sprints, as a player holding the sprint key does, so its first hit carries sprint knockback. It lets go to block, eat, heal, shoot, jump for a crit, swim, bridge or pillar, when it's hungry, and for a moment after each swing.
+- **Standing about:** bots with nothing to do only shove each other when they're actually touching (6.4.5), so a row of bots stays a row.
 
 ### Mace
 
@@ -740,6 +747,9 @@ Bots swim. A bot going after someone across a river swims over and climbs out on
 - A target right beside the water, close enough to hit, is fought from the bank.
 - Free roamers stay on dry land. One that ends up in the water anyway, knocked in say, swims to the nearest place it can get out.
 - With building on, a bot may put a block down to climb out of a river with steep banks. It only does this when it's after a target, or on a route it's allowed to build along.
+- **Water pouring off a ledge isn't a landing** (6.4.5). The drop under the waterfall counts, so bots bridge or go round instead of walking off. A bot standing in shallow water at an edge isn't swimming, so it can still jump or bridge out.
+
+**Water buckets (6.4.5).** A bot that places water (to wash out a cobweb, or to land a big fall) goes back and picks it up, in a fight or not, while it's within 16 blocks. A bot that dies or is removed takes its water with it, so big fights don't leave water everywhere.
 
 ## The settings screens
 
@@ -749,6 +759,7 @@ Bots swim. A bot going after someone across a river swims over and climbs out on
 - **Every bot's switches** and **One bot's settings** sit beside it (below).
 - **The eight groups** the config is in (Fighting, Weapons and PvP styles, and so on) are underneath, for everything else. Each one opens its sections, and each section its settings, with what each one does, what it is now and its default. A setting you've changed is yellow.
 - **Quick actions** and the **Web editor** are along the bottom.
+- **Every setting says what it does (6.4.5).** A choice lists each option with what it means, the one it's on marked in yellow: `building.only-own-blocks` shows what kit, true and false each do. Settings whose key says little have a plain name, like "Build only with blocks it carries" or "Bridge across gaps". The web editor shows the same.
 - **Click a setting to change it.** A switch flips, a choice moves on to the next (shift-click: the one before), and anything else you type: a number, a name, a list (commas between), a key. **Right-click** puts it back to its default. A secret such as `ai.api-key` is never shown; shift-right-click clears it.
 - **Typing it:** on 1.21.7 and newer a **dialog box** opens, with what the setting does, a box to type in, and Save and Cancel. On older versions a **sign** goes up over your head (nobody else sees it, and the block goes back afterwards): a number goes on the first line, and longer text, like a list or a command, can run across all four. Something too long for a sign, like an AI key, says to use `/fb web` or `config.yml` instead. Nothing is typed in chat any more.
 - **It's saved at once:** written into `config.yml` with its comments kept, and the config is read again, as `/fb reload` would. Health, speed and damage only apply to bots spawned after. Staff are told what was changed, and by whom.
@@ -1436,6 +1447,7 @@ Don't delete your config when you update. FightBot notices it came from an older
 | `combat.use-pearls`, `use-cobwebs`, `use-shield`, `use-axe-swap`, `use-water-bucket` | `true` | Which tricks bots use. Each is also a switch in a bot's own settings. |
 | `combat.pearl-away-distance` | `0` | How far a bot pearls to get away, in blocks (4 to 35), never over a wall. `0`: a full-strength throw. See [Ender pearls](#ender-pearls). |
 | `orders.bots-in-player-names` | `false` | Tab offers only real players as plain names (in `/fb fight`, `look`, `tp`, `march` and the rest); bots come after `--bot`. `true`: bots with the players too. |
+| `orders.spawn-apart` | `false` | `/fb spawn` puts a bot exactly where you stand. `true`: a new bot, or batch, spreads out round the bots already there (how it was before 6.4.5). |
 | `messages.staff-notices` | `true` | FightBot tells staff in chat when something happens by itself (a bot kicked, an update out...). `false`: console only, for scripted or recorded servers. |
 | `messages.author-notice` | `true` | When Funnyfam14, FightBot's author, joins, he's told privately that the server runs FightBot: the version, how many bots there are and any update waiting. Nobody else sees it, it gives no permissions and nothing leaves the server. `false` to turn it off. |
 | `combat.wait-for-charge` | `true` | Bots wait for their weapon to charge before they swing. |
@@ -1545,7 +1557,9 @@ Building is always a last resort. A bot looks for stairs, slopes and ways round 
 
 - **Pillaring** (on by default): when you're above it and there's no way up, it crouches, jumps and places blocks under itself until it's level with you.
 - **Stuck down a pit or below a ledge:** it gets out the way you would. It throws an ender pearl up onto your level (landing on top of a block, not against the side), throws a wind charge under its feet, or walks to the side nearest you and builds up against it.
-- **Bridging** (off by default): when there's a gap or water in the way and no way round, it bridges across the way a player does: it turns round, crouches, looks down behind it and backs out over the edge, placing blocks. On the far side it stands up and turns back round.
+- **Under an overhang (6.4.5):** a bot below a ledge it can't jump up walks out from under the roof to open sky, then builds up from there, instead of jumping into the ceiling.
+- **After a teleport (6.4.5)** a bot forgets where it was stuck, so steps right in front of it are walked up, not pillared.
+- **Bridging** (off by default): when there's a gap or water in the way and no way round, it bridges across the way a player does: it turns round, crouches, looks down behind it and backs out over the edge, placing blocks. On the far side it stands up and turns back round. Each bridge is a little different, like a player's: its own slightly-off angle, eased head turns and an uneven pace (6.4.5).
 - **Gaps while chasing** (`movement.gap-blocks`, on): see [Moving like a player](#moving-like-a-player).
 
 **Only its own blocks** (`building.only-own-blocks`): a player can only build with blocks they're carrying, and bots can be the same. They use up the blocks they carry, and with none, they don't pillar, bridge or build over gaps; they go round or wait. Any full solid block works (not obsidian, TNT, or sand and gravel, which fall).
@@ -1565,6 +1579,7 @@ Update to 6.1.0 or newer: on our test servers bots cost a fifth to a third less 
 - **Debug logging** (`/fb debug off`) should be off unless you're recording a log for us.
 - **Mobs:** a bot is a player to them, and they attack it. With `performance.mob-spawning: false` they don't spawn round bots, but they still spawn round you.
 - **How many bots are fighting at once** matters most. A bot standing in a formation costs a fraction of one in a fight.
+- **Slow to spawn?** Every bot is a real player, so plugins that do something when a player joins do it for every bot too: a skin plugin looking the name up online, a join message, a database. From 6.4.5 the console says once when that makes spawning slow, and `/fb debug report` lists every plugin with code that runs on join, and how long the last spawn took. Scenes also load a few bots a tick now, so a big one doesn't freeze the server.
 - Still slow? Run `/spark profiler start`, play for a minute, `/spark profiler stop`, and send us the link with a [debug log](#still-stuck-send-a-debug-log).
 
 **My FPS drops when there are lots of bots.**
@@ -1639,6 +1654,21 @@ Fixed in 5.17.2: bots drop everything they had, like a player, unless the world 
 
 **A bot fighting me stopped at the edge of a drop.**
 Fixed in 5.17.4: when you're on a lower step, past a 3-block drop, the bot jumps down after you. From 6.1.0 it also crosses a dip when you're level with it or higher on the far side: it waits a moment, hops down if the fall is safe, and climbs up to you. If one still stops, turn on `/fb debug on` and send the log from `plugins/FightBot/debug/`.
+
+**Bots fall into the void while bridging, or push each other off.**
+Update to 6.4.5. A bot no longer steps, drifts or gets pushed off an edge where the fall would kill it, and it bridges all the way across a gap over the void instead of jumping. Bots also bridge over water pouring off a ledge instead of walking off into it.
+
+**A bot is stuck under a ledge, jumping and crouching.**
+Update to 6.4.5: it walks out from under the overhang to open sky and builds up from there. A bot you teleport also forgets where it was stuck, so it walks up steps instead of pillaring.
+
+**`/fb fight` says a player isn't online, but they are.**
+They're probably nicked. From 6.4.5 every command finds a player by their nickname too, as long as no other player has the same one.
+
+**Bots spawn a block or two away from where I'm standing.**
+From 6.4.5 `/fb spawn` puts each bot exactly where you stand. Before, a new bot moved away from bots already there. Want that back? `orders.spawn-apart: true`.
+
+**Bots leave their water behind.**
+Update to 6.4.5: a bot goes back for its water within 16 blocks, and a bot that dies or is removed takes its water with it.
 
 **A bot is stuck in a hole.**
 From 6.1.0 a bot in a hole it can't jump out of builds a block or two under itself and climbs out, or pearls out. It needs **Pillaring** on (`building.pillar`, and the switch in its settings menu) and, with `building.only-own-blocks` on, blocks in its pack.

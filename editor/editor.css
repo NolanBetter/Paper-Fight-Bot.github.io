@@ -118,6 +118,10 @@
 .setting .name{font-family:var(--display);font-size:17.5px;color:#fff}
 .setting .key{color:var(--ash);font-size:14.5px;word-break:break-all}
 .setting .help{grid-column:1/-1;color:var(--ash);font-size:15.5px;white-space:pre-wrap;margin:0}
+.ed-choices{grid-column:1/-1;margin:2px 0 0;padding:0;list-style:none;display:grid;gap:3px;font-size:15px;color:var(--ash)}
+.ed-choices li{padding:3px 8px;border-left:3px solid transparent}
+.ed-choices li b{color:#fff;font-weight:600}
+.ed-choices li.on{border-left-color:var(--gold);background:rgba(255,255,255,.05)}
 .setting .ed-input{width:100%}
 .setting input[type=checkbox]{width:26px;height:26px;accent-color:var(--blood);margin:4px 0}
 .setting.changed{background:#14120f}

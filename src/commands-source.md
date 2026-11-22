@@ -2,16 +2,20 @@
 
 Main command: `/fightbot` (alias: `/fb`). Permission: `fightbot.use` (OP by default). Five more, also OP by default: `fightbot.settings` to change settings in the game (`/fb settings`), `fightbot.web` for the web editor, `fightbot.control` to play as a bot, `fightbot.quick.edit` to add and change quick actions, and `fightbot.voice.custom` to play sound files added to the server. Players with `fightbot.hunt.exempt` (nobody by default) are never hunted.
 
-> **New? Type `/fb guide` in game.** It walks you through setup one step at a time. `/fb help` lists every command.
+> **New? Type `/fb guide` in game.** It walks you through setup one step at a time. `/fb help` shows the commands by topic, with examples.
 
 ### Help
 - `/fb guide` — A quick walkthrough. Pages: `start`, `gear`, `fights`, `groups`, `army`, `routes`, `film`, `skins`, `names`, `voice`, `ai`, `web`, `network`, `which`, `lag`, `problems`
 - `/fb guide <page>` — One page, e.g. `/fb guide skins`
 - `/fb skins` — Where your skins stand right now, and how to set them up
 - `/fb skins names` — Every name FightBot found with its own skin, to copy (click to copy in game; all of them are saved to `skins/found-names.txt`)
-- `/fb help` — Every command
+- `/fb help` — The commands by topic (the basics, moving bots, filming, gear, groups, routes, voice, the server), each with what it does and an example. Click a line in game to put it in your chat box
+- `/fb help <topic|command>` — One topic (`/fb help start`), or one command explained (`/fb help fight`)
+- `/fb help all` — Every command on one page
 
 > **A player or a bot? (6.4.4)** Wherever a command can take either, a plain name is a player and a bot goes after `--bot`, as in `/fb fight`: `/fb look Bob Nolan` watches the player Nolan, `/fb look Bob --bot Guard1` the bot Guard1. The same goes for `tp`, `march`, `surround`, `protect` and route targets. Groups are the other way round: `/fb groupadd red Bob` adds the bot Bob, and `--player Steve` adds the player Steve. The older ways still work.
+
+> **Nicknames (6.4.5).** A player can be named by their nickname too (EssentialsX `/nick` and the like): `/fb fight Bob Nolan` works while Nolan is nicked. A real name comes first, and a nickname two players share isn't used.
 
 ### Which one should I use?
 Some commands do nearly the same job. Pick by what you want:
@@ -46,7 +50,7 @@ Some commands do nearly the same job. Pick by what you want:
 **Kit or save?** A kit changes the gear on bots you have. A save spawns new bots, gear and settings together. `saveload` stores a kit and `savegear` stores a save; `kit` gives a kit and `save` spawns from a save.
 
 ### Spawning
-- `/fb spawn` — One bot with a random name, where you stand, facing the way you face
+- `/fb spawn` — One bot with a random name, exactly where you stand, facing the way you face. Spawn them one at a time to line them up (`orders.spawn-apart: true` spreads new bots round the ones already there, as before 6.4.5)
 - `/fb spawn <count>` — Up to 200 bots with random names (a few each tick, so the server keeps up)
 - `/fb spawn --name <name>` — One bot with the name you choose (Tab offers a few ideas). If it's a real Minecraft account, the bot wears that account's skin (`identity.skin-from-name`, on at first): `/fb spawn --name Dream`. Spawn yourself from an alt and it looks just like you. `/fb spawn <name>` is the short way, for scripts
 - `/fb spawn --random [count]` — The long way of writing `/fb spawn <count>`

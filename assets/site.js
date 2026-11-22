@@ -1,8 +1,8 @@
 /* Paper Fight Bot. Change CONFIG and every page follows. */
 
 const CONFIG = {
-  version:  "6.4.3",      // what the pages say until Modrinth answers (see liveFromModrinth)
-  downloads: "9.8K",
+  version:  "6.4.5",      // what the pages say until Modrinth answers (see liveFromModrinth)
+  downloads: "9.9K",
   minecraft: "1.20.5+",
   modrinth: "https://modrinth.com/plugin/paper-fight-bot",
   discord:  "https://discord.gg/Gc3TDyFup5",

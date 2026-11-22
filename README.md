@@ -7,7 +7,7 @@ stylesheet, ES modules.
     install.html    installation and first fight
     compare.html    FightBot beside FakePlayer and VexBot
     ai.html         setting up AI voice chat with Groq
-    wiki.html       the FightBot wiki, 6.4.4
+    wiki.html       the FightBot wiki, 6.4.5
     faq.html        common questions
     report.html     bug report form
     reports.html    your reports, and the reply threads

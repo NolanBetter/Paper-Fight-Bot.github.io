@@ -797,7 +797,8 @@ function renderSettings({ keepPlace = false } = {}) {
   const groups = new Map();
   for (const e of cfg.schema) {
     if (e.key === "config-version") continue;
-    if (find && !(e.key + " " + (e.help || "") + " " + (e.note || "")).toLowerCase().includes(find)) continue;
+    if (find && !(e.key + " " + (e.title || "") + " " + (e.help || "") + " " + (e.note || "") + " "
+        + Object.values(e.optionHelp || {}).join(" ")).toLowerCase().includes(find)) continue;
     if (!groups.has(e.section)) groups.set(e.section, []);
     groups.get(e.section).push(e);
   }
@@ -844,7 +845,7 @@ function settingRow(e) {
     input = el("select", { class: "ed-input", disabled, "aria-label": e.key },
       ...(e.options || []).map(o => el("option", { value: o, text: o })));
     input.value = value;
-    input.addEventListener("change", () => changed(input.value));
+    input.addEventListener("change", () => { changed(input.value); markChoice(row, input.value); });
 
   } else if (e.type === "integer" || e.type === "number") {
     input = el("input", { type: "number", class: "ed-input", disabled, "aria-label": e.key,
@@ -882,14 +883,26 @@ function settingRow(e) {
   const range = e.min !== undefined ? "  (" + e.min + "–" + e.max + ")" : "";
   row.append(
     el("div", {},
-      el("div", { class: "name", text: pretty(e.key) + (e.readOnly ? " · read only" : "") }),
+      el("div", { class: "name", text: (e.title || pretty(e.key)) + (e.readOnly ? " · read only" : "") }),
       el("div", { class: "key", text: e.key + range })),
     el("div", {}, input)
   );
   const help = [e.help, e.note].filter(Boolean).join("\n");
   if (help) row.append(el("p", { class: "help", text: help }));
+  // 6.4.5: what each choice means, the one it's on marked
+  if (e.type === "choice" && e.optionHelp && !e.choicesInHelp) {
+    row.append(el("ul", { class: "ed-choices" },
+      ...(e.options || []).map(o => el("li", { "data-choice": o },
+        el("b", { text: o }), el("span", { text: " — " + (e.optionHelp[o] || "") })))));
+    markChoice(row, value);
+  }
   if (e.key in edits) row.classList.add("changed");
   return row;
+}
+
+function markChoice(row, value) {
+  row.querySelectorAll(".ed-choices li").forEach(li =>
+    li.classList.toggle("on", String(li.dataset.choice).toLowerCase() === String(value).toLowerCase()));
 }
 
 function updateSavebar() {
