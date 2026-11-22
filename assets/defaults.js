@@ -58,9 +58,10 @@ A bot with a mace and wind charges wind-jumps and smashes you on the way down. W
   { id: "bug", q: "How do I report a bug?",
     a: `Use the [report form](report.html). It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.
 
-From 6.4.4, \`/fightbot debug report\` writes everything we need into one file in \`plugins/FightBot/debug/\`:
-your versions, plugins, worlds, bots, \`config.yml\` with keys and passwords hidden, and FightBot's recent
-console lines. Turn on \`/fightbot debug on\` first, make the problem happen, then run it, and send that file.` },
+Run \`/fightbot debug on\`, make the problem happen, then \`/fightbot debug off\`, and send the file it names
+(in \`plugins/FightBot/debug/\`). From 6.4.6 that one file has everything we need: your versions, TPS,
+plugins, worlds, bots and \`config.yml\` with keys and passwords hidden at the start and the end, and what
+the bots did in between. (\`/fightbot debug report\` from 6.4.4 and 6.4.5 is now part of it.)` },
   { id: "webeditor", q: "Can I change settings without opening server files?",
     a: `Yes, two ways. In game, \`/fightbot settings\` (6.4.3 and newer) shows every setting as screens, each one
 explained, with the 18 settings most people change on a **Popular settings** screen first (6.4.4). Click a
@@ -371,6 +372,8 @@ In all four, a bot that's hit fights back and then takes its place again, and no
 | \`/fb look <bot> <x> <y> <z>\` | Everyone should look at one spot, like a stage or a door. |
 | \`/fb action <bot> turn left\` | A turn from where it faces now, when the exact direction doesn't matter. |
 | \`left\` or \`right\` on a march or formation | Heads turned while they walk, like a parade. |
+
+Outside a fight a bot turns its head at a person's pace, so a group turning a corner or a bot told to look somewhere doesn't snap round in one frame (6.4.6). A bot with nothing to do also **glances about** now and then: off to one side, or at someone close by, for a second or two, then back the way it was placed. Bots in a formation, or told where to look with \`/fb look\`, stay still. \`head-movement.idle-glance: false\` keeps every bot still.
 
 ### Stopping and removing
 
@@ -776,7 +779,8 @@ Bots throw pearls to chase someone who runs, to get out of a pit, and to get awa
 
 ### Moving like a player
 
-- **Sprint-jumping** (\`movement.sprint-jump\`): chasing someone on open, level ground, a bot sprint-jumps like a player, which is faster than running. Coming down from a jump, it lands critical hits.
+- **Sprint-jumping** (\`movement.sprint-jump\`): when the player it's fighting or hunting is 12 blocks or more away on open ground, a bot sprint-jumps like a player, which is faster than running. Nearer than that it runs (6.4.6: before, it hopped from 4 blocks out). Marching, guarding and roaming bots never sprint-jump. Coming down from a jump, it lands critical hits.
+- **Steps (6.4.6):** a bot goes by each block's real height, like the game does for a player. Anything a player steps up without jumping (a dirt path next to grass, a slab, a stair, a thin layer of snow) it walks up; a full block it jumps; anything taller is a wall. So bots marching along a path don't hop up and down any more.
 - **Gaps** (\`movement.jump-gaps\`): it jumps gaps up to 3 blocks wide, onto the same level or one block up, instead of placing blocks.
 - **A single missing block** in otherwise solid ground is walked round, not jumped. Trenches across its path are still jumped.
 - **Ledges:** a bot won't walk off a drop of 3 blocks or more unless its target is below it. In a fight, with its target level with it or higher on the far side of a dip, it waits about a second and a half for a way round, then hops down if the fall won't cost it much (4 blocks or less, or deeper while it would still have 5 hearts left), and comes up the other side. It never drops onto lava, fire, magma or cactus.
@@ -1681,7 +1685,7 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`mace.elytra-combo\` | \`true\` | After a Wind Burst smash: the elytra back on, a rocket, and another dive. See [Mace](#mace). |
 | \`spear.lunge\` | \`true\` | With Lunge on the spear: dashing in from a few blocks off, and out when losing. See [Spears](#spears). |
 | \`spear.elytra-charge\` | \`true\` | Spear charges from the elytra (needs \`elytra.enabled\` too). See [Spears](#spears). |
-| \`movement.sprint-jump\` | \`true\` | Sprint-jumping after players on open ground, and crits off the jump. See [Moving like a player](#moving-like-a-player). |
+| \`movement.sprint-jump\` | \`true\` | Sprint-jumping to close a big gap (12 blocks or more) to someone it's fighting or hunting, and crits off the jump. See [Moving like a player](#moving-like-a-player). |
 | \`movement.jump-gaps\` | \`true\` | Jumping gaps up to 3 blocks wide instead of placing blocks. |
 | \`movement.gap-blocks\` | \`true\` | Crossing gaps of 4 to 12 blocks by placing blocks, while after a target. |
 | \`cart.enabled\` / \`cooldown\` | \`true\` / \`3\` | Cart PvP, and the least seconds between carts. See [Cart PvP](#cart-pvp). |
@@ -1707,7 +1711,8 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`formation.march.look-angle\` / \`look-up\` | \`45\` / \`10\` | Marching eyes left or right: how far round and up. |
 | \`joining.enabled\` | \`false\` | Bots join the server by themselves, like players. See [Bots that join by themselves](#bots-that-join-by-themselves). |
 | \`mining.enabled\` | \`false\` | Breaking blocks in the way with a pickaxe. |
-| \`head-movement.natural\` | \`false\` | \`true\` turns the head at a person's pace, with a little aim drift. |
+| \`head-movement.natural\` | \`false\` | In a fight, \`true\` turns the head at a person's pace, with a little aim drift. Outside a fight bots always turn at a person's pace (6.4.6). |
+| \`head-movement.idle-glance\` | \`true\` | A bot with nothing to do glances about now and then, or at someone close by. See [Where a bot looks](#where-a-bot-looks). |
 | \`ping.enabled\` | \`true\` | A realistic, wandering ping in the tab list. |
 | \`death.leave-message\` / \`sound\` | \`true\` | The "left the game" line when a bot dies (sent like a player's) and the death boom. |
 | \`reload.keep-bots\` | \`true\` | Bots come back after a plugin reload, doing what they were. |
@@ -1791,7 +1796,7 @@ Update to 6.1.0 or newer: on our test servers bots cost a fifth to a third less 
 - **Debug logging** (\`/fb debug off\`) should be off unless you're recording a log for us.
 - **Mobs:** a bot is a player to them, and they attack it. With \`performance.mob-spawning: false\` they don't spawn round bots, but they still spawn round you.
 - **How many bots are fighting at once** matters most. A bot standing in a formation costs a fraction of one in a fight.
-- **Slow to spawn?** Every bot is a real player, so plugins that do something when a player joins do it for every bot too: a skin plugin looking the name up online, a join message, a database. From 6.4.5 the console says once when that makes spawning slow, and \`/fb debug report\` lists every plugin with code that runs on join, and how long the last spawn took. Scenes also load a few bots a tick now, so a big one doesn't freeze the server.
+- **Slow to spawn?** Every bot is a real player, so plugins that do something when a player joins do it for every bot too: a skin plugin looking the name up online, a join message, a database. From 6.4.5 the console says once when that makes spawning slow. A [debug log](#still-stuck-send-a-debug-log) lists every plugin with code that runs on join and how long the last spawn took, and from 6.4.6 it notes each time the server freezes while bots spawn. Scenes also load a few bots a tick now, so a big one doesn't freeze the server.
 - Still slow? Run \`/spark profiler start\`, play for a minute, \`/spark profiler stop\`, and send us the link with a [debug log](#still-stuck-send-a-debug-log).
 
 **My FPS drops when there are lots of bots.**
@@ -1882,6 +1887,15 @@ From 6.4.5 \`/fb spawn\` puts each bot exactly where you stand. Before, a new bo
 **Bots leave their water behind.**
 Update to 6.4.5: a bot goes back for its water within 16 blocks, and a bot that dies or is removed takes its water with it.
 
+**Bots hop up and down when they march along a path.**
+Update to 6.4.6. A dirt path sits a pixel lower than grass, and bots took the next path block for a step to jump. Now they walk it, like a player.
+
+**Bots sprint-jump the whole time.**
+Update to 6.4.6: they only sprint-jump to close a big gap (12 blocks or more) to someone they're fighting or hunting. Marching, guarding and roaming bots never do. \`movement.sprint-jump: false\` turns it off.
+
+**Idle bots move their heads.**
+That's the glance from 6.4.6, so a crowd doesn't stand like statues. Bots always come back the way they were placed. \`head-movement.idle-glance: false\` keeps them still, and so does \`/fb look\`.
+
 **A bot is stuck in a hole.**
 From 6.1.0 a bot in a hole it can't jump out of builds a block or two under itself and climbs out, or pearls out. It needs **Pillaring** on (\`building.pillar\`, and the switch in its settings menu) and, with \`building.only-own-blocks\` on, blocks in its pack.
 
@@ -1928,7 +1942,7 @@ Fixed in 6.4.3. A bot teleported a long way down, from a tower to the ground or 
 Fixed in 6.4.3. The ground under it could unload, and Spigot counts a bot there as gone, so orders said "None of them are in the game." Its ground now goes with it when it's teleported.
 
 **After a restart, bots didn't come back in the world they were in, or came back in the main world.**
-Update to 6.4.4. In 6.4.3: on Spigot they didn't come back at all, and a bot in a world that a plugin loads a moment late (Multiverse, a world that resets) was left out; now it waits for that world. In 6.4.4: two kinds of plugin still moved them to the main world. One empties a world as the server stops; the other sends new players to spawn (EssentialsX, Multiverse's first spawn, a lobby plugin). FightBot now works round both, and the console names the plugin that tried. See [Server restarts](#server-restarts). Still happening? Run \`/fb debug on\`, restart, and send a [debug report](#still-stuck-send-a-debug-log).
+Update to 6.4.4. In 6.4.3: on Spigot they didn't come back at all, and a bot in a world that a plugin loads a moment late (Multiverse, a world that resets) was left out; now it waits for that world. In 6.4.4: two kinds of plugin still moved them to the main world. One empties a world as the server stops; the other sends new players to spawn (EssentialsX, Multiverse's first spawn, a lobby plugin). FightBot now works round both, and the console names the plugin that tried. See [Server restarts](#server-restarts). Still happening? Run \`/fb debug on\`, restart, and send the [debug log](#still-stuck-send-a-debug-log).
 
 **"'Name' is banned on this server."**
 That name was banned, perhaps by a death-ban plugin. Run \`/pardon <name>\`, or use another name.
@@ -1960,9 +1974,14 @@ Update to 6.4.4; before, \`performance.locator-bar: true\` didn't actually put t
 /fb debug on
 \`\`\`
 
-Make the problem happen, then run \`/fb debug off\`. (\`/fb debug\` on its own shows whether it's on.) The log is in \`plugins/FightBot/debug/\`. It records what each bot saw, chose and did, and why. Since 6.4.4 it also records every FightBot command, settings changed in \`/fb settings\`, bots changing world and who moved them, worlds loading, what's saved and brought back over a restart, scenes, and voice chat while you control a bot.
+Make the problem happen, then run \`/fb debug off\`. That's all: it tells you which file to send, in \`plugins/FightBot/debug/\`. (\`/fb debug\` on its own shows whether it's on.) It only writes a file; nothing is sent anywhere.
 
-**Then run \`/fb debug report\` (6.4.4).** It writes one file to \`plugins/FightBot/debug/\` with everything we need in one place: your FightBot, server and Java versions, every plugin, every world, every bot and what it's doing, \`config.yml\` (with keys, secrets and passwords hidden), FightBot's recent console lines and the end of the debug log. It only writes a file; nothing is sent anywhere. Send us that file.
+The log has three parts (6.4.6):
+- **At the start:** how your server stands as you turn it on: your FightBot, server and Java versions, TPS, every plugin, every world, every bot and what it's doing, and \`config.yml\` with keys, secrets and passwords hidden.
+- **In between:** what each bot saw, chose and did, and why. Also every FightBot command, settings changed in \`/fb settings\`, bots changing world and who moved them, worlds loading, what's saved and brought back over a restart, scenes, and voice chat while you control a bot. Once a minute there's a line on the server's TPS and its longest pause, and a note whenever the server freezes for 300 ms or more.
+- **At the end:** the same snapshot again as you turn it off, how long the last spawn took, and everything FightBot said in the console while it was on. The end is written when the server stops, too.
+
+\`/fb debug report\` from 6.4.4 and 6.4.5 is gone: it's all in the one log now.
 
 More at [fightmc.xyz](https://www.fightmc.xyz)` },
 ];

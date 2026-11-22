@@ -283,8 +283,8 @@ Only the servers where you want bots need FightBot. Bots count in the network's 
 
 ### Other
 - `/fb reload` — Re-read the config without restarting (it also shows how your skins are doing)
-- `/fb debug <on|off>` — Log everything the bots do to `plugins/FightBot/debug/` (`/fb debug` alone shows whether it's on). It also logs FightBot commands, settings changes, worlds, restarts, scenes and voice chat during control
-- `/fb debug report` — One file with your versions, plugins, worlds, bots, `config.yml` (keys and secrets hidden) and FightBot's recent console lines, to send with a bug report
+- `/fb debug on` — Start a debug log in `plugins/FightBot/debug/`. It begins with how your server stands (versions, TPS, plugins, worlds, bots, `config.yml` with keys and secrets hidden), then logs everything the bots do, FightBot commands, settings changes, worlds, restarts, scenes and voice chat during control, with the TPS once a minute
+- `/fb debug off` — End the log with the same snapshot again and FightBot's console lines meanwhile, and say which file to send with a bug report. `/fb debug` alone shows whether it's on
 - `/fb update` — Look on Modrinth for a newer FightBot right now
 
 > **Skins:** set `identity.skin-source` to `random`, `folder` or `mojang`, then `/fb reload`. With `random`, about 970 skins come built in, ready at once, and FightBot also finds real names with their own skins while nobody's on the server, and new bots get those names, each wearing its own skin (`identity.find-skins`). The console says when it finds some, and `/fb skins` shows how many and who it's waiting for. If the console says the skin signing service asked FightBot to wait, that's normal. FightBot carries on by itself. `/fb skins` shows how far along it is.

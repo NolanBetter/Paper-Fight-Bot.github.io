@@ -93,9 +93,10 @@ Go ahead. A link back is appreciated but not required.
 
 Use the [report form](report.html). It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.
 
-From 6.4.4, `/fightbot debug report` writes everything we need into one file in `plugins/FightBot/debug/`:
-your versions, plugins, worlds, bots, `config.yml` with keys and passwords hidden, and FightBot's recent
-console lines. Turn on `/fightbot debug on` first, make the problem happen, then run it, and send that file.
+Run `/fightbot debug on`, make the problem happen, then `/fightbot debug off`, and send the file it names
+(in `plugins/FightBot/debug/`). From 6.4.6 that one file has everything we need: your versions, TPS,
+plugins, worlds, bots and `config.yml` with keys and passwords hidden at the start and the end, and what
+the bots did in between. (`/fightbot debug report` from 6.4.4 and 6.4.5 is now part of it.)
 
 <!-- id: webeditor -->
 ## Can I change settings without opening server files?
