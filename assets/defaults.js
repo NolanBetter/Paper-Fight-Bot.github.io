@@ -779,7 +779,7 @@ Bots throw pearls to chase someone who runs, to get out of a pit, and to get awa
 
 ### Moving like a player
 
-- **Sprint-jumping** (\`movement.sprint-jump\`): when the player it's fighting or hunting is 12 blocks or more away on open ground, a bot sprint-jumps like a player, which is faster than running. Nearer than that it runs (6.4.6: before, it hopped from 4 blocks out). Marching, guarding and roaming bots never sprint-jump. Coming down from a jump, it lands critical hits.
+- **Sprint-jumping** (\`movement.sprint-jump\`): when the player it's fighting or hunting is 12 blocks or more away on open ground, or is running from it, a bot sprint-jumps like a player, which is faster than running. Coming in on someone, it may jump once at the end to come down on them. Otherwise it runs (6.4.6: before, it hopped from 4 blocks out whatever you did). Marching, guarding and roaming bots never sprint-jump. Coming down from a jump, it lands critical hits.
 - **Steps (6.4.6):** a bot goes by each block's real height, like the game does for a player. Anything a player steps up without jumping (a dirt path next to grass, a slab, a stair, a thin layer of snow) it walks up; a full block it jumps; anything taller is a wall. So bots marching along a path don't hop up and down any more.
 - **Gaps** (\`movement.jump-gaps\`): it jumps gaps up to 3 blocks wide, onto the same level or one block up, instead of placing blocks.
 - **A single missing block** in otherwise solid ground is walked round, not jumped. Trenches across its path are still jumped.
@@ -1685,7 +1685,7 @@ Don't delete your config when you update. FightBot notices it came from an older
 | \`mace.elytra-combo\` | \`true\` | After a Wind Burst smash: the elytra back on, a rocket, and another dive. See [Mace](#mace). |
 | \`spear.lunge\` | \`true\` | With Lunge on the spear: dashing in from a few blocks off, and out when losing. See [Spears](#spears). |
 | \`spear.elytra-charge\` | \`true\` | Spear charges from the elytra (needs \`elytra.enabled\` too). See [Spears](#spears). |
-| \`movement.sprint-jump\` | \`true\` | Sprint-jumping to close a big gap (12 blocks or more) to someone it's fighting or hunting, and crits off the jump. See [Moving like a player](#moving-like-a-player). |
+| \`movement.sprint-jump\` | \`true\` | Sprint-jumping to close a gap to someone it's fighting or hunting (12 blocks or more, or running from it), and crits off the jump. See [Moving like a player](#moving-like-a-player). |
 | \`movement.jump-gaps\` | \`true\` | Jumping gaps up to 3 blocks wide instead of placing blocks. |
 | \`movement.gap-blocks\` | \`true\` | Crossing gaps of 4 to 12 blocks by placing blocks, while after a target. |
 | \`cart.enabled\` / \`cooldown\` | \`true\` / \`3\` | Cart PvP, and the least seconds between carts. See [Cart PvP](#cart-pvp). |
@@ -1891,7 +1891,7 @@ Update to 6.4.5: a bot goes back for its water within 16 blocks, and a bot that 
 Update to 6.4.6. A dirt path sits a pixel lower than grass, and bots took the next path block for a step to jump. Now they walk it, like a player.
 
 **Bots sprint-jump the whole time.**
-Update to 6.4.6: they only sprint-jump to close a big gap (12 blocks or more) to someone they're fighting or hunting. Marching, guarding and roaming bots never do. \`movement.sprint-jump: false\` turns it off.
+Update to 6.4.6: they only sprint-jump to close a gap to someone they're fighting or hunting: 12 blocks or more, or someone running from them, plus the odd jump in for a crit. Marching, guarding and roaming bots never do. \`movement.sprint-jump: false\` turns it off.
 
 **Idle bots move their heads.**
 That's the glance from 6.4.6, so a crowd doesn't stand like statues. Bots always come back the way they were placed. \`head-movement.idle-glance: false\` keeps them still, and so does \`/fb look\`.
@@ -1981,7 +1981,7 @@ The log has three parts (6.4.6):
 - **In between:** what each bot saw, chose and did, and why. Also every FightBot command, settings changed in \`/fb settings\`, bots changing world and who moved them, worlds loading, what's saved and brought back over a restart, scenes, and voice chat while you control a bot. Once a minute there's a line on the server's TPS and its longest pause, and a note whenever the server freezes for 300 ms or more.
 - **At the end:** the same snapshot again as you turn it off, how long the last spawn took, and everything FightBot said in the console while it was on. The end is written when the server stops, too.
 
-\`/fb debug report\` from 6.4.4 and 6.4.5 is gone: it's all in the one log now.
+\`/fb debug report\` from 6.4.4 and 6.4.5 is gone: it's all in the one log now. A \`/fb reload\` along the way doesn't stop the log (6.4.6); only changing \`debug.enabled\` in the config does.
 
 More at [fightmc.xyz](https://www.fightmc.xyz)` },
 ];
