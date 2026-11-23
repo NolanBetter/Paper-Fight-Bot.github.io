@@ -303,7 +303,7 @@ Only the servers where you want bots need FightBot. Bots count in the network's 
 >
 > **Shields and knockback:** bots block with a shield and take knockback exactly like players. A shield only blocks from the front, once it's been up a quarter of a second, and an axe knocks it out for 5 seconds, so stun slams work.
 >
-> **Movement:** bots sprint-jump after players on open ground and crit off the jump, jump gaps up to 3 blocks wide, walk round a single missing block, and cross wider gaps by placing blocks (a block mid-jump over 4, bridging down to 3 on anything wider). Bridging, they turn round, crouch and back out over the edge, like a player. See `movement.*` in the config.
+> **Movement:** bots run at players and sprint-jump only to close a big gap (12 blocks or more, or a player running away), now and then jumping in at the end for a crit. They walk paths, slabs and stairs, jump gaps up to 3 blocks wide, walk round a single missing block, and cross wider gaps by placing blocks (a block mid-jump over 4, bridging down to 3 on anything wider). Bridging, they turn round, crouch and back out over the edge, like a player. See `movement.*` in the config.
 >
 > **Cart PvP:** a bot with TNT minecarts, rails, cobwebs, arrows and a bow or crossbow (plus flint and steel, unless the bow has Flame) cobwebs its target, puts a rail beside them and a TNT minecart on it, then shoots a burning arrow into the cart. Without Flame it lights fire just before the cart and shoots through it. A crossbow is kept loaded, so the shot is one click. Up close, it cobwebs you and steps back first. Any rail works. Rain puts burning arrows out, so bots don't try it in the rain. Give bots totems: a cart blast is big.
 >
