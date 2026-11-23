@@ -118,7 +118,7 @@ In all four, a bot that's hit fights back and then takes its place again, and no
 | `/fb action <bot> turn left` | A turn from where it faces now, when the exact direction doesn't matter. |
 | `left` or `right` on a march or formation | Heads turned while they walk, like a parade. |
 
-Outside a fight a bot turns its head at a person's pace, so a group turning a corner or a bot told to look somewhere doesn't snap round in one frame (6.4.6). A bot with nothing to do also **glances about** now and then: off to one side, or at someone close by, for a second or two, then back the way it was placed. Bots in a formation, or told where to look with `/fb look`, stay still. `head-movement.idle-glance: false` keeps every bot still.
+Outside a fight a bot turns its head at a person's pace, so a group turning a corner or a bot told to look somewhere doesn't snap round in one frame (6.4.6). A bot with nothing to do also **glances about** now and then: off to one side, or at someone close by, for a second or two, then back the way it was placed. A bot walking with `/fb action walk` keeps its eyes ahead and walks straight, and one turned with `/fb action turn` or teleported facing a new way glances out from that new way. Bots in a formation, or told where to look with `/fb look`, stay still. `head-movement.idle-glance: false` keeps every bot still.
 
 ### Stopping and removing
 
