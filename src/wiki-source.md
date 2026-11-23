@@ -105,6 +105,7 @@ In all four, a bot that's hit fights back and then takes its place again, and no
 | `/fb roamingfree` | Making a place look lived in. Nothing to set up: bots stroll about near where they are. | You don't choose where they go. |
 | `/fb roamingstart <bot> <route>` | Bots should walk a path you choose: guards on a wall, a street through a town. They find their own way from point to point. | You set the points first. `/fb pointtool` is the quick way. |
 | `/fb patrollingstart <bot> <route>` | The same walk, and they attack the route's targets when they see them. | |
+| `/fb march <bots> --route <route>` | An army marching a route in rows, for a parade or a shot, with nobody leading (6.4.7). | They keep to rows: for bots each going their own way, roam. |
 | `/fb record` and `/fb replay` | A shot for a video. The bot does exactly what you did, looking about, crouching and swinging included, the same on every take. | It copies you; it doesn't find its own way. A block that wasn't there when you recorded stops it. |
 | `/fb action <bot> walk` | A simple move in a script or a command block: forward for 3 seconds. | Nothing is automatic. It walks into walls and off ledges. |
 
@@ -242,6 +243,7 @@ Walking and sprinting work like holding a key down: **nothing is automatic**. Th
 |---|---|
 | `/fb march <bot\|--all\|--group <group>> [player] [left\|straight\|right]` | Bots march in rows behind you, or the player you name. Add `left` or `right` for "eyes left" or "eyes right". |
 | `/fb march <bot\|--all\|--group <group>> here` | Rows where you stand, facing the way you face, held there. See [Holding a spot](#holding-a-spot). |
+| `/fb march <bot\|--all\|--group <group>> --route <route> [stop\|loop\|back]` | Rows marching a route, point to point, with nobody leading (6.4.7). See [Marching a route](#marching-a-route). |
 | `/fb surround <bot\|--all\|--group <group>> [player\|here]` | Bots stand in a ring round you, the player you name, or (`here`) the spot you stand on. |
 | `/fb formation` | A screen showing how a march lines up, with heads, where you set how wide or how long it is. See [The formation screen](#the-formation-screen). |
 | `/fb formation width <1-64>` | How many bots across each row (3 at first). Saved in the config; marches already going change at once. |
@@ -307,6 +309,17 @@ The middle 9 columns and the first 4 rows fit on the screen; the info item says 
 - **Where they look:** holding a spot, they face the way you faced. Add `left` or `right` for "eyes left" or "eyes right", or use [`/fb look`](#facing-a-direction) afterwards to point them anywhere.
 - **Spacing:** add `spacing <blocks>` on the end for that many blocks of gap between bots, sideways and row to row: `/fb march --all here spacing 2`. `spacing 0` is shoulder to shoulder; up to 16. It works on `/fb surround` too, and a saved scene keeps it. Without it, spacing comes from `formation.march.*`: `side-gap` between bots side by side, `row-gap` between one row and the next.
 - Everything else works as it does for marching: bots walk to their places, a bot that's hit fights back and then takes its place again, and `/fb stop` ends it.
+
+### Marching a route
+
+`/fb march --all --route parade` (6.4.7) marches the bots in rows **along a route**, the same routes roaming and patrolling use (`/fb pointtool parade` makes one by walking it). Nobody leads: the front of the march walks the route itself, **point to point in straight lines**, at a steady marching pace.
+
+- **Corners:** each row turns where the front turned, the way a real column goes round a corner, instead of the whole block swinging round like a gate.
+- **Keeping together:** when the back rows fall behind (a tree, a crowd), the front waits for them. A few stuck bots don't hold the march up for long: after a few seconds it goes on at half pace.
+- **At the end:** `stop` (the default) holds there, facing the way it came; `loop` goes round again from the first point; `back` turns round and marches back.
+- **Where they look:** the way their own row is going. `left` or `right` on the end for eyes left or eyes right: `/fb march --group army --route parade loop left`.
+- `spacing <blocks>` and `/fb formation width` work as for any march, and `--points` is the same as `--route`. `/fb stop` ends it.
+- The route's points can be at any height: the march follows the ground between them.
 
 The formation shapes from before 6.3.0 (`/fb formation --all wedge`, `square here`, `rows 20 10` and the rest) are gone, to keep it simple. Typing one now tells you what to use instead: a march, a surround, `march … here`, or `formation width`.
 
@@ -517,6 +530,9 @@ Bots fight like a person, not a machine:
 - **Real critical hits only.** A bot jumps and swings on the way down, and the game decides if it's a crit. It never crits walking along, and its reach is a player's, whatever weapon you hold.
 - **A charged swing.** It waits for its weapon to charge up (the attack bar a player sees) before it swings, and times its crit jumps to come down just as it fills (`combat.wait-for-charge`). That matters most for slow weapons: a half-charged axe hit does far less.
 - **Hit them straight away.** A bot can be hit the moment it joins, teleports, pearls or changes world, like a player.
+- **A turn, not a snap (6.4.7).** Its aim is as quick and sure as ever, but its head turns over a tick or two instead of jumping right round in one frame, and it doesn't swing at someone more than 70 degrees off to its side. `head-movement.natural: true` is slower and more human still.
+- **One at a time (6.4.7).** With several on it, it keeps at the one it's fighting, the way a person does, and moves on when that one's out of reach and someone else is close. It used to turn to whoever was nearest that moment, and in a crowd its head never stopped swinging.
+- **Getting its breath back (6.4.7).** Low on health, it backs off away from everyone fighting it - not just the nearest - and keeps going that way. Running to heal, it turns and runs, looking where it's going with a glance back now and then. Surrounded on every side, it stands its ground and eats where it stands.
 
 ### Ender pearls
 
@@ -538,6 +554,9 @@ Bots throw pearls to chase someone who runs, to get out of a pit, and to get awa
 - **Deadly drops (6.4.5):** a bot never steps, drifts or is pushed off an edge where the fall would kill it: the void, 24 blocks or more, or more than its health can take. Bots shoving each other in a crowd, a jump for a critical hit and flowing water all stop at the edge. A gap over a deadly drop is never jumped, however short: with bridging on it's bridged all the way across, crouched; otherwise the bot goes round. Ten bots can bridge side by side over the End void.
 - **Sprinting (6.4.5):** a bot running at full speed sprints, as a player holding the sprint key does, so its first hit carries sprint knockback. It lets go to block, eat, heal, shoot, jump for a crit, swim, bridge or pillar, when it's hungry, and for a moment after each swing.
 - **Standing about:** bots with nothing to do only shove each other when they're actually touching (6.4.5), so a row of bots stays a row.
+- **Only forward is a sprint (6.4.7).** Backing off, stepping sideways, or looking one way and going another, a bot walks, as a player has to. Eating slows it right down, as it does a player.
+- **Looking where it's going (6.4.7):** after someone a long way off, going round something on the way, it looks where it's walking, not at them through the hill.
+- **A long way off (6.4.7):** a bot after someone more than 40 blocks away works out as much of the way as it can and looks again from there, so a crowd follows a narrow path or a bridge across the void. Before, it walked straight at them and stopped at the edge.
 
 ### Mace
 
@@ -548,7 +567,7 @@ Mace combat is **on by default** from 6.0.0 (`mace.enabled`). A config from befo
 - **Elytra combo** (the dive, with a **Wind Burst** mace): the first hit is the full flight - up, round and down. After every smash that lands, Wind Burst throws it up; at the top it puts the elytra on and fires a rocket **straight back down** at you, swapping to its chestplate at the last moment to smash again. That repeats until one misses. After a miss, it does the full flight again, until the rockets run out. `mace.elytra-combo: false` turns this off.
 - **Pearl launch** (mace + ender pearls + wind charges): from further off than a wind jump (about 7 to 22 blocks), it throws a pearl that lands right next to you, then wind-jumps from there and smashes down. Nothing but the game's own moves: the pearl takes it where it lands, like yours does. Turn it off with `mace.pearl-launch: false`.
 - **After a miss** with no rockets left, it saves itself the way you would: a wind charge just before it lands, a water bucket, or the elytra again.
-- **Against you** (`combat.mace-defence`, on by default): when you come down on a bot with a mace (a wind jump, a dive, a pearl in), it does something about it, but not every time, like a person. It gets its shield up in time, sprints out from under you and stays clear until you land (then comes for you), or pearls away. Now and then it doesn't react at all. It sees a mace on your hotbar too, so swapping to it at the last moment doesn't hide it.
+- **Against you** (`combat.mace-defence`, on by default): when you come down on a bot with a mace (a wind jump, a dive, a pearl in), it does something about it, but not every time, like a person. It gets its shield up in time, gets out from under you and stays clear until you land (then comes for you), or pearls away. Getting out of the way, it either turns and runs, or, with time to spare, steps aside watching you - one way, kept to (6.4.7). Now and then it doesn't react at all. It sees a mace on your hotbar too, so swapping to it at the last moment doesn't hide it.
 - **How hard they try** (`combat.mace-dodge`, `100`): above 100 a bot sees a dive coming from further off to the side, reacts sooner, all but never just stands there, and runs further clear; below 100, the other way (0 to 400). The shield is left as it is: `combat.shield-use` is still how often it blocks. Each dive is decided on its own, so a string of smashes gets a reaction every time, and a bot that's in the air when it sees one decides the moment it lands. Getting out of the way works best against a wind-charge jump, which can hardly steer once it's in the air. FightBot's own elytra divers aim where you're going to be, so against them the shield (or `combat.mace-shield-swap`) is what really stops the hit.
 - **Totem in the offhand** (`combat.mace-shield-swap`, off by default): a bot holding a totem can't hold a shield. With this on, a bot that has a shield in its pack swaps it into its offhand when you dive at it with a mace, blocks, and puts the totem back once you've landed. While the shield is out the totem can't save it, which is why it's off unless you turn it on.
 - **While you're in the air:** bots near you watch you all the way down. Bots further off (more than 8 blocks) look across at you and glance up now and then, each in its own time, instead of a whole army tipping its heads back at once. A jump, wind charge or mace leap doesn't count as "out of reach" either: bots wait for you to come down instead of pearling and building up after you.
@@ -1496,7 +1515,8 @@ Don't delete your config when you update. FightBot notices it came from an older
 | `formation.march.look-angle` / `look-up` | `45` / `10` | Marching eyes left or right: how far round and up. |
 | `joining.enabled` | `false` | Bots join the server by themselves, like players. See [Bots that join by themselves](#bots-that-join-by-themselves). |
 | `mining.enabled` | `false` | Breaking blocks in the way with a pickaxe. |
-| `head-movement.natural` | `false` | In a fight, `true` turns the head at a person's pace, with a little aim drift. Outside a fight bots always turn at a person's pace (6.4.6). |
+| `head-movement.natural` | `false` | In a fight, `true` turns the head at a person's pace, with a little aim drift. `false` is the quick, sure aim - a fast turn, never a one-frame snap (6.4.7). Outside a fight bots always turn at a person's pace (6.4.6). |
+| `debug.include.plugins` / `tps` | `true` / `true` | What a debug log records about your server besides the bots: your plugins, and your TPS and tick times. `false` leaves them out (6.4.7). |
 | `head-movement.idle-glance` | `true` | A bot with nothing to do glances about now and then, or at someone close by. See [Where a bot looks](#where-a-bot-looks). |
 | `ping.enabled` | `true` | A realistic, wandering ping in the tab list. |
 | `death.leave-message` / `sound` | `true` | The "left the game" line when a bot dies (sent like a player's) and the death boom. |
@@ -1566,7 +1586,7 @@ Building is always a last resort. A bot looks for stairs, slopes and ways round 
 - **Bridging** (off by default): when there's a gap or water in the way and no way round, it bridges across the way a player does: it turns round, crouches, looks down behind it and backs out over the edge, placing blocks. On the far side it stands up and turns back round. Each bridge is a little different, like a player's: its own slightly-off angle, eased head turns and an uneven pace (6.4.5).
 - **Gaps while chasing** (`movement.gap-blocks`, on): see [Moving like a player](#moving-like-a-player).
 
-**Only its own blocks** (`building.only-own-blocks`): a player can only build with blocks they're carrying, and bots can be the same. They use up the blocks they carry, and with none, they don't pillar, bridge or build over gaps; they go round or wait. Any full solid block works (not obsidian, TNT, or sand and gravel, which fall).
+**Only its own blocks** (`building.only-own-blocks`): a player can only build with blocks they're carrying, and bots can be the same. They use up the blocks they carry, and with none, they don't pillar, bridge or build over gaps; they go round or wait. Blocks given with `/give` (or by another plugin) go into its pack and count (6.4.7). Any full solid block works (not obsidian, TNT, or sand and gravel, which fall).
 
 | Value | What it does |
 |---|---|
@@ -1680,6 +1700,15 @@ Update to 6.4.6. A dirt path sits a pixel lower than grass, and bots took the ne
 **Bots sprint-jump the whole time.**
 Update to 6.4.6: they only sprint-jump to close a gap to someone they're fighting or hunting: 12 blocks or more, or someone running from them, plus the odd jump in for a crit. Marching, guarding and roaming bots never do. `movement.sprint-jump: false` turns it off.
 
+**Bots won't bridge across the void.**
+Update to 6.4.7, and check two things: `building.bridge: true` (it's off at first), and blocks to build with. A bot that's been given a kit only builds with blocks it carries; from 6.4.7 blocks you give it with `/give` count too. `/fb debug on` says why a bot at the edge isn't bridging.
+
+**Bots stop at the edge of a path or bridge across the void.**
+Update to 6.4.7. A bot after someone more than 40 blocks away never worked out a route, and walked straight at them; now it follows the path. Orders to a lot of bots also used to leave most of them without a route.
+
+**A bot fighting a crowd spins round and walks backwards.**
+Update to 6.4.7. It backs off away from all of them now and keeps going that way, keeps at one enemy instead of turning to whoever's nearest, and runs forwards. Surrounded, it stands its ground.
+
 **Idle bots move their heads.**
 That's the glance from 6.4.6, so a crowd doesn't stand like statues. Bots always come back the way they were placed. `head-movement.idle-glance: false` keeps them still, and so does `/fb look`.
 
@@ -1767,6 +1796,8 @@ The log has three parts (6.4.6):
 - **At the start:** how your server stands as you turn it on: your FightBot, server and Java versions, TPS, every plugin, every world, every bot and what it's doing, and `config.yml` with keys, secrets and passwords hidden.
 - **In between:** what each bot saw, chose and did, and why. Also every FightBot command, settings changed in `/fb settings`, bots changing world and who moved them, worlds loading, what's saved and brought back over a restart, scenes, and voice chat while you control a bot. Once a minute there's a line on the server's TPS and its longest pause, and a note whenever the server freezes for 300 ms or more.
 - **At the end:** the same snapshot again as you turn it off, how long the last spawn took, and everything FightBot said in the console while it was on. The end is written when the server stops, too.
+
+**What it says about your server.** Besides the bots, the log has your plugin list and your TPS. Some servers keep those private: `debug.include.plugins: false` and `debug.include.tps: false` leave them out (6.4.7), and the top of the log says so. Read a log through before you send it anywhere.
 
 `/fb debug report` from 6.4.4 and 6.4.5 is gone: it's all in the one log now. A `/fb reload` along the way doesn't stop the log (6.4.6); only changing `debug.enabled` in the config does.
 

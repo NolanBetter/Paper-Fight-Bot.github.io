@@ -72,6 +72,12 @@
       <p class="hint" style="margin:0 0 12px">Run <span class="cmd">/fightbot debug on</span>, make it
       happen again, then <span class="cmd">/fightbot debug off</span>, and grab the file it names from
       <span class="cmd">plugins/FightBot/debug/</span>.</p>
+      <p class="hint" style="margin:0 0 12px">What's in it: your FightBot, server and Java versions, the
+      plugins your server runs, your worlds, your bots, <span class="cmd">config.yml</span> (with keys and
+      passwords hidden) and your server's TPS. Rather keep your plugins or TPS to yourself? Set
+      <span class="cmd">debug.include.plugins: false</span> or <span class="cmd">debug.include.tps: false</span>
+      in <span class="cmd">config.yml</span> (FightBot 6.4.7 and up) before you start the log. Read it
+      through before you send it: it goes with your report, so the FightBot team can see it.</p>
       <input type="file" id="logFile" accept=".log,.txt,text/plain" class="filepick">
       <textarea id="logs" rows="6" class="mono" placeholder="Pick the file above, or paste the log here"></textarea>
 

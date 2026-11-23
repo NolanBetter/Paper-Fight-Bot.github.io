@@ -37,6 +37,7 @@ Some commands do nearly the same job. Pick by what you want:
 | Guards for a place | A patrol: `/fb patrollingtargetadd`, `/fb patrollingstart` | Roaming: roamers don't go looking for a fight |
 | An army walking behind you | `/fb march --all` | |
 | Bots holding a spot for filming | `/fb march --all here` | `/fb march --all`: the rows follow you |
+| An army marching a route, nobody leading | `/fb march --all --route <route>` | Roaming: roamers don't keep to rows |
 | Wider or narrower rows | `/fb formation` (a screen with heads) or `/fb formation width 10` | |
 | A ring round someone | `/fb surround --all <player>` | |
 | A place that looks lived in | `/fb roamingfree --all` | |
@@ -115,6 +116,7 @@ Moving by hand works like holding a key down: **nothing is automatic.** It doesn
 ### Marching and surrounding
 - `/fb march <bot|--all|--group <group>> [player] [left|straight|right]` — Bots march in rows behind you (or the player you name): a 1-block gap, then a row of 3 (one in the middle, one either side; `/fb formation width` changes how many), then the next row straight behind, and so on. A crowd marches wider, so it isn't a long thin line (1000 bots: 23 across; `formation.march.widen`). They look at you (`straight`, the default), or add `left` / `right` for a parade's "eyes left" / "eyes right" (e.g. `/fb march --all Nolan left`; with no player, you lead: `/fb march --all left`)
 - `/fb march <bot|--all|--group <group>> here` — Rows where you stand, facing the way you face, and they hold it, so you can move away and film them
+- `/fb march <bot|--all|--group <group>> --route <route> [stop|loop|back] [left|straight|right]` — Rows marching a route (made with `/fb pointtool`), point to point in straight lines, nobody leading. Each row turns where the front turned. At the end they hold (`stop`), go round again (`loop`) or march back (`back`). `--points` works too (6.4.7)
 - `/fb surround <bot|--all|--group <group>> [player|here]` — Bots stand in a ring round you (or the player you name), looking at you. The more bots, the bigger the ring. `here`: a ring round the spot you stand on, held
 - `/fb formation` — A screen showing how a march lines up, with heads: you at the top, the bots in rows below. Click a sign to type how many across, or how many rows long; switch widening for crowds on or off; and change how many bots the picture shows. It's all saved in the config at once
 - `/fb formation width <1-64>` — How many bots across each row of a march (3 at first). Saved in the config as `formation.march.width`, and marches that are already going change straight away. (The formation shapes from before 6.3.0 are gone: a march, a surround or `march … here` does what they did)
@@ -285,6 +287,7 @@ Only the servers where you want bots need FightBot. Bots count in the network's 
 - `/fb reload` — Re-read the config without restarting (it also shows how your skins are doing)
 - `/fb debug on` — Start a debug log in `plugins/FightBot/debug/`. It begins with how your server stands (versions, TPS, plugins, worlds, bots, `config.yml` with keys and secrets hidden), then logs everything the bots do, FightBot commands, settings changes, worlds, restarts, scenes and voice chat during control, with the TPS once a minute
 - `/fb debug off` — End the log with the same snapshot again and FightBot's console lines meanwhile, and say which file to send with a bug report. `/fb debug` alone shows whether it's on
+- To leave your plugin list or your TPS out of the log, set `debug.include.plugins: false` or `debug.include.tps: false` in the config (6.4.7). The log is only a file on your server: nothing is sent anywhere
 - `/fb update` — Look on Modrinth for a newer FightBot right now
 
 > **Skins:** set `identity.skin-source` to `random`, `folder` or `mojang`, then `/fb reload`. With `random`, about 970 skins come built in, ready at once, and FightBot also finds real names with their own skins while nobody's on the server, and new bots get those names, each wearing its own skin (`identity.find-skins`). The console says when it finds some, and `/fb skins` shows how many and who it's waiting for. If the console says the skin signing service asked FightBot to wait, that's normal. FightBot carries on by itself. `/fb skins` shows how far along it is.
@@ -303,7 +306,7 @@ Only the servers where you want bots need FightBot. Bots count in the network's 
 >
 > **Shields and knockback:** bots block with a shield and take knockback exactly like players. A shield only blocks from the front, once it's been up a quarter of a second, and an axe knocks it out for 5 seconds, so stun slams work.
 >
-> **Movement:** bots run at players and sprint-jump only to close a big gap (12 blocks or more, or a player running away), now and then jumping in at the end for a crit. They walk paths, slabs and stairs, jump gaps up to 3 blocks wide, walk round a single missing block, and cross wider gaps by placing blocks (a block mid-jump over 4, bridging down to 3 on anything wider). Bridging, they turn round, crouch and back out over the edge, like a player. See `movement.*` in the config.
+> **Movement:** bots run at players and sprint-jump only to close a big gap (12 blocks or more, or a player running away), now and then jumping in at the end for a crit. Only forward is a sprint: backing off or stepping sideways, they walk, and eating slows them, as for a player. After someone a long way off they follow the path or bridge that's there. They walk paths, slabs and stairs, jump gaps up to 3 blocks wide, walk round a single missing block, and cross wider gaps by placing blocks (a block mid-jump over 4, bridging down to 3 on anything wider). Bridging, they turn round, crouch and back out over the edge, like a player. See `movement.*` in the config.
 >
 > **Cart PvP:** a bot with TNT minecarts, rails, cobwebs, arrows and a bow or crossbow (plus flint and steel, unless the bow has Flame) cobwebs its target, puts a rail beside them and a TNT minecart on it, then shoots a burning arrow into the cart. Without Flame it lights fire just before the cart and shoots through it. A crossbow is kept loaded, so the shot is one click. Up close, it cobwebs you and steps back first. Any rail works. Rain puts burning arrows out, so bots don't try it in the rain. Give bots totems: a cart blast is big.
 >
