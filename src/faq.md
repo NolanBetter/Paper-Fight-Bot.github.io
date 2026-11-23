@@ -98,6 +98,9 @@ Run `/fightbot debug on`, make the problem happen, then `/fightbot debug off`, a
 plugins, worlds, bots and `config.yml` with keys and passwords hidden at the start and the end, and what
 the bots did in between. (`/fightbot debug report` from 6.4.4 and 6.4.5 is now part of it.)
 
+Rather not share your plugin list or TPS? From 6.4.7, `debug.include.plugins: false` and
+`debug.include.tps: false` in `config.yml` leave them out, and the log says so at the top.
+
 <!-- id: webeditor -->
 ## Can I change settings without opening server files?
 
@@ -349,3 +352,18 @@ whoever clicks, and `wait 20` waits a second. `/fightbot quick run <name>` runs 
 Update to 6.4.4. With a full pack, a bot swapping weapons mid-fight dropped the extra item, even with
 `death.drop-items: never`. Now it waits on the bot and goes back in its pack when there's room. For one bot
 that drops nothing at all when it dies, turn off **Drops items** in its menu.
+
+<!-- id: bridge -->
+## My bots won't bridge across the void.
+
+Two things to check. Bridging is off at first: set `building.bridge: true` and `/fightbot reload`. And a bot
+that's been given a kit only builds with blocks it carries, so give it some: from 6.4.7 blocks you hand it
+with `/give` count, and bots after someone a long way off also follow a path or bridge that's already
+there. Turn on `/fightbot debug on` and the log says why a bot at the edge isn't bridging.
+
+<!-- id: routemarch -->
+## Can bots march along a route on their own?
+
+Yes, from 6.4.7: `/fightbot march --all --route <route>` marches them in rows along a route you made with
+`/fightbot pointtool`, point to point, with nobody leading. Each row turns where the front turned. Add
+`loop` to go round again or `back` to march back, and `left` or `right` for eyes left or right.

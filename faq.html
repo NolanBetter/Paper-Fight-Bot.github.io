@@ -109,6 +109,7 @@
         <summary>How do I report a bug?</summary>
         <p>Use the <a href="report.html" rel="noopener">report form</a>. It takes your debug log and plugin list, and you will see any reply on your reports page. Discord works too.</p>
 <p>Run <code class="cmd">/fightbot debug on</code>, make the problem happen, then <code class="cmd">/fightbot debug off</code>, and send the file it names (in <code class="cmd">plugins/FightBot/debug/</code>). From 6.4.6 that one file has everything we need: your versions, TPS, plugins, worlds, bots and <code class="cmd">config.yml</code> with keys and passwords hidden at the start and the end, and what the bots did in between. (<code class="cmd">/fightbot debug report</code> from 6.4.4 and 6.4.5 is now part of it.)</p>
+<p>Rather not share your plugin list or TPS? From 6.4.7, <code class="cmd">debug.include.plugins: false</code> and <code class="cmd">debug.include.tps: false</code> in <code class="cmd">config.yml</code> leave them out, and the log says so at the top.</p>
       </details>
       <details>
         <summary>Can I change settings without opening server files?</summary>
@@ -220,6 +221,14 @@
       <details>
         <summary>A bot dropped its mace with drops turned off.</summary>
         <p>Update to 6.4.4. With a full pack, a bot swapping weapons mid-fight dropped the extra item, even with <code class="cmd">death.drop-items: never</code>. Now it waits on the bot and goes back in its pack when there's room. For one bot that drops nothing at all when it dies, turn off <strong>Drops items</strong> in its menu.</p>
+      </details>
+      <details>
+        <summary>My bots won't bridge across the void.</summary>
+        <p>Two things to check. Bridging is off at first: set <code class="cmd">building.bridge: true</code> and <code class="cmd">/fightbot reload</code>. And a bot that's been given a kit only builds with blocks it carries, so give it some: from 6.4.7 blocks you hand it with <code class="cmd">/give</code> count, and bots after someone a long way off also follow a path or bridge that's already there. Turn on <code class="cmd">/fightbot debug on</code> and the log says why a bot at the edge isn't bridging.</p>
+      </details>
+      <details>
+        <summary>Can bots march along a route on their own?</summary>
+        <p>Yes, from 6.4.7: <code class="cmd">/fightbot march --all --route &lt;route&gt;</code> marches them in rows along a route you made with <code class="cmd">/fightbot pointtool</code>, point to point, with nobody leading. Each row turns where the front turned. Add <code class="cmd">loop</code> to go round again or <code class="cmd">back</code> to march back, and <code class="cmd">left</code> or <code class="cmd">right</code> for eyes left or right.</p>
       </details></div>
         <!-- faq:end --></div>
 
