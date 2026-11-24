@@ -390,3 +390,20 @@ seconds later. It breaks like any rod after one use, and nothing is said in chat
 Not from 6.4.8: bots in a march, a ring or a bodyguard formation always walk to their place, however far
 behind they are. To bring far-off bots back the old way, set `formation.teleport-distance` to a number
 (16 or more).
+
+<!-- id: joinfreeze -->
+## My server freezes for a second each time a bot spawns.
+
+Every bot is a real player, so every plugin that does something when a player joins does it for every bot
+too. If one of them is slow, the server stops for that long each time a bot comes in. From 6.4.9,
+`/fightbot debug on` names the plugin behind every freeze, and the console says it once. If the same
+freeze happens when a real player joins with no bots on, it's that plugin, for everyone: update it, ask its
+author, or take it off while you film.
+
+<!-- id: potions -->
+## My bots throw healing potions at full health.
+
+Update to 6.4.9. Before that, FightBot couldn't read what was in a potion on Paper 1.20.5 and newer, so a
+healing potion looked like a buff. Now a bot keeps its healing potions until it's below
+`potions.health-threshold` (80% of its health), throws a buff only when it hasn't got it on, and never
+throws harming, poison, slowness or weakness at its own feet.

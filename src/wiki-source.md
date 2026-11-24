@@ -727,6 +727,16 @@ Like a person, it reacts a moment late, and now and then it misses one. While it
 
 It gets the shield up **in time**: about half a second before your swing is charged, since a shield takes a quarter of a second to start working. It drops it the moment its own swing is ready, and can jump for a crit with the shield still up.
 
+### Potions
+
+A bot splashes potions at its own feet, the way a player does (6.4.9):
+
+- **Healing** when it's low: below `potions.health-threshold` (`80`, as a % of its health). Before 6.4.9, FightBot couldn't tell what was in a potion on Paper 1.20.5 and newer, so bots threw healing potions at full health.
+- **A buff** (speed, strength, fire resistance, regeneration...) when it hasn't got that effect on already. A side starting a fight doesn't all throw on the same tick.
+- **Never a harmful one** at its own feet: harming, poison, slowness, weakness and the rest.
+
+One bot throws at most one potion every `potions.cooldown-seconds` (`2`). `potions.enabled: false`, or the bot's own **Potions** switch, stops it. The debug log says which potion a bot threw and why.
+
 ### Axe fighting
 
 - **Your shield goes up:** after a moment, the bot gets out its axe (from anywhere in its inventory, if it isn't already holding one) and hits your shield. That knocks it out for 5 seconds.
@@ -940,7 +950,7 @@ Only armour, the offhand and the weapon have fixed slots. Everything else can go
 
 ### Wear and mending
 
-Bot gear wears out and breaks like yours. A bot wearing **Mending** gear, with **bottles o' enchanting** anywhere in its inventory, mends like a player: it throws the bottles down in front of itself and picks up the XP. The repair is the game's own, so a worn-out netherite set takes over a hundred bottles.
+Bot gear wears out and breaks like yours: the game wears it down the same way, a point for each hit taken on armour and each hit with a weapon. Before 6.4.9 FightBot wore it down a second time on top, so it broke sooner than yours would. `gear.durability: false` stops a bot's gear wearing at all. When something breaks, the bot puts on the best spare in its pack (`gear.replace-broken`). A bot wearing **Mending** gear, with **bottles o' enchanting** anywhere in its inventory, mends like a player: it throws the bottles down in front of itself and picks up the XP. The repair is the game's own, so a worn-out netherite set takes over a hundred bottles.
 
 - `gear.mending-throw-speed` (`0.5`): how hard it throws each bottle.
 - `gear.mending-throw-angle` (`45`): how far down it throws. `0` is straight ahead, `90` is at its feet.
@@ -1444,7 +1454,7 @@ Bots come back after a server restart too, and after a FightBot update, since th
 - **A world plugin that empties a world as the server stops** (Multiverse and others can) used to send the bots to the main world just before they were written down, so they came back there. Since 6.4.4 FightBot writes down where they really were, and the console names the plugin that moved them.
 - **A plugin that sends new players to spawn** (EssentialsX's spawn on join, Multiverse's first spawn, lobby plugins) sees every bot coming back as a new player, and used to move it there a moment later. Since 6.4.4, for `restart.hold-in-place-seconds` (10) after it's brought back, a bot stays where FightBot put it, and the console names the plugin, once. Bots you spawn yourself aren't held. `0` turns this off.
 - **A world that was reset** while the server was down: if a bot's spot is inside blocks now, in lava or over nothing, it comes back on top of the ground there (or at the world's spawn).
-- **After a crash:** the bots are also written down every `restart.save-every-seconds` (60), so a server that crashes, or is killed without a proper stop, still brings them back from the last time.
+- **After a crash:** the bots are also written down every `restart.save-every-seconds` (60), so a server that crashes, or is killed without a proper stop, still brings them back from the last time. Since 6.4.9 this is done a few bots a tick and the file is written in the background, so it no longer pauses the server.
 - They **don't** carry on with what they were doing. Fights and routes start afresh.
 - They come back **a few at a time** (`restart.per-second`, 10), so a big army doesn't hold the startup up.
 - At most **`restart.max-bots`** come back (100; `0` means all of them). Lower it if your server struggles with lots of bots.
@@ -1568,6 +1578,8 @@ Don't delete your config when you update. FightBot notices it came from an older
 | `orders.must-stop-first` | `true` | A busy bot turns down a new order until it's stopped. `false`: new orders take over. |
 | `gear.mending-throw-speed` / `mending-throw-angle` | `0.5` / `45` | How hard and how far down bots throw XP bottles. See [Wear and mending](#wear-and-mending). |
 | `gear.repair-after-fight-seconds` | `30` | How long after a fight a bot standing about gets its gear back to full. |
+| `gear.durability` | `true` | Bots' gear wears down like a player's. `false`: it never wears (6.4.9: the game's own wear is stopped too). |
+| `potions.health-threshold` / `cooldown-seconds` | `80` / `2` | Below this % of its health a bot splashes healing; the least time between two of its potions. See [Potions](#potions). |
 | `death.drop-items` | `auto` | What a bot drops when it dies: `auto` (like a player), `always` or `never`. One bot: **Drops items** in its menu. |
 | `death.hardcore` | `false` | A bot that dies stays in the game as a spectator. See [Hardcore](#hardcore-dead-bots-stay-as-spectators). |
 | `voice.enabled` | `true` | Bots in voice chat, when Simple Voice Chat is on the server. |
@@ -1580,7 +1592,7 @@ Don't delete your config when you update. FightBot notices it came from an older
 | `joining.enabled` | `false` | Bots join the server by themselves, like players. See [Bots that join by themselves](#bots-that-join-by-themselves). |
 | `mining.enabled` | `false` | Breaking blocks in the way with a pickaxe. |
 | `head-movement.natural` | `false` | In a fight, `true` turns the head at a person's pace, with a little aim drift. `false` is the quick, sure aim: a quick player's turn, right round in about a third of a second (6.4.8), never a one-frame snap. Outside a fight bots always turn at a person's pace (6.4.6). |
-| `debug.include.plugins` / `tps` | `true` / `true` | What a debug log records about your server besides the bots: your plugins, and your TPS and tick times. `false` leaves them out (6.4.7). |
+| `debug.include.plugins` / `tps` | `true` / `true` | What a debug log records about your server besides the bots: your plugins, and your TPS and tick times, with what each freeze was spent on (6.4.9). `false` leaves them out (6.4.7). |
 | `head-movement.idle-glance` | `true` | A bot with nothing to do glances about now and then, or at someone close by. See [Where a bot looks](#where-a-bot-looks). |
 | `ping.enabled` | `true` | A realistic, wandering ping in the tab list. |
 | `death.leave-message` / `sound` | `true` | The "left the game" line when a bot dies (sent like a player's) and the death boom. |
@@ -1628,6 +1640,8 @@ A tick has 50 ms before the server drops below 20 TPS. Your numbers depend on yo
 
 **Roaming crowds (6.4.8).** A bot walking about costs about the same as a player walking about. Most of that is the game moving it (collisions, physics, telling the players near it), not FightBot. On our test server 200 bots roaming round a player took about 12 ms a tick, so TPS stays at 20. Roamers nobody can see now cost almost nothing, roamers standing about rest, and a big crowd spreads out instead of piling into each other. Your server's numbers depend on its CPU: a debug log (`/fb debug on`, then `/fb debug off`) shows FightBot's share of each tick against the whole tick.
 
+**Big fights (6.4.9).** In a 125-against-125 group fight on our test server, an average tick went from 57 ms on 6.4.8 to 49 ms, and the slowest one in ten from 100 to 75 ms. Most of what's left is the game itself moving the bots and working out their hits, the same work it does for players. Bots now read their potions properly, play each hurt sound once, wear their gear down once, and look through their packs less often. Writing the bots down for a restart (`restart.save-every-seconds`) no longer pauses the server every minute.
+
 **A very big crowd.** A thousand bots work, but a thousand in one place cost more than a thousand spread out. For every player the server looks at every other player near it, each tick, to decide who can see whom and what should stay awake. That work grows with the square of the crowd, it is the server's own, and no plugin can switch it off. On our test server 1000 bots standing together took about 40 ms a tick and 1000 marching about 75 ms (about 86 ms before 6.1.1), where 300 marching took 7 ms. If a crowd that size lags, split it: two armies of 500 a few hundred blocks apart cost less than one of 1000.
 
 ### Low FPS in a crowd
@@ -1666,11 +1680,12 @@ Building is always a last resort. A bot looks for stairs, slopes and ways round 
 ## Problems and answers
 
 **Bots lag my server.**
-Update to 6.1.0 or newer: on our test servers bots cost a fifth to a third less in a fight (most on 1.21.6 and newer), about half as much standing idle, and keep far less of a survival world loaded (see [Performance](#performance)). If you changed the `performance` settings, put them back to the defaults. Then check the rest:
+Update to the newest version: 6.1.0 made bots cost a fifth to a third less in a fight, about half as much standing idle, and keep far less of a survival world loaded, and 6.4.9 took another seventh off big fights (see [Performance](#performance)). If you changed the `performance` settings, put them back to the defaults. Then check the rest:
 - **Debug logging** (`/fb debug off`) should be off unless you're recording a log for us.
 - **Mobs:** a bot is a player to them, and they attack it. With `performance.mob-spawning: false` they don't spawn round bots, but they still spawn round you.
 - **How many bots are fighting at once** matters most. A bot standing in a formation costs a fraction of one in a fight.
-- **Slow to spawn?** Every bot is a real player, so plugins that do something when a player joins do it for every bot too: a skin plugin looking the name up online, a join message, a database. From 6.4.5 the console says once when that makes spawning slow. A [debug log](#still-stuck-send-a-debug-log) lists every plugin with code that runs on join and how long the last spawn took, and from 6.4.6 it notes each time the server freezes while bots spawn. Scenes also load a few bots a tick now, so a big one doesn't freeze the server.
+- **Slow to spawn?** Every bot is a real player, so plugins that do something when a player joins do it for every bot too: a skin plugin looking the name up online, a join message, a database. From 6.4.5 the console says once when that makes spawning slow. A [debug log](#still-stuck-send-a-debug-log) lists every plugin with code that runs on join and how long the last spawn took, and from 6.4.9 every freeze names the plugin the server was busy in. The console says it too, once for each plugin. If the same freezes happen when a real player joins with no bots on, the plugin is slow for everyone; the bots just join more often. Scenes also load a few bots a tick now, so a big one doesn't freeze the server.
+- **Freezes?** From 6.4.9 a [debug log](#still-stuck-send-a-debug-log) names what the server was busy with in every freeze, plugin by plugin, and a TIME line each minute shares out its time between the server, the bots, FightBot and each of your plugins.
 - Still slow? Run `/spark profiler start`, play for a minute, `/spark profiler stop`, and send us the link with a [debug log](#still-stuck-send-a-debug-log).
 
 **My FPS drops when there are lots of bots.**
@@ -1879,7 +1894,7 @@ Make the problem happen, then run `/fb debug off`. That's all: it tells you whic
 
 The log has three parts (6.4.6):
 - **At the start:** how your server stands as you turn it on: your FightBot, server and Java versions, TPS, every plugin, every world, every bot and what it's doing, and `config.yml` with keys, secrets and passwords hidden.
-- **In between:** what each bot saw, chose and did, and why. Also every FightBot command, settings changed in `/fb settings`, bots changing world and who moved them, worlds loading, what's saved and brought back over a restart, scenes, and voice chat while you control a bot. Once a minute there's a line on the server's TPS and its longest pause, and a note whenever the server freezes for 300 ms or more.
+- **In between:** what each bot saw, chose and did, and why. Also every FightBot command, settings changed in `/fb settings`, bots changing world and who moved them, worlds loading, what's saved and brought back over a restart, scenes, and voice chat while you control a bot. Once a minute there's a line on the server's TPS and its longest pause, and a note whenever the server freezes for 300 ms or more. From 6.4.9 each freeze says what the server was busy with, by plugin, and what that plugin was doing (writing a file, waiting for the network, the database...). A **TIME** line each minute shares out the server's busy time: the server itself, the bots' bodies (the game's own movement and hits), FightBot's thinking, and each other plugin.
 - **At the end:** the same snapshot again as you turn it off, how long the last spawn took, and everything FightBot said in the console while it was on. The end is written when the server stops, too.
 
 **What it says about your server.** Besides the bots, the log has your plugin list and your TPS. Some servers keep those private: `debug.include.plugins: false` and `debug.include.tps: false` leave them out (6.4.7), and the top of the log says so. Read a log through before you send it anywhere.

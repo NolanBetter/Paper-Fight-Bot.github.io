@@ -318,7 +318,7 @@ Only the servers where you want bots need FightBot. Bots count in the network's 
 
 ### Other
 - `/fb reload` — Re-read the config without restarting (it also shows how your skins are doing)
-- `/fb debug on` — Start a debug log in `plugins/FightBot/debug/`. It begins with how your server stands (versions, TPS, plugins, worlds, bots, `config.yml` with keys and secrets hidden), then logs everything the bots do, FightBot commands, settings changes, worlds, restarts, scenes and voice chat during control, with the TPS once a minute
+- `/fb debug on` — Start a debug log in `plugins/FightBot/debug/`. It begins with how your server stands (versions, TPS, plugins, worlds, bots, `config.yml` with keys and secrets hidden), then logs everything the bots do, FightBot commands, settings changes, worlds, restarts, scenes and voice chat during control, with the TPS once a minute. From 6.4.9 every freeze says which plugin (or the server) it was busy in, and a TIME line each minute says where the server's time went
 - `/fb debug off` — End the log with the same snapshot again and FightBot's console lines meanwhile, and say which file to send with a bug report. `/fb debug` alone shows whether it's on
 - To leave your plugin list or your TPS out of the log, set `debug.include.plugins: false` or `debug.include.tps: false` in the config (6.4.7). The log is only a file on your server: nothing is sent anywhere
 - `/fb update` — Look on Modrinth for a newer FightBot right now
