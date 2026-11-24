@@ -1,6 +1,6 @@
 ## FightBot Commands
 
-Main command: `/fightbot` (alias: `/fb`). Permission: `fightbot.use` (OP by default). Five more, also OP by default: `fightbot.settings` to change settings in the game (`/fb settings`), `fightbot.web` for the web editor, `fightbot.control` to play as a bot, `fightbot.quick.edit` to add and change quick actions, and `fightbot.voice.custom` to play sound files added to the server. Players with `fightbot.hunt.exempt` (nobody by default) are never hunted.
+Main command: `/fightbot` (alias: `/fb`). Permission: `fightbot.use` (OP by default). Six more, also OP by default: `fightbot.settings` to change settings in the game (`/fb settings`), `fightbot.web` for the web editor, `fightbot.control` to play as a bot, `fightbot.quick.edit` to add and change quick actions, `fightbot.voice.custom` to play sound files added to the server, and `fightbot.cannon` to take Player Cannons. Everyone has `fightbot.cannon.use`, to use a Player Cannon they're given. Players with `fightbot.hunt.exempt` (nobody by default) are never hunted.
 
 > **New? Type `/fb guide` in game.** It walks you through setup one step at a time. `/fb help` shows the commands by topic, with examples.
 
@@ -15,7 +15,9 @@ Main command: `/fightbot` (alias: `/fb`). Permission: `fightbot.use` (OP by defa
 
 > **A player or a bot? (6.4.4)** Wherever a command can take either, a plain name is a player and a bot goes after `--bot`, as in `/fb fight`: `/fb look Bob Nolan` watches the player Nolan, `/fb look Bob --bot Guard1` the bot Guard1. The same goes for `tp`, `march`, `surround`, `protect` and route targets. Groups are the other way round: `/fb groupadd red Bob` adds the bot Bob, and `--player Steve` adds the player Steve. The older ways still work.
 
-> **Nicknames (6.4.5).** A player can be named by their nickname too (EssentialsX `/nick` and the like): `/fb fight Bob Nolan` works while Nolan is nicked. A real name comes first, and a nickname two players share isn't used.
+> **Nicknames (6.4.5).** A player can be named by their nickname too (EssentialsX `/nick` and the like): `/fb fight Bob Nolan` works while Nolan is nicked. A real name comes first, and a nickname two players share isn't used. Nicks that change the player's own name, like Scripted Solutions' nicks, work too (6.4.8).
+
+> **`--free` (6.4.8).** Wherever `--all` or `--group <group>` works, `--free` means every bot that isn't in a group: `/fb groupadd red --free`, `/fb roamingfree --free`, `/fb fight --free Nolan`, `/fb tp --free Nolan`.
 
 ### Which one should I use?
 Some commands do nearly the same job. Pick by what you want:
@@ -36,6 +38,9 @@ Some commands do nearly the same job. Pick by what you want:
 | Bots that only defend one player | `/fb protect --all <player>` | |
 | Guards for a place | A patrol: `/fb patrollingtargetadd`, `/fb patrollingstart` | Roaming: roamers don't go looking for a fight |
 | An army walking behind you | `/fb march --all` | |
+| Bots to walk somewhere and stand about, like survivors after a fight | `/fb point camp`, then `/fb walk --all camp` | `/fb march`: that's rows |
+| An army marching in rows to a place, then holding | `/fb march --all --point camp` | |
+| Bots arriving by ender pearl around you | The Player Cannon: `/fb cannon` | `/fb tp`: they just appear |
 | Bots holding a spot for filming | `/fb march --all here` | `/fb march --all`: the rows follow you |
 | An army marching a route, nobody leading | `/fb march --all --route <route>` | Roaming: roamers don't keep to rows |
 | Wider or narrower rows | `/fb formation` (a screen with heads) or `/fb formation width 10` | |
@@ -64,6 +69,7 @@ Some commands do nearly the same job. Pick by what you want:
 - `/fb fight <bot> --bot <bot>` — One bot fights another bot
 - `/fb fight <bot> --group <group>` — One bot fights a whole group
 - `/fb fight --all <player|--bot <bot>|--group <group>>` — Every bot fights them
+- `/fb fight --free <player|--bot <bot>|--group <group>>` — Every bot that isn't in a group fights them
 - `/fb fight --group <group> <player|--bot <bot>>` — A whole group fights them
 - `/fb fight --group <group> --group <group>` — Two groups fight each other as one-on-one duels
 - `/fb hunt <bot|--all|--group <group>> [player]` — Bots hunt a player down, the way a player would with the locator bar: they know which way, not where, and fight once they see them. No name: whoever is nearest. After a kill they go on hunting. They can't track anyone invisible, crouching, or wearing a carved pumpkin or mob head
@@ -73,11 +79,13 @@ A player is named on their own, a bot after `--bot`, a group after `--group`. Ta
 - `/fb stop` (or `stop --all`) — Every bot stops: fights, roaming and patrolling
 - `/fb stop <bot>` — One bot stops, whatever it's doing
 - `/fb stop --group <group>` — Everyone in a group stops
+- `/fb stop --free` — Every bot that isn't in a group stops
 
 ### Managing bots
 - `/fb list` — Every bot (in game: their heads; click one for its menu)
 - `/fb remove <bot|--all|--group <group>>` — Remove bots: one, all, or everyone in a group
 - `/fb remove --dead` — Remove only the bots that died and are spectating (hardcore)
+- `/fb remove --free` — Remove every bot that isn't in a group
 
 **Recording, replaying and scenes**
 - `/fb record <name>` — Copy yourself exactly (where you go, where you look, crouching, sprinting, every swing) until `/fb record stop`
@@ -93,7 +101,7 @@ A player is named on their own, a bot after `--bot`, a group after `--group`. Ta
 - `/fb edit clone <bot> <--name <name>|--random>` — Copy a bot, gear and settings included
 - `/fb edit clone <bot> --random <count>` — Up to 200 copies at once
 - `/fb edit change <bot> <--name <name>|--random>` — Rename a bot
-- `/fb tp <bot|--all|--group <group>> <player|--bot <bot>|x y z>` — Teleport bots; sent to a player (or a bot), they face the way it faces
+- `/fb tp <bot|--all|--free|--group <group>> <player|--bot <bot>|x y z>` — Teleport bots; sent to a player (or a bot), they face the way it faces
 - `/fb rtp <bot|--all|--group <group>> [world] [radius]` — Each bot to its own random safe spot in a world (the one it's in if you don't say), within `rtp.radius` (1000) blocks of its spawn
 - `/fb look <bot|--all|--group <group>> <player|--bot <bot>|--stop>` — Bots watch someone until you say `--stop`, or until they leave or die. Works on busy bots too (roaming, marching…). Given another order, such as a fight, they look at their opponent, then go back to watching
 - `/fb look <bot|--all|--group <group>> <yaw> [pitch]` — Bots face that way, in degrees, as F3 shows them: yaw `0` south, `90` west, `180` north, `-90` east; pitch `-90` up to `90` down (e.g. `/fb look Bob 90 -20`)
@@ -101,22 +109,25 @@ A player is named on their own, a bot after `--bot`, a group after `--group`. Ta
 - `/fb look <bot|--all|--group <group>> <x> <y> <z>` — Look at a spot (`~` works for players)
 
 ### Actions — make a bot do what a player does
-`/fb action <bot|--all|--group <group>> <action>`
+`/fb action <bot|--all|--group <group>> <action> [repeat|once]`
 - `jump` — Jumps
 - `crouch` — Crouches (again to stand up)
 - `left-click` — Swings, hitting what it looks at
 - `right-click` — Uses the block it looks at (a door, a button…), or else the item in its hand
 - `walk [forward|back|left|right] [seconds]` — Walks that way, relative to where it faces (forward if you don't say). It keeps going until `stop`, or for that many seconds
 - `sprint [seconds]` — Sprints forward (sprinting only goes forward, as for a player; other directions walk)
-- `stop` — Stops walking or sprinting
+- `stop` — Stops walking or sprinting, and anything repeating
 - `turn <left|right|around|degrees>` — Turns it (positive degrees turn right)
+
+**Over and over (6.4.8):** put `repeat` on the end of `jump`, `crouch`, `left-click` or `right-click` and it keeps going: `/fb action Bob jump repeat`. The same command again stops it, and so do `/fb action <bot> stop` and `/fb stop`. With `actions.repeat: true` in the config, they always repeat, and `once` on the end does just one.
 
 Moving by hand works like holding a key down: **nothing is automatic.** It doesn't step up blocks, stop at edges or go round anything. Make it jump with `/fb action <bot> jump` while it moves, for sprint-jumps too. Crouching while walking makes it crouch-walk. Turn it with `/fb look` or `turn` first. `/fb stop` also ends it.
 
 ### Marching and surrounding
-- `/fb march <bot|--all|--group <group>> [player] [left|straight|right]` — Bots march in rows behind you (or the player you name): a 1-block gap, then a row of 3 (one in the middle, one either side; `/fb formation width` changes how many), then the next row straight behind, and so on. A crowd marches wider, so it isn't a long thin line (1000 bots: 23 across; `formation.march.widen`). They look at you (`straight`, the default), or add `left` / `right` for a parade's "eyes left" / "eyes right" (e.g. `/fb march --all Nolan left`; with no player, you lead: `/fb march --all left`)
+- `/fb march <bot|--all|--free|--group <group>> [player] [player|straight|left|right]` — Bots march in rows behind you (or the player you name): a 1-block gap, then a row of 3 (one in the middle, one either side; `/fb formation width` changes how many), then the next row straight behind, and so on. A crowd marches wider, so it isn't a long thin line (1000 bots: 23 across; `formation.march.widen`). They look at you by default. Add `straight` to have them look straight ahead the way they're going, or `left` / `right` for a parade's "eyes left" / "eyes right" (e.g. `/fb march --all Nolan left`; with no player, you lead: `/fb march --all straight`). `formation.march.look` sets what they do when you don't say (6.4.8)
 - `/fb march <bot|--all|--group <group>> here` — Rows where you stand, facing the way you face, and they hold it, so you can move away and film them
 - `/fb march <bot|--all|--group <group>> --route <route> [stop|loop|back] [left|straight|right]` — Rows marching a route (made with `/fb pointtool`), point to point in straight lines, nobody leading. Each row turns where the front turned. At the end they hold (`stop`), go round again (`loop`) or march back (`back`). `--points` works too (6.4.7)
+- `/fb march <bot|--all|--group <group>> --point <point> [straight|left|right]` — Rows marching from where they are to a point (made with `/fb point`), round what's in the way, then holding there (6.4.8)
 - `/fb surround <bot|--all|--group <group>> [player|here]` — Bots stand in a ring round you (or the player you name), looking at you. The more bots, the bigger the ring. `here`: a ring round the spot you stand on, held
 - `/fb formation` — A screen showing how a march lines up, with heads: you at the top, the bots in rows below. Click a sign to type how many across, or how many rows long; switch widening for crowds on or off; and change how many bots the picture shows. It's all saved in the config at once
 - `/fb formation width <1-64>` — How many bots across each row of a march (3 at first). Saved in the config as `formation.march.width`, and marches that are already going change straight away. (The formation shapes from before 6.3.0 are gone: a march, a surround or `march … here` does what they did)
@@ -127,13 +138,35 @@ Moving by hand works like holding a key down: **nothing is automatic.** It doesn
 - `/fb march <bot|--all|--group <group>> --stop` (or `surround … --stop`, or `/fb stop`) — End it
 - `/fb protect <bot|--all|--group <group>> [player] [behind|front|side]` — Bodyguards: bots keep close to you (or the player you name), behind, in front or down each side, and go after anyone who hurts them. They look where the player looks. `--stop`, or `/fb stop`, ends it
 
-They keep their places as you walk and run, and get to them round trees, walls and steps. In a straight line the rows stay tight; on a turn they swing round to their new places. Bots far behind (48 blocks, or in another world) are brought to their place. A bot that's hit fights back, then takes its place again, but never against the player it follows (`formation.ignore-leader`). The row width, the gaps, the ring's size and spacing, and the bodyguards' settings are all in the config (`formation.*`).
+They keep their places as you walk and run, and get to them round trees, walls and steps. In a straight line the rows stay tight; on a turn they swing round to their new places. Bots always walk to their place, however far behind they are (6.4.8). One whose place is in another world waits. `formation.teleport-distance` set to a number brings bots that are further behind than that. A bot that's hit fights back, then takes its place again, but never against the player it follows (`formation.ignore-leader`). The row width, the gaps, the ring's size and spacing, and the bodyguards' settings are all in the config (`formation.*`).
+
+### Points and walking somewhere (6.4.8)
+A point is one named place. Bots walk there, or march there in rows.
+- `/fb point` — Every point
+- `/fb point <name>` — Put a point where you stand, facing the way you face. Run it again somewhere else to move it
+- `/fb point tool <name>` — The point tool for one point: right-click with the emerald and it's set, and your hotbar comes back
+- `/fb point tp <name>` — Go to a point
+- `/fb point rename <name> <new name>` / `/fb point delete <name>`
+- `/fb walk <bot|--all|--free|--group <group>> <point|player|here|x y z>` — They walk there, each its own way, and stand about round it, the way survivors gather after a fight. The nearest ones end up in the middle. `--stop` (or `/fb stop`) stops them
+- `/fb march <bots> --point <point>` — In rows instead (see Marching)
+
+### Player Cannon (6.4.8)
+- `/fb cannon` — A screen to choose who comes (new bots, a group, bots not in a group, or every bot), how many, their gear, and what they do when they land. Then **Take a Player Cannon**
+- `/fb cannon give <player> [how many] [protect|charge|attack|stand]` — Hand one straight to someone, from the console too
+
+The Player Cannon is a fishing rod named "Player Cannon". Right-click it and the bots throw real ender pearls from about 35 blocks away, high up over whatever is in between, and land around you about 4 seconds later. What they do when they land:
+- `protect`: go for whoever you've been fighting, then guard you
+- `charge`: go for everyone near you but you
+- `attack`: come for you
+- `stand`: stand about
+
+Bots of yours that were already fighting carry on with their fight. The rod has one use and breaks like any rod. Nothing is said in chat, and no sound plays that a pearl wouldn't make. The usual settings are in `cannon.*` in the config.
 
 ### Bots that join by themselves (off by default)
 - `/fb join <number>` — That many bots join like players ("X joined the game") at `joining.at` (the world spawn by default). What they do is `joining.objective`: go after a player (`hunt`), walk to `joining.point` (`point`), or both. Up to 20 at a time. Needs `joining.enabled: true`; with `joining.on-their-own` they also join by themselves now and then. The rest is in `joining.*` in the config
 
 ### Settings
-- `/fb settings` (or `/fb edit`, `/fb config`) — Every setting in config.yml as screens. **Popular settings** first (the 18 most people change), then every bot's switches, one bot's settings, and the eight groups for the rest. Click to change a setting, right-click for the default. Numbers and text are typed in a dialog box (1.21.7+) or on a sign (older versions), never in chat; anything too long for a sign says to use `/fb web`. Saved at once, comments kept. Needs `fightbot.settings`
+- `/fb settings` (or `/fb edit`, `/fb config`) — Every setting in config.yml as screens. **Popular settings** first (the 21 most people change), then every bot's switches, one bot's settings, and the twelve groups for the rest. Click to change a setting, right-click for the default. Numbers and text are typed in a dialog box (1.21.7+) or on a sign (older versions), never in chat; anything too long for a sign says to use `/fb web`. Saved at once, comments kept. Needs `fightbot.settings`
 - `/fb settings global` — Every bot's switches: the same switches as a bot's own menu, for every bot at once (also in `/fb settings`)
 - `/fb settings <bot>` (or `/fb edit <bot>`) — That bot's own settings menu
 
@@ -169,15 +202,15 @@ Bots can walk a route, or wander about freely, when they aren't fighting. Routes
 - `/fb pointtool <route>` (or `roamingpointtool`) — Make points by walking: an emerald puts a point where you stand, red dye takes the last one back, lime dye is done, a barrier cancels. The route is drawn in the air while you work, and your hotbar comes back when you're done
 - `/fb roamingpointset <route> <number>` — Move that point to where you're standing
 - `/fb roamingpointdel <route> <number>` — Delete a point
-- `/fb roamingstart <bot|--all|--group <group>> <route> [loop|back|stop]` — Walk a route. At the end it loops, walks back, or stops. A group walks it together as a squad. `roaming.stop-at-points: false` walks straight on through each point instead of stopping at it
+- `/fb roamingstart <bot|--all|--free|--group <group>> <route> [loop|back|stop]` — Walk a route. At the end it loops, walks back, or stops. A group walks it together as a squad. `roaming.stop-at-points: false` walks straight on through each point instead of stopping at it, without slowing down at any of them (6.4.8)
 - `/fb roamingfree <bot|--all|--group <group>>` — Wander about freely near where it is. A group wanders together as a squad
-- `/fb roamingfree --group <group> apart` — Every bot in the group wanders its own way, in random directions
+- `/fb roamingfree --group <group> apart` — Every bot in the group wanders its own way, in random directions. With `roaming.free-apart: true` that's what a group always does, so a big group spreads out instead of following one leader (`together` on the end does the opposite, 6.4.8)
 - `/fb roamingstop <bot|--all|--group <group>>` — Stop roaming
 
 ### Patrolling
 A patrol walks a route and goes after that route's targets, and only those. After the fight, it goes back to its route. Targets who are gone (logged off, removed, or a group that was deleted or emptied) come off the route once nobody is patrolling it. While a patrol runs, it keeps them, and goes after them again when they're back.
 - `/fb patrolling` (or `patrol`) — Open the patrolling screens
-- `/fb patrollingstart <bot|--all|--group <group>> <route> [loop|back|stop]` — Patrol a route
+- `/fb patrollingstart <bot|--all|--free|--group <group>> <route> [loop|back|stop]` — Patrol a route. Started from a menu on a route that has no targets yet, the targets screen opens next, so you can pick who they patrol for (6.4.8)
 - `/fb patrollingstop <bot|--all|--group <group>>` — Stop patrolling
 - `/fb patrollingtargetadd <route> <player|--bot <bot>|--group <group>>` — Give a route's patrols a target
 - `/fb patrollingtargetdel <route> <name>` — Remove a target
@@ -210,7 +243,7 @@ In the kits screen, pick a kit, then pick as many bots as you like. Each one dro
 - `/fb groups` — Open the groups screen
 - `/fb groupcreate <name>` — Create a group
 - `/fb groupadd <group> <bot|--player <player>>` — Add a bot, or an online player (after `--player`). Each is in one group at a time, so adding one that's in another group moves it. If the group is roaming, patrolling or fighting together, a free bot joins in. A busy bot keeps at its own job until it's free (or joins in straight away with `orders.must-stop-first: false`).
-- `/fb groupadd <group> --all` — Put in every bot that isn't in a group yet (bots in other groups stay put)
+- `/fb groupadd <group> --free` — Put in every bot that isn't in a group yet (bots in other groups stay put). `--all` does the same
 - `/fb groupadd <group> --group <other>` — Move everyone in another group into this one (the other group stays, empty)
 
 In the groups screen, **Add a bot** also has **Add every free bot**, **Add every bot** and **Move another group in**.
@@ -320,7 +353,9 @@ Only the servers where you want bots need FightBot. Bots count in the network's 
 >
 > **Capes:** 30% of bots wear a cape that came with their skin (`identity.capes`). Minecraft only shows capes Mojang gave an account, so capes can't be made from pictures.
 >
-> Bridging and mining are off by default, and pillaring and mace combat are on. Change any of them in the config, or for one bot in its settings menu.
+> **Mining (6.4.8):** a bot with a pickaxe mines what's in its way, as a player would: the block between it and who it's fighting, and, when there's no way to walk to them, its way through the wall to them. It digs a hole two blocks high and walks through. Anything a player can mine goes, but never bedrock, barriers, portals, chests, furnaces, spawners or the like, and never anything a protection plugin forbids. A bot with no pickaxe never breaks anything. Mining is on by default now (`mining.enabled`).
+>
+> Bridging is off by default, and pillaring, mining and mace combat are on. Change any of them in the config, or for one bot in its settings menu.
 
 ## Equipment
 

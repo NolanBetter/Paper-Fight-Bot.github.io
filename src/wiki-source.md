@@ -106,6 +106,9 @@ In all four, a bot that's hit fights back and then takes its place again, and no
 | `/fb roamingstart <bot> <route>` | Bots should walk a path you choose: guards on a wall, a street through a town. They find their own way from point to point. | You set the points first. `/fb pointtool` is the quick way. |
 | `/fb patrollingstart <bot> <route>` | The same walk, and they attack the route's targets when they see them. | |
 | `/fb march <bots> --route <route>` | An army marching a route in rows, for a parade or a shot, with nobody leading (6.4.7). | They keep to rows: for bots each going their own way, roam. |
+| `/fb walk <bots> <point>` | Bots walking somewhere and standing about there, like survivors gathering after a fight (6.4.8). | Make the point first, with `/fb point <name>`. |
+| `/fb march <bots> --point <point>` | An army marching in rows to a place, then holding there (6.4.8). | |
+| The Player Cannon (`/fb cannon`) | Bots arriving round you by ender pearl, for a shot (6.4.8). | They come in from about 35 blocks off, so they need open sky over you. |
 | `/fb record` and `/fb replay` | A shot for a video. The bot does exactly what you did, looking about, crouching and swinging included, the same on every take. | It copies you; it doesn't find its own way. A block that wasn't there when you recorded stops it. |
 | `/fb action <bot> walk` | A simple move in a script or a command block: forward for 3 seconds. | Nothing is automatic. It walks into walls and off ledges. |
 
@@ -134,7 +137,7 @@ Outside a fight a bot turns its head at a person's pace, so a group turning a co
 
 ### One bot, a group or everyone
 
-Nearly every order takes a bot's name, `--all`, or `--group <group>`. Make groups as soon as you have two sides, or want to order part of an army about. A group is a team too: its bots don't fight back against each other, or against players in it.
+Nearly every order takes a bot's name, `--all`, `--free` (every bot that isn't in a group, 6.4.8), or `--group <group>`. Make groups as soon as you have two sides, or want to order part of an army about. A group is a team too: its bots don't fight back against each other, or against players in it.
 
 ### Every bot, or just one
 
@@ -192,7 +195,7 @@ A **recording** is what one player did, for bots to act out. A **scene** is wher
 
 **A player or a bot? (6.4.4)** Wherever a command can take either, a plain name is a player and a bot goes after `--bot`, the way `/fb fight` has always worked: `/fb look Bob Nolan` watches the player Nolan, and `/fb look Bob --bot Guard1` watches the bot Guard1. It's the same for `/fb tp`, `/fb march`, `/fb surround`, `/fb protect` and a route's targets. Tab only offers players as plain names, and `--bot` (then the bots) after them; `orders.bots-in-player-names: true` brings the bots back. Groups are the other way round, since a group is mostly bots: `/fb groupadd red Bob` adds the bot Bob, and `/fb groupadd red --player Steve` adds the player Steve. The older ways still work, so command blocks and scripts don't need changing.
 
-**Nicknames (6.4.5).** A player can be named by their nickname too (EssentialsX `/nick` and other nick plugins): `/fb fight Bob Nolan` works while Nolan is nicked, and so does every other command that takes a player. A real name always comes first, and a nickname two players share isn't used. Tab offers nicknames as well.
+**Nicknames (6.4.5).** A player can be named by their nickname too (EssentialsX `/nick` and other nick plugins): `/fb fight Bob Nolan` works while Nolan is nicked, and so does every other command that takes a player. A real name always comes first, and a nickname two players share isn't used. Tab offers nicknames as well. Nicks that change the player's own name, the way Scripted Solutions' nicks do, work too (6.4.8). Before, the server still knew the player by their old name, so the nick found nobody.
 
 A bot never takes a name that belongs to someone else:
 
@@ -214,8 +217,10 @@ Player data is safe either way, because bots have IDs of their own. If a real pl
 | `right-click` | Uses the block it's looking at (a door, button, lever or chest), or else the item in its hand: a pearl or snowball thrown, food eaten, a bow drawn and shot, a shield raised. |
 | `walk [forward\|back\|left\|right] [seconds]` | Walks that way, relative to where it faces (forward if you don't say), until `stop`, or for that many seconds. |
 | `sprint [seconds]` | Sprints forward. Sprinting only goes forward, as for a player; other directions walk. |
-| `stop` | Stops walking or sprinting. |
+| `stop` | Stops walking or sprinting, and anything it's doing over and over. |
 | `turn <left\|right\|around\|degrees>` | Turns it. Positive degrees turn right. |
+
+**Over and over (6.4.8):** add `repeat` on the end of `jump`, `crouch`, `left-click` or `right-click` and the bot keeps doing it: `/fb action Bob jump repeat` jumps every time it lands. Run the same command again to stop it, or `/fb action Bob stop`, or `/fb stop`. Each bot goes at a player's pace, never quite even, and a crowd doesn't jump as one. With `actions.repeat: true` in the config, those four always repeat, and `once` on the end does just one.
 
 Walking and sprinting work like holding a key down: **nothing is automatic**. The bot doesn't step up blocks, stop at edges or go round anything. It bumps into walls and walks off ledges like a player would. Make it jump with `/fb action <bot> jump` while it moves, and a sprint plus a jump is a sprint-jump. Crouched, it crouch-walks; drawing a bow or eating slows it, like you. Speeds match a player's: about 4.3 blocks a second walking, 5.6 sprinting. `/fb look` or `turn` points it first, and `/fb stop` ends it.
 
@@ -241,9 +246,10 @@ Walking and sprinting work like holding a key down: **nothing is automatic**. Th
 
 | Command | What it does |
 |---|---|
-| `/fb march <bot\|--all\|--group <group>> [player] [left\|straight\|right]` | Bots march in rows behind you, or the player you name. Add `left` or `right` for "eyes left" or "eyes right". |
+| `/fb march <bot\|--all\|--group <group>> [player] [player\|straight\|left\|right]` | Bots march in rows behind you, or the player you name. Add `straight` to look straight ahead, or `left` or `right` for "eyes left" or "eyes right". |
 | `/fb march <bot\|--all\|--group <group>> here` | Rows where you stand, facing the way you face, held there. See [Holding a spot](#holding-a-spot). |
 | `/fb march <bot\|--all\|--group <group>> --route <route> [stop\|loop\|back]` | Rows marching a route, point to point, with nobody leading (6.4.7). See [Marching a route](#marching-a-route). |
+| `/fb march <bot\|--all\|--group <group>> --point <point>` | Rows marching to a point, then holding there (6.4.8). See [Points](#points-walking-and-marching-somewhere). |
 | `/fb surround <bot\|--all\|--group <group>> [player\|here]` | Bots stand in a ring round you, the player you name, or (`here`) the spot you stand on. |
 | `/fb formation` | A screen showing how a march lines up, with heads, where you set how wide or how long it is. See [The formation screen](#the-formation-screen). |
 | `/fb formation width <1-64>` | How many bots across each row (3 at first). Saved in the config; marches already going change at once. |
@@ -258,7 +264,7 @@ March, surround or protect? See [Following a player](#following-a-player).
 
 **Marching:** behind you, the way you're walking, there's a gap (1 block), then the first row: one bot in the middle, one to its left and one to its right, shoulder to shoulder (`/fb formation width 5` makes it 5). The next row is straight behind it, and so on, so 7 bots make two full rows and one in the middle of a third. In a straight line the rows stay tight; when you turn, they swing round to their new places. Sprinting, the back rows trail a little (a bot can't go faster than you) and close up when you stop.
 
-**Where they look:** marching bots look at you (`straight`, the default). Add `left` or `right` and they turn their heads that way and a little up, like a parade's "eyes left", while they march straight on behind you: `/fb march --all Nolan left`. With no player named, you lead: `/fb march --all right`. Bots in a ring always look at you.
+**Where they look:** marching bots look at you. Add `straight` and they look straight ahead, the way they're marching (6.4.8: `straight` used to mean at you). Add `left` or `right` and they turn their heads that way and a little up, like a parade's "eyes left", while they march straight on behind you: `/fb march --all Nolan left`. With no player named, you lead: `/fb march --all right`. `formation.march.look` (`player`, `straight`, `left` or `right`) sets what they do when you don't say. Bots in a ring always look at you.
 
 **A big march:** a crowd marches wider, so it doesn't trail off behind you in a long thin line. Once the rows would be more than twice as deep as they're wide, they widen to keep it at that: 50 bots march 5 across, 200 march 10 across, 1000 march 23 across and 44 deep. `formation.march.widen: false` keeps every march `width` across, however long that makes it.
 
@@ -281,7 +287,7 @@ The middle 9 columns and the first 4 rows fit on the screen; the info item says 
 **Surrounding:** an evenly spaced ring round you that follows you. With the radius left at `0`, the ring grows with the number of bots: 7 bots make a 2-block ring, 20 about 3 blocks.
 
 - Bots get to their places the way they walk anywhere else: round trees and walls, up and down steps. Two bots squeezing through the same gap take turns. A place that falls inside a tree or a wall is swapped for a spot behind you.
-- A bot further than `formation.teleport-distance` (48 blocks) from its place, or in another world, is brought there. Marching behind you, a place far down the column counts from further off (48 blocks plus its own distance from you), so the back rows walk round a turn instead of being moved. A bot is only ever put on open ground it can stand on, in the middle of a block; with nowhere to stand near its place, it waits.
+- **Bots always walk to their place (6.4.8)**, however far behind they've fallen: on a laggy server, half a march used to teleport to a leader who'd got ahead. One whose place is in another world waits where it is. To have far-off bots brought there instead, set `formation.teleport-distance` to a number (16 or more): further than that from its place, a bot is moved, only ever onto open ground it can stand on.
 - It's a job, like roaming: a busy bot has to be stopped first (unless `orders.must-stop-first` is off). Bots already marching or surrounding can be switched straight to another formation, player or direction. A bot that's hit fights back, then takes its place again. If the player leaves, the bots wait where they are.
 - **They never fight back against the player they follow.** Turn round and hit your own marchers: they take it, and stay in line. Anyone else who hits them still gets a fight. `formation.ignore-leader: false` turns this off.
 
@@ -293,12 +299,13 @@ The middle 9 columns and the first 4 rows fit on the screen; the info item says 
 | `formation.march.gap` | `1` | Empty blocks between you and the first row. |
 | `formation.march.side-gap` | `0` | Empty blocks between bots in a row. `0` is shoulder to shoulder. |
 | `formation.march.row-gap` | `0` | Empty blocks between one row and the next. |
+| `formation.march.look` | `player` | Where marchers look when you don't say: `player` (at you), `straight` (straight ahead), `left` or `right`. On a route or to a point, with nobody leading, `player` is straight ahead. |
 | `formation.march.look-angle` | `45` | Marching `left` or `right`: how far they turn their heads, in degrees (0 to 120). |
 | `formation.march.look-up` | `10` | Marching `left` or `right`: how far up they look, in degrees (-45 to 45). |
 | `formation.surround.radius` | `0` | `0`: the ring grows with the number of bots. Or a fixed radius, in blocks. |
 | `formation.surround.spacing` | `1.0` | Blocks from one bot to the next round the ring (radius `0`). |
 | `formation.surround.min-radius` | `2.0` | The smallest the ring gets (radius `0`). |
-| `formation.teleport-distance` | `48` | Further than this from its place, a bot is brought there. On a march, this plus the place's own distance from you. |
+| `formation.teleport-distance` | `0` | `0`: bots always walk to their place (6.4.8). A number (16 or more): further than this from its place, a bot is brought there. On a march, this plus the place's own distance from you. Servers still on the old 48 are moved to 0. |
 | `formation.ignore-leader` | `true` | Marching, surrounding or protecting bots never fight back against the player they follow. |
 
 ### Holding a spot
@@ -320,6 +327,24 @@ The middle 9 columns and the first 4 rows fit on the screen; the info item says 
 - **Where they look:** the way their own row is going. `left` or `right` on the end for eyes left or eyes right: `/fb march --group army --route parade loop left`.
 - `spacing <blocks>` and `/fb formation width` work as for any march, and `--points` is the same as `--route`. `/fb stop` ends it.
 - The route's points can be at any height: the march follows the ground between them.
+
+### Points: walking and marching somewhere
+
+A **point** (6.4.8) is one named place: the gate, the camp, where the survivors meet. A route is a line of points to walk along; a point is just somewhere to go.
+
+| Command | What it does |
+|---|---|
+| `/fb point <name>` | Puts a point where you stand, facing the way you face. Run it again somewhere else to move it. |
+| `/fb point tool <name>` | The point tool for one point: right-click with the emerald where it goes, and that's it. Your hotbar comes back. |
+| `/fb point` | Every point. |
+| `/fb point tp <name>` | Takes you there. |
+| `/fb point rename <name> <new>` / `/fb point delete <name>` | |
+| `/fb walk <bots> <point\|player\|here\|x y z>` | The bots walk there and stand about round it. |
+| `/fb march <bots> --point <point>` | The bots march there in rows, and hold. |
+
+**Walking there** (`/fb walk --all camp`): each bot walks its own way, at a walking pace, to a spot of its own round the point, so they end up standing about loosely, close but not touching, the way people gather after a fight. The ones nearest go in the middle. They don't all set off on the same tick. When they get there they turn to the middle, then stand about like any bot with nothing to do. A bot that can't get to its own spot (someone's on it, a wall's in the way) stops as near as it can. In a test, 12 bots all got there and stood within about 5 blocks of the point. `--stop` (or `/fb stop`) stops them. It takes a player (`/fb walk --all Nolan`), `here`, `--bot <bot>` or `x y z` too.
+
+**Marching there** (`/fb march --group army --point camp`): rows form up where the bots are, then march to the point round anything a way can be found round, and hold there. `straight`, `left` or `right` on the end set where they look, and `spacing` and `/fb formation width` work as for any march.
 
 The formation shapes from before 6.3.0 (`/fb formation --all wedge`, `square here`, `rows 20 10` and the rest) are gone, to keep it simple. Typing one now tells you what to use instead: a march, a surround, `march … here`, or `formation width`.
 
@@ -441,6 +466,39 @@ If a player hits it on its way to the point, it fights back and then carries on 
 - Bots that joined by themselves don't come back after a server restart. New ones join instead, like players logging in.
 - `/fb stop` on a joined bot ends what it came for, and it stands where it is.
 
+### The Player Cannon
+
+The **Player Cannon** (6.4.8) brings bots in round you by ender pearl, like a group of players arriving.
+
+1. `/fb cannon` opens a small screen. Pick **who comes**:
+   - **New bots** (how many, and their gear: a sword or mace loadout each, one ready-made loadout, or one of your kits, and a group to join)
+   - **A group** of yours
+   - **Bots not in a group**
+   - **Every bot**
+2. Pick **what they do when they land**:
+   - **Fight for you**: go for whoever you've been fighting, then guard you
+   - **Fight everyone near**: everyone round you but you
+   - **Fight you**
+   - **Just stand**
+3. Click **Take a Player Cannon**. It's a fishing rod named "Player Cannon". It carries what you picked, so different rods can bring different bots.
+4. Right-click it. The bots throw real ender pearls from about 35 blocks away (`cannon.from-distance`), high up over whatever is in between. You see the pearls go up a way off and come down in a ring round you about 4 seconds later (`cannon.spread`), and the game takes each bot to where its pearl lands, the usual pearl damage and all.
+
+- **It looks like players arriving.** The rod is a plain fishing rod with a name, as if someone renamed it in an anvil. It has one use and breaks like any rod. Nothing is said in chat, and no sound plays that a pearl wouldn't make.
+- **Bots of yours** that are far off, or have no open sky to throw through, are moved to somewhere 30-odd blocks away first and throw from there. Ones close enough throw from where they are. A bot that was already fighting keeps fighting the same one after it lands.
+- **Under a roof** there's no way for a pearl to come down, so the bots are simply there.
+- **Who can use it:** anyone holding one (`fightbot.cannon.use`, everyone by default). Taking them from `/fb cannon` needs `fightbot.cannon` (ops). Someone without `fightbot.cannon.use` just has a fishing rod. `/fb cannon give <player> [how many] [protect|charge|attack|stand]` hands one out from the console.
+- Scripted Solutions is getting a Player Cannon of its own, with teams of players and bots. This one may go once that's out. `cannon.enabled: false` turns it off.
+
+| Setting | Default | What it does |
+|---|---|---|
+| `cannon.enabled` | `true` | `false`: rods do nothing, and `/fb cannon` says it's off. |
+| `cannon.bots` | `5` | New bots a rod brings, as the screen starts. |
+| `cannon.max-bots` | `30` | The most one rod can bring. |
+| `cannon.gear` | `random` | `random` (a sword or mace loadout each, never crystals or TNT carts, which would blow up round you), a ready-made loadout's name, or a kit number. |
+| `cannon.on-landing` | `protect` | `protect`, `charge`, `attack` or `stand`. |
+| `cannon.from-distance` | `35` | How far off they throw from, in blocks (16 to 45). |
+| `cannon.spread` | `4` | How far round you they land, in blocks (2 to 16). |
+
 ### Spawning somewhere else
 
 Add `--location` to the end of a spawn command. It works the way `/tp` does:
@@ -557,6 +615,8 @@ Bots throw pearls to chase someone who runs, to get out of a pit, and to get awa
 - **Only forward is a sprint (6.4.7).** Backing off, stepping sideways, or looking one way and going another, a bot walks, as a player has to. Eating slows it right down, as it does a player.
 - **Looking where it's going (6.4.7):** after someone a long way off, going round something on the way, it looks where it's walking, not at them through the hill.
 - **A long way off (6.4.7):** a bot after someone more than 40 blocks away works out as much of the way as it can and looks again from there, so a crowd follows a narrow path or a bridge across the void. Before, it walked straight at them and stopped at the edge.
+- **Turning to aim (6.4.8):** a bot turns its head to someone at a quick player's pace: right round in about a third of a second, never in one frame. It won't hit someone more than 55° to its side. `head-movement.natural: true` is slower and more human still.
+- **Digging through (6.4.8):** a bot with a pickaxe that has no way to walk to its target digs one, as a player would: a hole two blocks high through the wall, then through it. See [Building](#building).
 
 ### Mace
 
@@ -777,9 +837,9 @@ Bots swim. A bot going after someone across a river swims over and climbs out on
 
 `/fb settings` (or `/fb edit`) on its own opens **every setting in `config.yml` as screens**. Since 6.4.4 the first screen is laid out so a new server owner isn't faced with everything at once:
 
-- **Popular settings** comes first: the 18 settings most people change, on one screen. Health, damage, pearls, shields, maces, crystals, carts, drops, hardcore, skins, names, march width, bridging, whether a busy bot has to be stopped first, how many bots players see, staff notices, what a bot does after a replay, and keeping bots over a restart.
+- **Popular settings** comes first: the 21 settings most people change, on one screen. Health, damage, pearls, shields, maces, crystals, carts, drops, hardcore, skins, names, march width, bridging, whether a busy bot has to be stopped first, how many bots players see, staff notices, what a bot does after a replay, keeping bots over a restart, and (6.4.8) idle glancing about, where marchers look, and mining.
 - **Every bot's switches** and **One bot's settings** sit beside it (below).
-- **The eight groups** the config is in (Fighting, Weapons and PvP styles, and so on) are underneath, for everything else. Each one opens its sections, and each section its settings, with what each one does, what it is now and its default. A setting you've changed is yellow.
+- **The twelve groups** the config is in are underneath, for everything else: Fighting; Weapons and PvP styles; Orders and groups; Marching and formations; Walking, building and mining; Roaming and patrolling; Who the bots are; Bots that join, and the Player Cannon; Filming; Voice and AI; Performance; The server (6.4.8: there were eight, and building was hidden under marching). Each one opens its sections, and each section its settings, with what each one does, what it is now and its default. A setting you've changed is yellow.
 - **Quick actions** and the **Web editor** are along the bottom.
 - **Every setting says what it does (6.4.5).** A choice lists each option with what it means, the one it's on marked in yellow: `building.only-own-blocks` shows what kit, true and false each do. Settings whose key says little have a plain name, like "Build only with blocks it carries" or "Bridge across gaps". The web editor shows the same.
 - **Click a setting to change it.** A switch flips, a choice moves on to the next (shift-click: the one before), and anything else you type: a number, a name, a list (commas between), a key. **Right-click** puts it back to its default. A secret such as `ai.api-key` is never shown; shift-right-click clears it.
@@ -1006,15 +1066,18 @@ While you work, the route is drawn in the air for you only: a spark at each poin
 | `/fb roamingstart <bot\|--all\|--group <group>> <route> [loop\|back\|stop]` | Walks the route. At the end it loops, walks back, or stops. |
 | `/fb roamingfree <bot\|--all\|--group <group>>` | Wanders about near where it is, pausing now and then. |
 | `/fb roamingfree --group <group> apart` | Every bot in the group wanders its own way, in random directions, instead of together as a squad. |
+| `/fb roamingfree --group <group> together` | Together as a squad, even with `roaming.free-apart: true`. |
 | `/fb roamingstop <bot\|--all\|--group <group>>` | Stops roaming. |
 
-A group sent on a route walks it together, as a squad. A group sent free roaming does too, behind a leader, unless you add `apart`. If a roaming bot is attacked, it fights back, then goes back to its walk.
+A group sent on a route walks it together, as a squad. A group sent free roaming does too, behind a leader, unless you add `apart`. With `roaming.free-apart: true` (6.4.8, off at first), a group sent free roaming always spreads out, each its own way, so you can put every bot in one big group and still have them wander about at random. If a roaming bot is attacked, it fights back, then goes back to its walk.
 
-Free roamers now and then stop to look at a bit of grass. With Mining on, they sometimes pull it up. They don't go swimming. In the config:
+**Free roaming (6.4.8):** roamers pick spots out in the open that they can walk to in a straight line, so they don't stand walking into walls. If there's no way to the spot they picked, they pick another. A crowd roaming in one place spreads out over more ground (200 bots over about 64 blocks), instead of all bumping into each other in a small circle. A roamer that no player is near enough to see stands about until someone comes (`performance.unseen-roamers-rest`). That costs the server almost nothing.
+
+Free roamers now and then stop to look at a bit of grass. With Mining on, ones carrying a pickaxe sometimes pull it up. They don't go swimming. In the config:
 - `roaming.free-radius` sets how far a free roamer strays.
 - `pause-min-seconds` and `pause-max-seconds` set how long it stands about between strolls.
 - `point-pause-seconds` sets how long a route walker waits at each point.
-- `stop-at-points: false` (6.4.4) walks a route straight on through each point, turning as it goes, without stopping or waiting. It reads as someone walking a path rather than going from mark to mark. The end of the route still loops, turns back or stops as you said.
+- `stop-at-points: false` (6.4.4) walks a route straight on through each point, turning as it goes, without stopping or waiting. It reads as someone walking a path rather than going from mark to mark. The end of the route still loops, turns back or stops as you said. 6.4.8: it no longer slows almost to a stop at each point (stop, go, stop, go along points close together). It turns for the next one the moment it gets there.
 
 ### Patrolling
 
@@ -1025,7 +1088,7 @@ A patrol walks a route and goes after **that route's targets**, and only those. 
 | `/fb patrollingtargetadd <route> <player\|--bot <bot>\|--group <group>>` | Gives the route's patrols a target. A plain name is a player (6.4.4). |
 | `/fb patrollingtargetdel <route> <name>` | Removes a target. |
 | `/fb patrollingtargetlist <route>` | Who the route's patrols hunt. |
-| `/fb patrollingstart <bot\|--all\|--group <group>> <route> [loop\|back\|stop]` | Patrols the route. |
+| `/fb patrollingstart <bot\|--all\|--group <group>> <route> [loop\|back\|stop]` | Patrols the route. Started from a group's or a bot's menu on a route that has no targets yet, the route's targets screen opens straight after, so you can pick who they patrol for (6.4.8). |
 | `/fb patrollingstop <bot\|--all\|--group <group>>` | Stops patrolling. |
 
 `patrolling.spot-range` sets how close, and in sight, a target has to be before it's spotted. `patrolling.give-up-seconds` sets how long a target can stay out of reach before the patrol goes back to its route.
@@ -1465,6 +1528,7 @@ Don't delete your config when you update. FightBot notices it came from an older
 | `restart.hold-in-place-seconds` | `10` | After a restart, how long a bot that's been brought back stays where FightBot put it, whatever other plugins do. `0`: off. |
 | `performance.rest-when-idle` | `true` | A bot with nothing to do is checked twice a second instead of twenty times. |
 | `performance.quiet-steps` | `true` | A bot no player is within 24 blocks of makes no footstep sounds, and in a crowd the 16 bots nearest each player make them. |
+| `performance.unseen-roamers-rest` | `true` | A free roamer no player can see stands about until someone comes (6.4.8). |
 | `performance.max-visible-bots` | `0` | The most bots each player is sent, nearest first. `0`: all of them. For players whose game slows down in a crowd. See [Performance](#performance). |
 | `combat.use-pearls`, `use-cobwebs`, `use-shield`, `use-axe-swap`, `use-water-bucket` | `true` | Which tricks bots use. Each is also a switch in a bot's own settings. |
 | `combat.pearl-away-distance` | `0` | How far a bot pearls to get away, in blocks (4 to 35), never over a wall. `0`: a full-strength throw. See [Ender pearls](#ender-pearls). |
@@ -1515,7 +1579,7 @@ Don't delete your config when you update. FightBot notices it came from an older
 | `formation.march.look-angle` / `look-up` | `45` / `10` | Marching eyes left or right: how far round and up. |
 | `joining.enabled` | `false` | Bots join the server by themselves, like players. See [Bots that join by themselves](#bots-that-join-by-themselves). |
 | `mining.enabled` | `false` | Breaking blocks in the way with a pickaxe. |
-| `head-movement.natural` | `false` | In a fight, `true` turns the head at a person's pace, with a little aim drift. `false` is the quick, sure aim - a fast turn, never a one-frame snap (6.4.7). Outside a fight bots always turn at a person's pace (6.4.6). |
+| `head-movement.natural` | `false` | In a fight, `true` turns the head at a person's pace, with a little aim drift. `false` is the quick, sure aim: a quick player's turn, right round in about a third of a second (6.4.8), never a one-frame snap. Outside a fight bots always turn at a person's pace (6.4.6). |
 | `debug.include.plugins` / `tps` | `true` / `true` | What a debug log records about your server besides the bots: your plugins, and your TPS and tick times. `false` leaves them out (6.4.7). |
 | `head-movement.idle-glance` | `true` | A bot with nothing to do glances about now and then, or at someone close by. See [Where a bot looks](#where-a-bot-looks). |
 | `ping.enabled` | `true` | A realistic, wandering ping in the tab list. |
@@ -1539,6 +1603,7 @@ To the server a bot is a real player, and the server does a lot for every player
 | `performance.simulation-distance` | `3` | How far round each bot the world keeps running: mobs moving, crops growing (2 to 32, or `server`). |
 | `performance.locator-bar` | `false` | The locator bar (1.21.6 and newer) shows where other players are. The server works it out again for every player each time anyone moves, so a crowd of bots costs a lot. `false`: bots aren't on it. `true` shows them, at that cost. |
 | `performance.rest-when-idle` | `true` | A bot with nothing to do (standing still, unhurt, no orders, in its place if it's in a formation) is checked twice a second instead of twenty times. It wakes the moment it's hit, pushed or given something to do, and a formation steps off together when its leader moves. |
+| `performance.unseen-roamers-rest` | `true` | A bot roaming about freely that no player is near enough to see (the server's tracking range for players, at least 64 blocks) stands about until someone comes, and then rests like any idle bot (6.4.8). Roaming bots standing about where a player could see them rest too. Off: roamers wander about whether anyone's there or not. |
 | `performance.quiet-steps` | `true` | A bot no player is within 24 blocks of makes no footstep sounds. For every step a player takes, the server goes through everyone online to see who should hear it, so an army walking together spent a lot of each tick on sounds nobody heard. With a crowd round a player, the 16 bots nearest them make the footsteps: a game can't play hundreds a second anyway. |
 | `performance.max-visible-bots` | `0` | The most bots each player is sent: the ones nearest them (20 or more). `0`: all of them. See [Low FPS in a crowd](#low-fps-in-a-crowd). |
 
@@ -1560,6 +1625,8 @@ Mob spawning, view distance, simulation distance and "sent nothing" need Paper o
 | 50 idle bots on a survival world at night (view distance 10), 26.2 | 8.1 ms, 1016 chunks loaded | 5.4 ms, 421 chunks loaded |
 
 A tick has 50 ms before the server drops below 20 TPS. Your numbers depend on your machine, your world and your other plugins.
+
+**Roaming crowds (6.4.8).** A bot walking about costs about the same as a player walking about. Most of that is the game moving it (collisions, physics, telling the players near it), not FightBot. On our test server 200 bots roaming round a player took about 12 ms a tick, so TPS stays at 20. Roamers nobody can see now cost almost nothing, roamers standing about rest, and a big crowd spreads out instead of piling into each other. Your server's numbers depend on its CPU: a debug log (`/fb debug on`, then `/fb debug off`) shows FightBot's share of each tick against the whole tick.
 
 **A very big crowd.** A thousand bots work, but a thousand in one place cost more than a thousand spread out. For every player the server looks at every other player near it, each tick, to decide who can see whom and what should stay awake. That work grows with the square of the crowd, it is the server's own, and no plugin can switch it off. On our test server 1000 bots standing together took about 40 ms a tick and 1000 marching about 75 ms (about 86 ms before 6.1.1), where 300 marching took 7 ms. If a crowd that size lags, split it: two armies of 500 a few hundred blocks apart cost less than one of 1000.
 
@@ -1686,7 +1753,7 @@ Update to 6.4.5. A bot no longer steps, drifts or gets pushed off an edge where 
 Update to 6.4.5: it walks out from under the overhang to open sky and builds up from there. A bot you teleport also forgets where it was stuck, so it walks up steps instead of pillaring.
 
 **`/fb fight` says a player isn't online, but they are.**
-They're probably nicked. From 6.4.5 every command finds a player by their nickname too, as long as no other player has the same one.
+They're probably nicked. From 6.4.5 every command finds a player by their nickname too, as long as no other player has the same one. From 6.4.8 that includes nicks that change the player's own name, like Scripted Solutions' nicks.
 
 **Bots spawn a block or two away from where I'm standing.**
 From 6.4.5 `/fb spawn` puts each bot exactly where you stand. Before, a new bot moved away from bots already there. Want that back? `orders.spawn-apart: true`.
@@ -1711,6 +1778,24 @@ Update to 6.4.7. It backs off away from all of them now and keeps going that way
 
 **Idle bots move their heads.**
 That's the glance from 6.4.6, so a crowd doesn't stand like statues. Bots always come back the way they were placed. `head-movement.idle-glance: false` keeps them still, and so does `/fb look`.
+
+**Marching or surrounding bots teleport to me.**
+Fixed in 6.4.8. They always walk to their place now, however far behind they are. On a laggy server, half a march used to jump to a leader who had got ahead. To have far-off bots brought to you again, set `formation.teleport-distance` to a number (16 or more).
+
+**Bots with pickaxes stand stuck behind a wall.**
+From 6.4.8 a bot carrying a pickaxe digs through to whoever it's after when there's no way to walk there, and mining is on by default. Check `mining.enabled` and the bot's own **Mining** switch, and that a protection plugin isn't stopping it (the debug log says so).
+
+**Free roamers walk into walls, or a crowd of roamers lags.**
+Better in 6.4.8. Roamers pick open spots they can walk to, a crowd spreads out over more ground, and roamers nobody can see stand still and cost almost nothing (`performance.unseen-roamers-rest`). See [Roaming](#roaming).
+
+**A group I send free roaming follows one leader.**
+That's a squad. Add `apart` (`/fb roamingfree --group army apart`), or set `roaming.free-apart: true` so a group always spreads out (6.4.8).
+
+**Bots on a route go stop, go, stop, go.**
+Fixed in 6.4.8, with `roaming.stop-at-points: false`. A bot now turns for the next point the moment it reaches one.
+
+**A patrol from the groups menu doesn't go after anyone.**
+Its route had no targets. From 6.4.8 the route's targets screen opens straight after, so you can pick who they patrol for.
 
 **A bot is stuck in a hole.**
 From 6.1.0 a bot in a hole it can't jump out of builds a block or two under itself and climbs out, or pearls out. It needs **Pillaring** on (`building.pillar`, and the switch in its settings menu) and, with `building.only-own-blocks` on, blocks in its pack.
