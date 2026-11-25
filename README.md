@@ -7,8 +7,9 @@ stylesheet, ES modules.
     install.html    installation and first fight
     compare.html    FightBot beside FakePlayer and VexBot
     ai.html         setting up AI voice chat with Groq
-    wiki.html       the FightBot wiki, 6.4.9
+    wiki.html       the FightBot wiki, 6.4.10
     faq.html        common questions
+    updates.html    every release and its changelog, read live from Modrinth
     report.html     bug report form
     reports.html    your reports, and the reply threads
     admin.html      owner only, edits the FAQ and wiki in Markdown
@@ -19,7 +20,7 @@ stylesheet, ES modules.
 
     editor/         the in-game web editor, opened by /fightbot web
       index.html    the page itself
-      editor.js     its seven tabs
+      editor.js     its eight tabs (Formations draws march shapes)
       editor.css    its styles, on top of assets/style.css
       skin3d.js     a skin as a model you can turn round, in plain CSS
       relay.json    where the relay is, read by both the page and the plugin
@@ -30,6 +31,7 @@ stylesheet, ES modules.
       firebase.js        project config and the auth/firestore handles
       defaults.js        the FAQ and wiki the site ships with, as data
       md.js              the Markdown renderer
+      updates.js         the Updates page: Modrinth's version list, grouped and searchable
       app.js             accounts, nav, reports, threads, content editing
       fightbot-web.js    talks to a Minecraft server for editor/ — leave as is
       logo.png           the square mark

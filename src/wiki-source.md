@@ -103,12 +103,12 @@ In all four, a bot that's hit fights back and then takes its place again, and no
 | `/fb tp` | Putting bots somewhere at once, while you set things up. | They don't walk there, so it's not for a shot. |
 | `/fb rtp` | Scattering bots round a world, each in its own random safe spot. | You don't choose where they go. |
 | `/fb roamingfree` | Making a place look lived in. Nothing to set up: bots stroll about near where they are. | You don't choose where they go. |
-| `/fb roamingstart <bot> <route>` | Bots should walk a path you choose: guards on a wall, a street through a town. They find their own way from point to point. | You set the points first. `/fb pointtool` is the quick way. |
+| `/fb roamingstart <bot> <route>` | Bots should walk a path you choose: guards on a wall, a street through a town. They find their own way from point to point. | You set the points first. `/fb roamingpointtool` is the quick way. |
 | `/fb patrollingstart <bot> <route>` | The same walk, and they attack the route's targets when they see them. | |
 | `/fb march <bots> --route <route>` | An army marching a route in rows, for a parade or a shot, with nobody leading (6.4.7). | They keep to rows: for bots each going their own way, roam. |
 | `/fb walk <bots> <point>` | Bots walking somewhere and standing about there, like survivors gathering after a fight (6.4.8). | Make the point first, with `/fb point <name>`. |
 | `/fb march <bots> --point <point>` | An army marching in rows to a place, then holding there (6.4.8). | |
-| The Player Cannon (`/fb cannon`) | Bots arriving round you by ender pearl, for a shot (6.4.8). | They come in from about 35 blocks off, so they need open sky over you. |
+| The Player Cannon (`/fb cannon`) | Bots arriving round you by ender pearl, for a shot (6.4.8). | The pearls fall from above you (6.4.10), so it looks best with open sky. Under a low roof the bots just appear. |
 | `/fb record` and `/fb replay` | A shot for a video. The bot does exactly what you did, looking about, crouching and swinging included, the same on every take. | It copies you; it doesn't find its own way. A block that wasn't there when you recorded stops it. |
 | `/fb action <bot> walk` | A simple move in a script or a command block: forward for 3 seconds. | Nothing is automatic. It walks into walls and off ledges. |
 
@@ -138,6 +138,10 @@ Outside a fight a bot turns its head at a person's pace, so a group turning a co
 ### One bot, a group or everyone
 
 Nearly every order takes a bot's name, `--all`, `--free` (every bot that isn't in a group, 6.4.8), or `--group <group>`. Make groups as soon as you have two sides, or want to order part of an army about. A group is a team too: its bots don't fight back against each other, or against players in it.
+
+**Only the bots near you (6.4.10):** add `--distance <blocks>` to any of those, or use it on its own for every bot that close. `/fb stop --distance 20` stops every bot within 20 blocks of you; `/fb fight --group red --distance 30 Steve` sends only the bots of red within 30 blocks. It counts from wherever the command was run: you, a command block, or `/execute as`.
+
+**In the game's own commands**, `@b` picks bots the way `@a` picks players: `/tp @b ~ ~ ~`, `/effect give @b[distance=..20] speed`. See [@b: bots in any command](#b-bots-in-any-command).
 
 ### Every bot, or just one
 
@@ -251,7 +255,7 @@ Walking and sprinting work like holding a key down: **nothing is automatic**. Th
 | `/fb march <bot\|--all\|--group <group>> --route <route> [stop\|loop\|back]` | Rows marching a route, point to point, with nobody leading (6.4.7). See [Marching a route](#marching-a-route). |
 | `/fb march <bot\|--all\|--group <group>> --point <point>` | Rows marching to a point, then holding there (6.4.8). See [Points](#points-walking-and-marching-somewhere). |
 | `/fb surround <bot\|--all\|--group <group>> [player\|here]` | Bots stand in a ring round you, the player you name, or (`here`) the spot you stand on. |
-| `/fb formation` | A screen showing how a march lines up, with heads, where you set how wide or how long it is. See [The formation screen](#the-formation-screen). |
+| `/fb formation` | A screen showing how a march lines up, with heads, where you set how wide or how long it is, or pick a shape drawn in the web editor. See [The formation screen](#the-formation-screen). |
 | `/fb formation width <1-64>` | How many bots across each row (3 at first). Saved in the config; marches already going change at once. |
 | `/fb formation length <0-64>` | Or how many rows long: the march is then as wide as it needs to be. `0` goes back to the width. |
 | `/fb formation widen <on\|off>` | Whether a crowd marches wider (see below). |
@@ -277,10 +281,24 @@ March, surround or protect? See [Following a player](#following-a-player).
 - **How many across:** click the sign and type a number (1 to 64) on it. The heads move to match.
 - **How many rows:** click the other sign and type how many rows long the march should be. It's then as wide as it needs to be. `0` goes back to the width.
 - **Wider for crowds:** the switch for `formation.march.widen`.
+- **Layout (6.4.10):** switches between plain rows and each shape you've drawn in the web editor. Click for the next one, right-click to go back. The heads show the shape. Width, length and widening don't apply while a shape is in use, and typing a width or a length goes back to plain rows.
 - **Bots in this picture:** left-click for one more, right-click for one fewer, shift for ten at a time. It only changes the picture, so you can see how 50 or 500 bots would line up. It starts at the number of bots you have.
 - **Back to the default:** 3 across, wider for crowds, no set length.
 
 The middle 9 columns and the first 4 rows fit on the screen; the info item says how wide and deep the whole march is. Everything is saved in `config.yml` the moment you set it, and marches already going change at once. On 1.21.7 and newer you type the number in a dialog box. On older versions a sign goes up just over your head while you type, nobody else sees it, and the block goes back as it was afterwards; if there's no room for it, step somewhere with open space above you.
+
+#### Shapes you draw (6.4.10)
+
+Any shape you like, drawn in your browser: `/fb web`, then the **Formations** tab.
+
+- **You're at the top of the grid**, walking up the screen. Every square below is a spot a bot can stand on.
+- **Drag the bot from the tray onto a square** to add one. Drag bots about to move them, and drag one back to the tray to take it out. Clicking a square adds a bot or takes one out too, and the keyboard works the same way.
+- **Bots have to touch**, side by side or corner to corner, so a shape is always one group. The squares a bot could go on light up while you drag. The grid always keeps two empty squares round every edge, so a shape can grow any way.
+- **The gaps:** each shape has its own gap between rows and between bots in a row (0 to 8 blocks), or uses `formation.march.row-gap` and `side-gap`. The squares on screen move apart to match.
+- **Start again from** rows, a wedge, a square, a line, a column or a diamond, then change it.
+- Give it a name and **Save**. **Use for marches** puts it in use (or back to plain rows). Save as many as you like.
+
+Bots fill a shape front row first, the middle of each row first, the same order as plain rows. Fewer bots than spots fill it from the front; more bots than spots form rows behind it, as wide as its widest row. A march given its own width (`/fb march … width 5`) still uses plain rows. Shapes are kept in `plugins/FightBot/layouts.yml`, and `formation.march.layout` names the one in use.
 
 **If you fly or jump:** the rows stay on the ground under you and follow from there.
 
@@ -299,6 +317,7 @@ The middle 9 columns and the first 4 rows fit on the screen; the info item says 
 | `formation.march.gap` | `1` | Empty blocks between you and the first row. |
 | `formation.march.side-gap` | `0` | Empty blocks between bots in a row. `0` is shoulder to shoulder. |
 | `formation.march.row-gap` | `0` | Empty blocks between one row and the next. |
+| `formation.march.layout` | `""` | A shape drawn in the web editor that marches take (6.4.10). Empty: plain rows. See [Shapes you draw](#shapes-you-draw-6-4-10). |
 | `formation.march.look` | `player` | Where marchers look when you don't say: `player` (at you), `straight` (straight ahead), `left` or `right`. On a route or to a point, with nobody leading, `player` is straight ahead. |
 | `formation.march.look-angle` | `45` | Marching `left` or `right`: how far they turn their heads, in degrees (0 to 120). |
 | `formation.march.look-up` | `10` | Marching `left` or `right`: how far up they look, in degrees (-45 to 45). |
@@ -319,7 +338,7 @@ The middle 9 columns and the first 4 rows fit on the screen; the info item says 
 
 ### Marching a route
 
-`/fb march --all --route parade` (6.4.7) marches the bots in rows **along a route**, the same routes roaming and patrolling use (`/fb pointtool parade` makes one by walking it). Nobody leads: the front of the march walks the route itself, **point to point in straight lines**, at a steady marching pace.
+`/fb march --all --route parade` (6.4.7) marches the bots in rows **along a route**, the same routes roaming and patrolling use (`/fb roamingpointtool parade` makes one by walking it). Nobody leads: the front of the march walks the route itself, **point to point in straight lines**, at a steady marching pace.
 
 - **Corners:** each row turns where the front turned, the way a real column goes round a corner, instead of the whole block swinging round like a gate.
 - **Keeping together:** when the back rows fall behind (a tree, a crowd), the front waits for them. A few stuck bots don't hold the march up for long: after a few seconds it goes on at half pace.
@@ -335,7 +354,7 @@ A **point** (6.4.8) is one named place: the gate, the camp, where the survivors 
 | Command | What it does |
 |---|---|
 | `/fb point <name>` | Puts a point where you stand, facing the way you face. Run it again somewhere else to move it. |
-| `/fb point tool <name>` | The point tool for one point: right-click with the emerald where it goes, and that's it. Your hotbar comes back. |
+| `/fb pointtool <name>` | The point tool for one point: right-click with the emerald where it goes, and that's it. Your hotbar comes back. On a point you already have, it moves it. (6.4.10: this was `/fb point tool`. With a route's name, it's that route's tool instead.) |
 | `/fb point` | Every point. |
 | `/fb point tp <name>` | Takes you there. |
 | `/fb point rename <name> <new>` / `/fb point delete <name>` | |
@@ -468,7 +487,7 @@ If a player hits it on its way to the point, it fights back and then carries on 
 
 ### The Player Cannon
 
-The **Player Cannon** (6.4.8) brings bots in round you by ender pearl, like a group of players arriving.
+The **Player Cannon** (6.4.8) brings bots in round you by ender pearl, like a group of players arriving. From 6.4.10 the pearls fall straight down out of the sky round you, and a bot arrives where each one lands.
 
 1. `/fb cannon` opens a small screen. Pick **who comes**:
    - **New bots** (how many, and their gear: a sword or mace loadout each, one ready-made loadout, or one of your kits, and a group to join)
@@ -480,12 +499,14 @@ The **Player Cannon** (6.4.8) brings bots in round you by ender pearl, like a gr
    - **Fight everyone near**: everyone round you but you
    - **Fight you**
    - **Just stand**
-3. Click **Take a Player Cannon**. It's a fishing rod named "Player Cannon". It carries what you picked, so different rods can bring different bots.
-4. Right-click it. The bots throw real ender pearls from about 35 blocks away (`cannon.from-distance`), high up over whatever is in between. You see the pearls go up a way off and come down in a ring round you about 4 seconds later (`cannon.spread`), and the game takes each bot to where its pearl lands, the usual pearl damage and all.
+3. Pick **how high the pearls fall from** (the feather, 10 to 60 blocks) and **how far round you they land** (the compass, 2 to 16 blocks). Left-click goes up, right-click goes down.
+4. Click **Take a Player Cannon**. It's a fishing rod named "Player Cannon". It carries what you picked, so different rods can bring different bots.
+5. Right-click it. Real ender pearls appear high above you and fall straight down in a ring round you, one after another over a second and a half (`cannon.arrive-seconds`). Where each one lands, a bot arrives: a new one appears there, and one of yours is there the moment its pearl comes down.
 
 - **It looks like players arriving.** The rod is a plain fishing rod with a name, as if someone renamed it in an anvil. It has one use and breaks like any rod. Nothing is said in chat, and no sound plays that a pearl wouldn't make.
-- **Bots of yours** that are far off, or have no open sky to throw through, are moved to somewhere 30-odd blocks away first and throw from there. Ones close enough throw from where they are. A bot that was already fighting keeps fighting the same one after it lands.
-- **Under a roof** there's no way for a pearl to come down, so the bots are simply there.
+- **Bots of yours** stay where they are, doing what they were, until their pearls land; then they're there. A bot that was already fighting keeps fighting the same one after it lands.
+- **Under a tree or an overhang** a pearl starts just below it. **Under a low roof** there's no room for one to fall, so the bots are simply there.
+- **A big crowd** spreads a little wider than the spread you picked, so nobody lands on anyone.
 - **Who can use it:** anyone holding one (`fightbot.cannon.use`, everyone by default). Taking them from `/fb cannon` needs `fightbot.cannon` (ops). Someone without `fightbot.cannon.use` just has a fishing rod. `/fb cannon give <player> [how many] [protect|charge|attack|stand]` hands one out from the console.
 - Scripted Solutions is getting a Player Cannon of its own, with teams of players and bots. This one may go once that's out. `cannon.enabled: false` turns it off.
 
@@ -496,8 +517,11 @@ The **Player Cannon** (6.4.8) brings bots in round you by ender pearl, like a gr
 | `cannon.max-bots` | `30` | The most one rod can bring. |
 | `cannon.gear` | `random` | `random` (a sword or mace loadout each, never crystals or TNT carts, which would blow up round you), a ready-made loadout's name, or a kit number. |
 | `cannon.on-landing` | `protect` | `protect`, `charge`, `attack` or `stand`. |
-| `cannon.from-distance` | `35` | How far off they throw from, in blocks (16 to 45). |
-| `cannon.spread` | `4` | How far round you they land, in blocks (2 to 16). |
+| `cannon.height` | `30` | How high the pearls appear, in blocks (8 to 60). The rod's own height from the screen beats it. |
+| `cannon.spread` | `4` | How far round you they land, in blocks (2 to 16). The rod's own spread beats it. |
+| `cannon.arrive-seconds` | `1.5` | The pearls come down one after another over this long (0: all at once, up to 10). |
+
+`cannon.from-distance` (how far off bots threw from, before 6.4.10) is gone.
 
 ### Spawning somewhere else
 
@@ -523,6 +547,23 @@ To keep a server safe, FightBot stops a command block when it:
 - would have more than 200 of its bots in the game at once.
 
 A stopped command block can't spawn bots again until `/fb reload`. Ops are told which one it was and where it is.
+
+### @b: bots in any command
+
+`@b` (6.4.10) picks bots the way `@a` picks players, in the game's own commands and in other plugins' commands that take selectors:
+
+| You type | It does |
+|---|---|
+| `/tp @b ~ ~ ~` | Brings every bot to you. |
+| `/effect give @b[distance=..20] speed 30` | Speed for the bots within 20 blocks. |
+| `/kill @b[limit=1,sort=nearest]` | Kills the nearest bot. |
+| `/give @b[team=red] golden_apple 4` | Golden apples for the bots on a scoreboard team. |
+
+- Every option `@a` takes works after it: `distance`, `limit`, `sort`, `name`, `team`, `tag`, `gamemode` and the rest. `@b` is turned into `@a[tag=fightbot]` just before the command runs, and every bot carries that tag.
+- It works when you type it, from the console, from RCON and from command blocks. Datapack functions don't go through plugins, so they can't use it.
+- Your game may show `@b` in red as you type it, because the game itself doesn't know it. The command still works.
+- FightBot's own commands use `--distance` instead (see [One bot, a group or everyone](#one-bot-a-group-or-everyone)).
+- `orders.bot-selector: false` turns it off.
 
 ### Quick actions
 
@@ -1056,7 +1097,7 @@ A route, free roaming, a patrol or a recording? See [Moving bots about](#moving-
 2. Stand on each spot and run `/fb roamingpointset park`. Each run adds the next point.
 3. To move a point to where you're standing, use `/fb roamingpointset park <number>`. To delete one, use `/fb roamingpointdel park <number>`.
 
-**Or make it by walking it:** `/fb pointtool park` (also `/fb roamingpointtool park`) makes the route if it's new and lends you four things in your hotbar:
+**Or make it by walking it:** `/fb roamingpointtool park` makes the route if it's new and lends you four things in your hotbar. Once a route exists, `/fb pointtool park` gives you its tool too (6.4.10: `/fb pointtool` with a name that isn't a route makes a single point instead - see [Points](#points-walking-and-marching-somewhere)).
 
 | Item | Right-click |
 |---|---|
@@ -1200,6 +1241,13 @@ Number patterns use `%<digits>n` for one random character from those digits, and
 With `file`, if `botnames.yml` is empty or every name in it is taken, bots get made-up names, and FightBot says so in chat.
 
 `identity.protect-real-names` (on by default) stops bots taking the name of anyone who has played on your server. Turn it off to let bots use those names too, for example on a scripted server. Online players, AuthMe and nLogin accounts, and banned names are still off-limits.
+
+### Returning players
+
+Every bot joins as a newcomer at first, so plugins that greet first-time players or send them to a first-join spawn world treat it as one every time. Turn on `identity.returning-players` (6.4.10, off at first) and **a bot whose name has been on your server before joins as a returning player**: ArenaBot spawned again is a player coming back, not a new one. Multiverse's first-spawn, EssentialsSpawn's newbie spawn and "welcome to the server" messages then leave it alone.
+
+- Its gear, position and the rest still start fresh: only "has played before" changes.
+- The names that have joined are kept in `plugins/FightBot/returning.yml`. Take one out to have it join as new again. Names from before 6.4.10 are found in the server's own list of who has joined.
 
 ## Kicks and bans
 
@@ -1363,6 +1411,7 @@ Change FightBot from your browser instead of the server files. Type `/fb web` in
 - **see the bots that are on**, with their health, what they're doing, their group and where, and stop or remove them
 - **run the bots**: make them fight, roam or patrol, groups, kits, and each bot's own settings (new bots are only spawned in game)
 - **upload skins**, **voice lines**, **emotes** and **player models**, and play emotes on bots
+- **draw march shapes** by dragging bots onto a grid (6.4.10), and pick which one marches use
 - put bots **and players** in groups, or every bot at once
 - **read the debug logs**, follow one live, or download it
 
@@ -1544,6 +1593,8 @@ Don't delete your config when you update. FightBot notices it came from an older
 | `combat.pearl-away-distance` | `0` | How far a bot pearls to get away, in blocks (4 to 35), never over a wall. `0`: a full-strength throw. See [Ender pearls](#ender-pearls). |
 | `orders.bots-in-player-names` | `false` | Tab offers only real players as plain names (in `/fb fight`, `look`, `tp`, `march` and the rest); bots come after `--bot`. `true`: bots with the players too. |
 | `orders.spawn-apart` | `false` | `/fb spawn` puts a bot exactly where you stand. `true`: a new bot, or batch, spreads out round the bots already there (how it was before 6.4.5). |
+| `orders.bot-selector` | `true` | `@b` means every bot in the game's own commands (6.4.10). `false`: it's left as typed. See [@b](#b-bots-in-any-command). |
+| `identity.returning-players` | `false` | A bot whose name has been on the server before joins as a returning player (6.4.10). See [Returning players](#returning-players). |
 | `messages.staff-notices` | `true` | FightBot tells staff in chat when something happens by itself (a bot kicked, an update out...). `false`: console only, for scripted or recorded servers. |
 | `messages.author-notice` | `true` | When Funnyfam14, FightBot's author, joins, he's told privately that the server runs FightBot: the version, how many bots there are and any update waiting. Nobody else sees it, it gives no permissions and nothing leaves the server. `false` to turn it off. |
 | `combat.wait-for-charge` | `true` | Bots wait for their weapon to charge before they swing. |

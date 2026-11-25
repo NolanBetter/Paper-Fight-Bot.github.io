@@ -99,8 +99,35 @@ let botList = [];                 // the last bots we were sent
 const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
 const findBot = n => botList.find(x => same(x.name, n));
 const listHas = (list, n) => (list || []).some(x => same(x, n));
-const tabs = ["settings", "bots", "teams", "skins", "emotes", "voice", "debug"];
+const tabs = ["settings", "bots", "teams", "formations", "skins", "emotes", "voice", "debug"];
 let current = "settings";
+
+/* The opening card's three steps - finding the server, the private line, and
+   FightBot saying hello - each ticked off as it happens, so a slow start
+   shows where it's waiting instead of a spinner that never changes. */
+let slowTimer = null;
+function step(id, state) {
+  const li = $(id);
+  if (li) li.className = state || "";
+}
+function stepsFrom(first) {
+  const order = ["stepFind", "stepOpen", "stepHello"];
+  order.forEach((id, i) => step(id, i < order.indexOf(first) ? "done" : i === order.indexOf(first) ? "now" : ""));
+  $("startSteps").hidden = false;
+  $("startSlow").hidden = true;
+  clearTimeout(slowTimer);
+  slowTimer = setTimeout(() => { if (!$("start").hidden && !$("startSpin").hidden) $("startSlow").hidden = false; }, 9000);
+}
+function stepsFailed() {
+  clearTimeout(slowTimer);
+  $("startSlow").hidden = true;
+  for (const id of ["stepFind", "stepOpen", "stepHello"]) if ($(id).className === "now") step(id, "fail");
+}
+function stepsHidden() {
+  clearTimeout(slowTimer);
+  $("startSteps").hidden = true;
+  $("startSlow").hidden = true;
+}
 
 function setConn(text, kind, busy) {
   const c = $("conn");
@@ -180,14 +207,17 @@ async function start() {
       + "so nobody else can reach your server.";
     $("howTo").hidden = false;
     $("startSpin").hidden = true;
+    stepsHidden();
     setConn("No link", "bad");
     return;
   }
 
   // A /fbp web link lists a whole network instead of being one server.
+  stepsFrom("stepFind");
   try {
     const where = parseLink(hash);
     const look = await peekSession(where.secret, where.relay);
+    if (!look.gone) stepsFrom("stepOpen");
     if (look.network) {
       net = look.list;
       net.onNetwork = data => { netData = data; drawServers(); };
@@ -204,6 +234,9 @@ async function start() {
 
 /** Connect to one server and show its editor. */
 async function openServer(link) {
+  if (!["done", "now"].includes($("stepFind").className)) stepsFrom("stepOpen");
+  // the line is open once the relay answers; FightBot's hello is the last step
+  const helloTimer = setTimeout(() => { if (!ed) stepsFrom("stepHello"); }, 1200);
   try {
     ed = await connectFromLink(link, {
       onState: (name, data) => { if (name === "bots") showBots(data); },
@@ -229,6 +262,7 @@ async function openServer(link) {
         $("cmdCard").hidden = true;
         $("start").hidden = false;
         $("startSpin").hidden = true;
+        stepsHidden();
         $("startTitle").textContent = netData ? picked + "'s editor closed" : "The editor closed";
         $("startMsg").textContent = "It closed because " + why + "."
           + (netData ? " The other servers keep working \u2014 pick one above." : "");
@@ -242,6 +276,8 @@ async function openServer(link) {
       }
     });
   } catch (e) {
+    clearTimeout(helloTimer);
+    stepsFailed();
     $("startSpin").hidden = true;
     setConn("Not connected", "bad");
     $("startTitle").textContent = netData ? "Could not open " + picked : "Could not open the editor";
@@ -253,6 +289,8 @@ async function openServer(link) {
     return false;
   }
 
+  clearTimeout(helloTimer);
+  stepsHidden();
   status = ed.status;
   readOnly = !!status.readOnly;
   setConn("Connected", "ok");
@@ -416,9 +454,14 @@ class ListSession {
     message carries the whole session, so there is nothing to wait around for. */
 async function peekSession(secret, relayFromLink) {
   const list = await ListSession.make(secret, relayFromLink);
-  const snaps = await new Promise(ok => list.listen(ok));
+  // A link that has expired is turned away before anything arrives: that ends
+  // the wait too, and the editor's own connection then says it's expired.
+  // (Before 6.4.10 such a link waited on "Finding your server" for good.)
+  let gone = false;
+  const snaps = await new Promise(ok => { list.onGone = () => { gone = true; ok({}); }; list.listen(ok); });
+  list.onGone = null;
   const isList = !!(snaps.network || (snaps.status && snaps.status.network));
-  if (!isList) { list.stop(); return { list: null, network: null }; }
+  if (!isList) { list.stop(); return { list: null, network: null, gone }; }
   return { list, network: snaps.network || { servers: [] } };
 }
 
@@ -442,6 +485,7 @@ const STATE_WORDS = {
 
 function showNetwork(data) {
   netData = data;
+  stepsHidden();
   $("network").hidden = false;
   $("startSpin").hidden = true;
   $("startTitle").textContent = "Pick a server";
@@ -551,6 +595,7 @@ async function pickServer(s) {
   $("start").hidden = false;
   $("startTitle").textContent = "Opening " + s.name + "…";
   $("startMsg").textContent = "Connecting to that server.";
+  stepsFrom("stepOpen");
 
   const ok = await openServer(s.link);
   serverState.set(s.name, ok ? "open" : "failed");
@@ -577,7 +622,7 @@ function show(name) {
   if (leaving === "skins" && name !== "skins") closeSkin();
 
   const load = {
-    settings: loadSettings, bots: loadBots, teams: loadTeams,
+    settings: loadSettings, bots: loadBots, teams: loadTeams, formations: loadFormations,
     skins: loadSkins, emotes: loadEmotes, voice: loadVoice, debug: loadDebug
   }[name];
   load().catch(e => toast(e.message, true));
@@ -2275,5 +2320,488 @@ function liveLines(d) {
   }
   if (atEnd) pre.scrollTop = pre.scrollHeight;
 }
+
+// ============================================================ formations
+/* A march's shape, drawn spot by spot. FightBot keeps each shape as a list of
+   grid spots: "across" (0 is straight behind you, below 0 to the left) and
+   "back" (0 is the first row). Bots fill a shape front row first, the middle
+   of each row first - the order below matches FightBot's own - and more bots
+   than it has spots form rows behind it.
+
+   The rules the grid keeps, and FightBot checks again when it's saved:
+   every bot touches another (side by side or corner to corner), there are
+   always two empty squares round every edge so the shape can grow, and it
+   fits FightBot's limits. */
+
+const FM_TEMPLATES = {
+  "Rows": [[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1],[-1,2],[0,2],[1,2]],
+  "Wedge": [[0,0],[-1,1],[1,1],[-2,2],[2,2],[-3,3],[3,3]],
+  "Square": [[-2,0],[-1,0],[0,0],[1,0],[-2,1],[1,1],[-2,2],[1,2],[-2,3],[-1,3],[0,3],[1,3]],
+  "Line": [[-3,0],[-2,0],[-1,0],[0,0],[1,0],[2,0],[3,0]],
+  "Column": [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5]],
+  "Diamond": [[0,0],[-1,1],[1,1],[-2,2],[0,2],[2,2],[-1,3],[1,3],[0,4]]
+};
+
+const fm = {
+  data: null,          // what layouts.list said
+  name: "",            // the shape on screen ("" for a new one)
+  spots: new Set(),    // "across,back"
+  rowGap: -1, sideGap: -1,
+  dirty: false,
+  limits: { spots: 400, across: 32, back: 64 }
+};
+const fmKey = (a, b) => a + "," + b;
+const fmParse = k => k.split(",").map(Number);
+
+/** Every spot touches another: walk from one to everything it touches. */
+function fmConnected(set) {
+  if (set.size <= 1) return true;
+  const first = set.values().next().value, seen = new Set([first]), todo = [first];
+  while (todo.length) {
+    const [a, b] = fmParse(todo.pop());
+    for (let da = -1; da <= 1; da++) for (let db = -1; db <= 1; db++) {
+      const k = fmKey(a + da, b + db);
+      if (set.has(k) && !seen.has(k)) { seen.add(k); todo.push(k); }
+    }
+  }
+  return seen.size === set.size;
+}
+
+const fmTouches = (set, a, b) => {
+  for (let da = -1; da <= 1; da++) for (let db = -1; db <= 1; db++) {
+    if ((da || db) && set.has(fmKey(a + da, b + db))) return true;
+  }
+  return false;
+};
+
+/** The front row moved up to row 0, as FightBot keeps it. */
+function fmNormalise(set) {
+  if (!set.size) return set;
+  let minB = Infinity;
+  for (const k of set) minB = Math.min(minB, fmParse(k)[1]);
+  if (minB === 0) return set;
+  const out = new Set();
+  for (const k of set) { const [a, b] = fmParse(k); out.add(fmKey(a, b - minB)); }
+  return out;
+}
+
+function fmFits(set) {
+  if (set.size > fm.limits.spots) return "A shape can have " + fm.limits.spots + " bots at most.";
+  let maxB = 0;
+  for (const k of set) {
+    const [a, b] = fmParse(k);
+    if (Math.abs(a) > fm.limits.across) return "That's further out than a march goes (" + fm.limits.across + " either side).";
+    maxB = Math.max(maxB, b);
+  }
+  if (maxB > fm.limits.back) return "That's deeper than a march goes (" + fm.limits.back + " rows).";
+  return null;
+}
+
+/** Can this change be made? null if it can, else why not, for people. */
+function fmCheck(next) {
+  if (!fmConnected(next)) return "Bots have to touch - side by side or corner to corner - so that would split the shape.";
+  return fmFits(fmNormalise(next));
+}
+
+function fmApply(next) {
+  fm.spots = fmNormalise(next);
+  fm.dirty = true;
+  fmDraw();
+}
+
+/** Spots in the order bots fill them: front row first, the middle first, then left before right. */
+function fmOrder() {
+  return [...fm.spots].map(fmParse).sort((x, y) => x[1] - y[1] || Math.abs(x[0]) - Math.abs(y[0]) || x[0] - y[0]);
+}
+
+const fmGap = (own, server) => own >= 0 ? own : Math.max(0, Number(server) || 0);
+
+function fmDraw() {
+  const grid = $("fmGrid");
+  const d = fm.data || {};
+  const def = d.defaults || {};
+  const rowGap = fmGap(fm.rowGap, def.rowGap), sideGap = fmGap(fm.sideGap, def.sideGap);
+
+  // the bounds: everything placed, the middle column, and two spare squares all round
+  let minA = 0, maxA = 0, maxB = 0;
+  for (const k of fm.spots) { const [a, b] = fmParse(k); minA = Math.min(minA, a); maxA = Math.max(maxA, a); maxB = Math.max(maxB, b); }
+  if (!fm.spots.size) { minA = -1; maxA = 1; maxB = 1; }
+  minA -= 2; maxA += 2;
+  const minB = fm.spots.size ? -2 : 0, lastB = maxB + 2;
+  const cols = maxA - minA + 1;
+
+  // squares as big as fit, and as far apart as the bots will stand
+  const stageW = Math.max(260, $("fmStage").clientWidth - 40);
+  const cell = Math.max(30, Math.min(46, Math.floor((stageW - (cols - 1) * (4 + sideGap * 8)) / cols)));
+  grid.style.setProperty("--fm-cell", cell + "px");
+  grid.style.gridTemplateColumns = "repeat(" + cols + ", " + cell + "px)";
+  grid.style.columnGap = Math.min(40, 4 + sideGap * 8) + "px";
+  grid.style.rowGap = Math.min(40, 4 + rowGap * 8) + "px";
+
+  const order = fmOrder();
+  const slot = new Map(order.map((p, i) => [fmKey(p[0], p[1]), i]));
+  const faces = botList.filter(b => b.skin);
+  const cells = [];
+  for (let b = minB; b <= lastB; b++) {
+    for (let a = minA; a <= maxA; a++) {
+      const k = fmKey(a, b), filled = fm.spots.has(k);
+      const c = el("button", {
+        type: "button", class: "fm-cell" + (a === 0 ? " mid" : "") + (filled ? " filled" : ""),
+        "data-a": a, "data-b": b,
+        "aria-label": (filled ? "Bot " + (slot.get(k) + 1) + ", " : "Empty, ")
+          + (b < 0 ? "in front of the first row" : "row " + (b + 1)) + ", "
+          + (a === 0 ? "in the middle" : Math.abs(a) + " to the " + (a < 0 ? "left" : "right"))
+      });
+      if (filled) {
+        const i = slot.get(k), who = faces[i];
+        const token = el("span", { class: "fm-bot" + (who ? " face" : ""), text: who ? "" : String(i + 1) });
+        if (who) token.style.backgroundImage = "url(https://textures.minecraft.net/texture/" + who.skin + ")";
+        c.append(token);
+      }
+      cells.push(c);
+    }
+  }
+  grid.replaceChildren(...cells);
+
+  // what it adds up to
+  const n = fm.spots.size;
+  const widest = (() => { const per = new Map(); for (const p of order) per.set(p[1], (per.get(p[1]) || 0) + 1); return Math.max(0, ...per.values()); })();
+  const across = n ? (Math.max(...order.map(p => p[0])) - Math.min(...order.map(p => p[0])) + 1) : 0;
+  const deep = n ? maxB + 1 : 0;
+  $("fmStats").replaceChildren(
+    el("span", { class: "chip", text: n + (n === 1 ? " bot" : " bots") }),
+    el("span", { class: "chip", text: across + " across" }),
+    el("span", { class: "chip", text: deep + (deep === 1 ? " row" : " rows") + " deep" }),
+    el("span", { class: "chip", text: rowGap + " between rows" }),
+    el("span", { class: "chip", text: sideGap + " between bots" }));
+  $("fmMore").textContent = n
+    ? "More bots than this march in rows of " + widest + " behind it. Fewer fill it front row first, from the middle out."
+    : "Drag the bot from the tray onto any square to start.";
+  const gap = Math.max(0, Number(def.gap) || 0);
+  $("fmGapLabel").textContent = "The first row stands " + (gap + 1) + (gap + 1 === 1 ? " block" : " blocks") + " behind you (formation.march.gap).";
+
+  // the side panel
+  const inUse = d.inUse || "";
+  const saved = (d.layouts || []).find(l => same(l.name, fm.name));
+  $("fmTitle").textContent = fm.name ? fm.name : "A new shape";
+  $("fmState").textContent = fm.dirty ? "not saved yet" : saved ? (same(inUse, saved.name) ? "marches use this one" : "saved") : "";
+  $("fmRowServer").checked = fm.rowGap < 0;
+  $("fmSideServer").checked = fm.sideGap < 0;
+  $("fmRow").value = rowGap; $("fmRow").disabled = fm.rowGap < 0 || readOnly;
+  $("fmSide").value = sideGap; $("fmSide").disabled = fm.sideGap < 0 || readOnly;
+  $("fmRowVal").textContent = rowGap + (rowGap === 1 ? " block" : " blocks") + (fm.rowGap < 0 ? " (the server's)" : "");
+  $("fmSideVal").textContent = sideGap + (sideGap === 1 ? " block" : " blocks") + (fm.sideGap < 0 ? " (the server's)" : "");
+  const isInUse = saved && same(inUse, saved.name);
+  $("fmUse").textContent = isInUse ? "Back to plain rows" : fm.dirty || !saved ? "Save and use for marches" : "Use for marches";
+  $("fmUse").disabled = readOnly || (!n && !isInUse);
+  $("fmDelete").disabled = readOnly || !saved;
+  $("fmSave").disabled = readOnly || !n;
+  $("fmSource").disabled = readOnly;
+
+  const list = $("fmList");
+  const items = (d.layouts || []).map(l => {
+    const b = el("button", { type: "button", class: "fm-item" + (same(l.name, fm.name) ? " on" : ""), onclick: () => fmOpen(l) },
+      el("span", { class: "nm", text: l.name }),
+      el("span", { class: "chip", text: (l.spots || []).length + " bots" }));
+    if (same(l.name, inUse)) b.append(el("span", { class: "chip new", text: "In use" }));
+    return b;
+  });
+  list.replaceChildren(...(items.length ? items : [el("p", { class: "ed-empty", style: "padding:6px 0", text: "None yet. Draw one and save it." })]));
+}
+
+function fmOpen(l) {
+  if (fm.dirty && !confirm("The shape on screen isn't saved. Open " + l.name + " anyway?")) return;
+  fm.name = l.name;
+  fm.spots = fmNormalise(new Set((l.spots || []).map(p => fmKey(p[0], p[1]))));
+  fm.rowGap = typeof l.rowGap === "number" ? l.rowGap : -1;
+  fm.sideGap = typeof l.sideGap === "number" ? l.sideGap : -1;
+  fm.dirty = false;
+  $("fmName").value = l.name;
+  fmDraw();
+}
+
+function fmFresh(template) {
+  fm.name = "";
+  fm.spots = fmNormalise(new Set((FM_TEMPLATES[template] || FM_TEMPLATES.Rows).map(p => fmKey(p[0], p[1]))));
+  fm.rowGap = -1; fm.sideGap = -1;
+  fm.dirty = true;
+  $("fmName").value = "";
+  fmDraw();
+}
+
+async function loadFormations() {
+  if (!$("fmGrid").firstChild) busy($("fmGrid"), "Reading the shapes…");
+  let d;
+  try {
+    d = await ed.request("layouts.list");
+  } catch (e) {
+    if (/doesn't know|up to date/i.test(e.message)) {
+      $("fmOld").hidden = false;
+      $("fmWrap").hidden = true;
+      return;
+    }
+    throw e;
+  }
+  $("fmOld").hidden = true;
+  $("fmWrap").hidden = false;
+  fmTake(d);
+  // the bots' own faces go on the grid, in the order they'd stand
+  if (!botList.length) ed.listBots().then(b => { showBots(b); if (current === "formations") fmDraw(); }).catch(() => {});
+  if (!fm.name && !fm.dirty) {
+    const first = (d.layouts || []).find(l => same(l.name, d.inUse)) || (d.layouts || [])[0];
+    if (first) fmOpen(first); else fmFresh("Rows");
+  } else {
+    fmDraw();
+  }
+}
+
+function fmTake(d) {
+  fm.data = d;
+  if (d.limits) fm.limits = Object.assign({}, fm.limits, d.limits);
+}
+
+// ---- dragging -------------------------------------------------------
+/* Pointer events, so it works the same with a mouse, a pen or a finger. A
+   press that doesn't move is a click: an empty square gets a bot, a full one
+   loses it. */
+let drag = null;   // { from: "tray" | "a,b", ghost, start: {x, y}, moved, allowed: Set, over }
+
+function fmAllowed(from) {
+  const out = new Set();
+  const cells = $("fmGrid").querySelectorAll(".fm-cell");
+  for (const c of cells) {
+    const a = +c.dataset.a, b = +c.dataset.b, k = fmKey(a, b);
+    if (from === "tray") {
+      if (fm.spots.has(k)) continue;
+      if (fm.spots.size && !fmTouches(fm.spots, a, b)) continue;
+      const next = new Set(fm.spots); next.add(k);
+      if (!fmFits(fmNormalise(next))) out.add(k);
+    } else {
+      if (k === from) { out.add(k); continue; }
+      if (fm.spots.has(k)) continue;
+      const next = new Set(fm.spots); next.delete(from); next.add(k);
+      if (!fmCheck(next)) out.add(k);
+    }
+  }
+  return out;
+}
+
+function fmStart(e, from) {
+  if (readOnly || e.button > 0) return;
+  e.preventDefault();
+  drag = { from, start: { x: e.clientX, y: e.clientY }, moved: false, allowed: null, over: null, target: e.currentTarget };
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) { /* fine without */ }
+}
+
+function fmMove(e) {
+  if (!drag) return;
+  if (!drag.moved) {
+    if (Math.hypot(e.clientX - drag.start.x, e.clientY - drag.start.y) < 6) return;
+    drag.moved = true;
+    drag.allowed = fmAllowed(drag.from);
+    const g = el("div", { class: "fm-ghost" });
+    if (drag.from !== "tray") {
+      const tok = $("fmGrid").querySelector('.fm-cell[data-a="' + fmParse(drag.from)[0] + '"][data-b="' + fmParse(drag.from)[1] + '"]');
+      if (tok) {
+        tok.classList.add("lifted");
+        const bot = tok.querySelector(".fm-bot.face");
+        if (bot) { g.classList.add("face"); g.style.backgroundImage = bot.style.backgroundImage; }
+      }
+    }
+    document.body.append(g);
+    drag.ghost = g;
+    for (const c of $("fmGrid").querySelectorAll(".fm-cell")) {
+      const k = fmKey(c.dataset.a, c.dataset.b);
+      c.classList.toggle("can", drag.allowed.has(k) && k !== drag.from);
+      c.classList.toggle("no", !drag.allowed.has(k) && !fm.spots.has(k));
+    }
+    if (drag.from !== "tray") { $("fmTrayText").textContent = "Drop it here to take it out."; }
+  }
+  drag.ghost.style.left = e.clientX + "px";
+  drag.ghost.style.top = e.clientY + "px";
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = under && under.closest(".fm-cell");
+  const k = cell ? fmKey(cell.dataset.a, cell.dataset.b) : null;
+  const overTray = !!(under && under.closest("#fmTray")) && drag.from !== "tray";
+  if (drag.over && drag.over !== cell) drag.over.classList.remove("over");
+  drag.over = cell && drag.allowed.has(k) ? cell : null;
+  if (drag.over) drag.over.classList.add("over");
+  $("fmTray").classList.toggle("bin", overTray);
+  drag.ghost.classList.toggle("bin", overTray);
+}
+
+function fmEnd(e) {
+  if (!drag) return;
+  const d = drag;
+  drag = null;
+  if (d.ghost) d.ghost.remove();
+  $("fmTray").classList.remove("bin");
+  $("fmTrayText").textContent = "Drag from here onto a lit square. Bots have to touch, side by side or corner to corner.";
+  if (!d.moved) {
+    // a click: the tray's bot goes in the first free spot behind the shape's middle
+    if (d.from === "tray") fmClickAdd();
+    else fmToggle(...fmParse(d.from));
+    return;
+  }
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  if (d.from !== "tray" && under && under.closest("#fmTray")) {
+    fmRemove(...fmParse(d.from));
+    return;
+  }
+  if (d.over) {
+    const k = fmKey(d.over.dataset.a, d.over.dataset.b);
+    const next = new Set(fm.spots);
+    if (d.from !== "tray") { if (k === d.from) { fmDraw(); return; } next.delete(d.from); }
+    next.add(k);
+    const why = fmCheck(next);
+    if (why) { toast(why, true); fmDraw(); return; }
+    fmApply(next);
+    return;
+  }
+  fmDraw();    // dropped nowhere useful: everything back where it was
+}
+
+function fmToggle(a, b) {
+  if (readOnly) return;
+  const k = fmKey(a, b);
+  if (fm.spots.has(k)) { fmRemove(a, b); return; }
+  if (fm.spots.size && !fmTouches(fm.spots, a, b)) {
+    toast("Bots have to touch another bot - pick a square next to the shape.", true);
+    return;
+  }
+  const next = new Set(fm.spots); next.add(k);
+  const why = fmCheck(next);
+  if (why) { toast(why, true); return; }
+  fmApply(next);
+}
+
+function fmRemove(a, b) {
+  const next = new Set(fm.spots); next.delete(fmKey(a, b));
+  if (!next.size) { fmApply(next); return; }
+  const why = fmCheck(next);
+  if (why) { toast("Taking that bot out would leave the others apart. Take out one at the edge.", true); fmDraw(); return; }
+  fmApply(next);
+}
+
+/** Clicking the tray's bot: it goes in the nearest free spot that touches the shape, front and middle first. */
+function fmClickAdd() {
+  if (!fm.spots.size) { fmApply(new Set([fmKey(0, 0)])); return; }
+  const free = [...fmAllowed("tray")].map(fmParse).sort((x, y) => x[1] - y[1] || Math.abs(x[0]) - Math.abs(y[0]) || x[0] - y[0]);
+  const pick = free.find(p => p[1] >= 0) || free[0];
+  if (!pick) { toast("There's no room for another bot.", true); return; }
+  const next = new Set(fm.spots); next.add(fmKey(pick[0], pick[1]));
+  fmApply(next);
+}
+
+$("fmSource").addEventListener("pointerdown", e => fmStart(e, "tray"));
+$("fmSource").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!readOnly) fmClickAdd(); } });
+$("fmGrid").addEventListener("pointerdown", e => {
+  const c = e.target.closest(".fm-cell");
+  if (!c) return;
+  if (c.classList.contains("filled")) fmStart(Object.assign(e, {}), fmKey(c.dataset.a, c.dataset.b));
+});
+$("fmGrid").addEventListener("click", e => {
+  // empty squares are clicked like buttons (a keyboard press lands here too)
+  const c = e.target.closest(".fm-cell");
+  if (!c || !c.isConnected || c.classList.contains("filled") && e.detail !== 0) return;
+  if (!c.classList.contains("filled") || e.detail === 0) fmToggle(+c.dataset.a, +c.dataset.b);
+});
+for (const t of ["fmSource", "fmGrid"]) {
+  $(t).addEventListener("pointermove", fmMove);
+  $(t).addEventListener("pointerup", fmEnd);
+  $(t).addEventListener("pointercancel", () => { if (drag) { if (drag.ghost) drag.ghost.remove(); drag = null; fmDraw(); } });
+}
+window.addEventListener("resize", () => { if (current === "formations" && fm.data) fmDraw(); });
+
+for (const name of Object.keys(FM_TEMPLATES)) {
+  $("fmStarts").append(el("button", { type: "button", class: "btn ghost tiny", text: name, onclick: () => {
+    if (readOnly) return;
+    if (fm.spots.size && fm.dirty && !confirm("Start again from " + name.toLowerCase() + "? The shape on screen goes.")) return;
+    const keep = fm.name;
+    fmFresh(name);
+    fm.name = keep;
+    $("fmName").value = keep;
+    fmDraw();
+  } }));
+}
+$("fmStarts").append(el("button", { type: "button", class: "btn ghost tiny", text: "Empty", onclick: () => {
+  if (readOnly || !fm.spots.size) return;
+  if (!confirm("Take every bot off the grid?")) return;
+  fmApply(new Set());
+} }));
+
+$("fmNew").addEventListener("click", () => {
+  if (fm.dirty && fm.spots.size && !confirm("The shape on screen isn't saved. Start a new one anyway?")) return;
+  fmFresh("Rows");
+  $("fmName").focus();
+});
+$("fmRow").addEventListener("input", () => { fm.rowGap = +$("fmRow").value; fm.dirty = true; fmDraw(); });
+$("fmSide").addEventListener("input", () => { fm.sideGap = +$("fmSide").value; fm.dirty = true; fmDraw(); });
+$("fmRowServer").addEventListener("change", () => {
+  fm.rowGap = $("fmRowServer").checked ? -1 : fmGap(-1, (fm.data && fm.data.defaults || {}).rowGap);
+  fm.dirty = true; fmDraw();
+});
+$("fmSideServer").addEventListener("change", () => {
+  fm.sideGap = $("fmSideServer").checked ? -1 : fmGap(-1, (fm.data && fm.data.defaults || {}).sideGap);
+  fm.dirty = true; fmDraw();
+});
+$("fmName").addEventListener("input", () => { fm.dirty = true; $("fmState").textContent = "not saved yet"; });
+
+async function fmSave(use) {
+  if (readOnly) return;
+  const name = $("fmName").value.trim();
+  if (!/^[A-Za-z0-9_-]{1,24}$/.test(name)) {
+    toast("Give it a name first: 1 to 24 letters, numbers, - or _ (no spaces).", true);
+    $("fmName").focus();
+    return;
+  }
+  const exists = (fm.data && fm.data.layouts || []).find(l => same(l.name, name));
+  if (exists && !same(name, fm.name) && !confirm("There's already a shape called " + exists.name + ". Replace it?")) return;
+  const btn = $("fmSave");
+  btn.disabled = true;
+  try {
+    const r = await ed.request("layouts.save", {
+      name, spots: fmOrder(), rowGap: fm.rowGap, sideGap: fm.sideGap, use: !!use
+    });
+    fmTake(r);
+    fm.name = r.saved || name;
+    $("fmName").value = fm.name;
+    fm.dirty = false;
+    fmDraw();
+    toast(use ? "Saved. Marches take " + fm.name + " now." : "Saved " + fm.name + "." + (r.note ? " " + r.note : ""));
+  } catch (e) {
+    toast(e.message, true);
+  } finally {
+    btn.disabled = readOnly || !fm.spots.size;
+  }
+}
+$("fmSave").addEventListener("click", () => fmSave(false));
+$("fmUse").addEventListener("click", async () => {
+  if (readOnly || !fm.data) return;
+  const inUse = fm.data.inUse || "";
+  if (fm.name && same(inUse, fm.name)) {
+    try { fmTake(await ed.request("layouts.use", { name: "" })); fmDraw(); toast("Marches are plain rows again."); }
+    catch (e) { toast(e.message, true); }
+    return;
+  }
+  if (fm.dirty) { await fmSave(true); return; }
+  try {
+    fmTake(await ed.request("layouts.use", { name: fm.name }));
+    fmDraw();
+    toast("Marches take " + fm.name + " now.");
+  } catch (e) { toast(e.message, true); }
+});
+$("fmDelete").addEventListener("click", async () => {
+  if (readOnly || !fm.name) return;
+  if (!confirm("Delete the shape " + fm.name + "? Marches using it go back to plain rows.")) return;
+  try {
+    const r = await ed.request("layouts.delete", { name: fm.name });
+    fmTake(r);
+    toast("Deleted " + fm.name + ".");
+    fm.name = ""; fm.dirty = false;
+    const first = (r.layouts || [])[0];
+    if (first) fmOpen(first); else fmFresh("Rows");
+  } catch (e) { toast(e.message, true); }
+});
 
 start();

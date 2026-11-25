@@ -19,6 +19,10 @@ Main command: `/fightbot` (alias: `/fb`). Permission: `fightbot.use` (OP by defa
 
 > **`--free` (6.4.8).** Wherever `--all` or `--group <group>` works, `--free` means every bot that isn't in a group: `/fb groupadd red --free`, `/fb roamingfree --free`, `/fb fight --free Nolan`, `/fb tp --free Nolan`.
 
+> **`--distance <blocks>` (6.4.10).** Add it to `--all`, `--free` or `--group <group>` for only the bots that close to you, or use it on its own for every bot that close: `/fb stop --distance 20`, `/fb fight --group red --distance 30 Nolan`.
+
+> **`@b` (6.4.10).** In the game's own commands, `@b` picks bots the way `@a` picks players, options and all: `/tp @b ~ ~ ~`, `/effect give @b[distance=..20] speed 30`. `orders.bot-selector: false` turns it off.
+
 ### Which one should I use?
 Some commands do nearly the same job. Pick by what you want:
 
@@ -46,7 +50,7 @@ Some commands do nearly the same job. Pick by what you want:
 | Wider or narrower rows | `/fb formation` (a screen with heads) or `/fb formation width 10` | |
 | A ring round someone | `/fb surround --all <player>` | |
 | A place that looks lived in | `/fb roamingfree --all` | |
-| Bots walking a path you choose | A route: `/fb pointtool park`, then `/fb roamingstart <bot> park` | |
+| Bots walking a path you choose | A route: `/fb roamingpointtool park`, then `/fb roamingstart <bot> park` | |
 | A bot doing exactly what you did | `/fb record <name>`, then `/fb replay <bot> <name>` | A route: it walks from point to point, it doesn't act |
 | To play as a bot yourself, live | `/fb control <bot>` | A recording: that plays back later, the same every time |
 | Bots to stop, but stay | `/fb stop` | `/fb remove`: they leave the game |
@@ -126,7 +130,7 @@ Moving by hand works like holding a key down: **nothing is automatic.** It doesn
 ### Marching and surrounding
 - `/fb march <bot|--all|--free|--group <group>> [player] [player|straight|left|right]` — Bots march in rows behind you (or the player you name): a 1-block gap, then a row of 3 (one in the middle, one either side; `/fb formation width` changes how many), then the next row straight behind, and so on. A crowd marches wider, so it isn't a long thin line (1000 bots: 23 across; `formation.march.widen`). They look at you by default. Add `straight` to have them look straight ahead the way they're going, or `left` / `right` for a parade's "eyes left" / "eyes right" (e.g. `/fb march --all Nolan left`; with no player, you lead: `/fb march --all straight`). `formation.march.look` sets what they do when you don't say (6.4.8)
 - `/fb march <bot|--all|--group <group>> here` — Rows where you stand, facing the way you face, and they hold it, so you can move away and film them
-- `/fb march <bot|--all|--group <group>> --route <route> [stop|loop|back] [left|straight|right]` — Rows marching a route (made with `/fb pointtool`), point to point in straight lines, nobody leading. Each row turns where the front turned. At the end they hold (`stop`), go round again (`loop`) or march back (`back`). `--points` works too (6.4.7)
+- `/fb march <bot|--all|--group <group>> --route <route> [stop|loop|back] [left|straight|right]` — Rows marching a route (made with `/fb roamingpointtool`), point to point in straight lines, nobody leading. Each row turns where the front turned. At the end they hold (`stop`), go round again (`loop`) or march back (`back`). `--points` works too (6.4.7)
 - `/fb march <bot|--all|--group <group>> --point <point> [straight|left|right]` — Rows marching from where they are to a point (made with `/fb point`), round what's in the way, then holding there (6.4.8)
 - `/fb surround <bot|--all|--group <group>> [player|here]` — Bots stand in a ring round you (or the player you name), looking at you. The more bots, the bigger the ring. `here`: a ring round the spot you stand on, held
 - `/fb formation` — A screen showing how a march lines up, with heads: you at the top, the bots in rows below. Click a sign to type how many across, or how many rows long; switch widening for crowds on or off; and change how many bots the picture shows. It's all saved in the config at once
@@ -144,7 +148,7 @@ They keep their places as you walk and run, and get to them round trees, walls a
 A point is one named place. Bots walk there, or march there in rows.
 - `/fb point` — Every point
 - `/fb point <name>` — Put a point where you stand, facing the way you face. Run it again somewhere else to move it
-- `/fb point tool <name>` — The point tool for one point: right-click with the emerald and it's set, and your hotbar comes back
+- `/fb pointtool <name>` — The point tool for one point: right-click with the emerald and it's set, and your hotbar comes back. With a route's name, that route's tool instead (6.4.10; this was `/fb point tool`)
 - `/fb point tp <name>` — Go to a point
 - `/fb point rename <name> <new name>` / `/fb point delete <name>`
 - `/fb walk <bot|--all|--free|--group <group>> <point|player|here|x y z>` — They walk there, each its own way, and stand about round it, the way survivors gather after a fight. The nearest ones end up in the middle. `--stop` (or `/fb stop`) stops them
@@ -154,7 +158,7 @@ A point is one named place. Bots walk there, or march there in rows.
 - `/fb cannon` — A screen to choose who comes (new bots, a group, bots not in a group, or every bot), how many, their gear, and what they do when they land. Then **Take a Player Cannon**
 - `/fb cannon give <player> [how many] [protect|charge|attack|stand]` — Hand one straight to someone, from the console too
 
-The Player Cannon is a fishing rod named "Player Cannon". Right-click it and the bots throw real ender pearls from about 35 blocks away, high up over whatever is in between, and land around you about 4 seconds later. What they do when they land:
+The Player Cannon is a fishing rod named "Player Cannon". Right-click it and ender pearls fall straight down out of the sky round you, one after another, and a bot arrives where each one lands (6.4.10). The screen also sets how high they fall from and how far round you they land. What they do when they land:
 - `protect`: go for whoever you've been fighting, then guard you
 - `charge`: go for everyone near you but you
 - `attack`: come for you
@@ -199,7 +203,7 @@ Bots can walk a route, or wander about freely, when they aren't fighting. Routes
 - `/fb roamingroutechange <route> <newName>` — Rename a route
 - `/fb roamingroutelist` — Every route
 - `/fb roamingpointset <route>` — Add a point where you're standing
-- `/fb pointtool <route>` (or `roamingpointtool`) — Make points by walking: an emerald puts a point where you stand, red dye takes the last one back, lime dye is done, a barrier cancels. The route is drawn in the air while you work, and your hotbar comes back when you're done
+- `/fb roamingpointtool <route>` (or `/fb pointtool <route>` once the route exists) — Make points by walking: an emerald puts a point where you stand, red dye takes the last one back, lime dye is done, a barrier cancels. The route is drawn in the air while you work, and your hotbar comes back when you're done
 - `/fb roamingpointset <route> <number>` — Move that point to where you're standing
 - `/fb roamingpointdel <route> <number>` — Delete a point
 - `/fb roamingstart <bot|--all|--free|--group <group>> <route> [loop|back|stop]` — Walk a route. At the end it loops, walks back, or stops. A group walks it together as a squad. `roaming.stop-at-points: false` walks straight on through each point instead of stopping at it, without slowing down at any of them (6.4.8)

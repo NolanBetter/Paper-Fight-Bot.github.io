@@ -14,11 +14,11 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app https://firestore.googleapis.com; img-src 'self' data: https://textures.minecraft.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#060506">
+<meta name="theme-color" content="#09070d">
 <link rel="icon" href="../assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Pixelify+Sans:wght@500..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/style.css">
 <link rel="stylesheet" href="editor.css">
 </head>
@@ -49,6 +49,7 @@
 <!-- connection state and tabs, stuck together under the nav so they stay
      reachable while a long settings list scrolls -->
 <div class="ed-sticky">
+ <div class="ed-sticky-in">
   <div class="strip ed-strip">
     <div class="wrap strip-in">
       <span id="conn" class="ed-pill wait"><span class="sword" aria-hidden="true"></span>Connecting&hellip;</span>
@@ -62,11 +63,13 @@
     <button class="btn ghost tab sm on" role="tab" data-tab="settings" aria-selected="true">Settings</button>
     <button class="btn ghost tab sm" role="tab" data-tab="bots" aria-selected="false">Bots</button>
     <button class="btn ghost tab sm" role="tab" data-tab="teams" aria-selected="false">Groups &amp; kits</button>
+    <button class="btn ghost tab sm" role="tab" data-tab="formations" aria-selected="false">Formations</button>
     <button class="btn ghost tab sm" role="tab" data-tab="skins" aria-selected="false">Skins</button>
     <button class="btn ghost tab sm" role="tab" data-tab="emotes" aria-selected="false">Emotes &amp; models</button>
     <button class="btn ghost tab sm" role="tab" data-tab="voice" aria-selected="false">Voice lines</button>
     <button class="btn ghost tab sm" role="tab" data-tab="debug" aria-selected="false">Debug logs</button>
   </nav>
+ </div>
 </div>
 
 <main id="main" class="wrap ed-main">
@@ -87,7 +90,14 @@
       <span class="sword big" id="startSpin" aria-hidden="true"></span>
       <h2 id="startTitle">Opening the editor&hellip;</h2>
     </div>
-    <p class="lede" id="startMsg">Finding your server. This takes a few seconds.</p>
+    <p class="lede" id="startMsg">This takes a few seconds.</p>
+    <ol class="ed-progress" id="startSteps">
+      <li id="stepFind" class="now">Finding your server</li>
+      <li id="stepOpen">Opening a private line to it</li>
+      <li id="stepHello">FightBot answering</li>
+    </ol>
+    <p class="ed-slow" id="startSlow" hidden>Still waiting. A busy server, or one a long way from the relay, can take up to
+      half a minute.</p>
     <div id="howTo" hidden>
       <h3>Getting a link</h3>
       <ol class="ed-steps">
@@ -221,6 +231,67 @@
       </div>
       <p class="lede" id="teamInfo"></p>
       <div id="teamBody"></div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- formations -->
+  <!-- A march's shape, drawn on a grid: drag bots in, about, and out. -->
+  <section id="tab-formations" hidden>
+    <div class="ed-card fm-old" id="fmOld" hidden>
+      <h2>Formations need FightBot 6.4.10</h2>
+      <p class="lede">This server runs an older FightBot. Once it updates (it does that by itself on a restart),
+        this is where you draw the shape a march takes.</p>
+    </div>
+    <div class="fm-wrap" id="fmWrap">
+      <div class="ed-card">
+        <div class="ed-head2"><h2 id="fmTitle">Formations</h2><span class="ed-count" id="fmState"></span></div>
+        <p class="lede">The shape a march takes behind you. You're at the top, walking up the screen.
+          Drag the bot onto the grid, drag bots about to move them, and drag one back to the tray to take it out.
+          Clicking a square adds or takes out a bot too.</p>
+        <div class="fm-tray" id="fmTray">
+          <button class="fm-source" id="fmSource" type="button" aria-label="A bot to drag onto the grid"><span class="fm-plus" aria-hidden="true">+</span></button>
+          <p id="fmTrayText">Drag from here onto a lit square. Bots have to touch, side by side or corner to corner.</p>
+        </div>
+        <div class="fm-stage" id="fmStage">
+          <div class="fm-leader" aria-hidden="true"><span class="fm-arrow"></span><span class="fm-you">You</span><small>walking this way</small></div>
+          <p class="fm-gaplabel" id="fmGapLabel"></p>
+          <div class="fm-grid" id="fmGrid" aria-label="The formation: each square is a spot"></div>
+        </div>
+        <div class="fm-stats" id="fmStats"></div>
+        <p class="lede small-note" id="fmMore"></p>
+      </div>
+      <aside class="fm-side">
+        <div class="ed-card">
+          <h2 style="font-size:23px">Saved shapes</h2>
+          <div class="fm-list" id="fmList"></div>
+          <button class="btn ghost sm" id="fmNew" type="button" style="margin-top:12px">New shape</button>
+        </div>
+        <div class="ed-card">
+          <div class="fm-field">
+            <label for="fmName">Name</label>
+            <input id="fmName" class="ed-input" maxlength="24" placeholder="wedge" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="fm-field">
+            <span class="lab">Gap between rows: <span class="val" id="fmRowVal"></span></span>
+            <input type="range" id="fmRow" min="0" max="8" step="0.5" aria-label="Gap between rows, in blocks">
+            <label class="ed-check"><input type="checkbox" id="fmRowServer"> The server's setting</label>
+          </div>
+          <div class="fm-field">
+            <span class="lab">Gap between bots in a row: <span class="val" id="fmSideVal"></span></span>
+            <input type="range" id="fmSide" min="0" max="8" step="0.5" aria-label="Gap between bots in a row, in blocks">
+            <label class="ed-check"><input type="checkbox" id="fmSideServer"> The server's setting</label>
+          </div>
+          <div class="fm-field">
+            <span class="lab">Start again from</span>
+            <div class="fm-starts" id="fmStarts"></div>
+          </div>
+          <div class="fm-actions">
+            <button class="btn sm" id="fmSave" type="button">Save</button>
+            <button class="btn sm ghost" id="fmUse" type="button">Use for marches</button>
+            <button class="btn sm danger" id="fmDelete" type="button">Delete</button>
+          </div>
+        </div>
+      </aside>
     </div>
   </section>
 

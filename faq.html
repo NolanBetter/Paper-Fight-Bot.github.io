@@ -10,11 +10,11 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://fightmc.xyz/faq.html">
 <meta property="og:image" content="https://fightmc.xyz/assets/banner.png">
-<meta name="theme-color" content="#060506">
+<meta name="theme-color" content="#09070d">
 <link rel="icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Pixelify+Sans:wght@500..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -27,6 +27,7 @@
       <a href="install.html">Install</a>
       <a href="wiki.html">Wiki</a>
       <a href="faq.html">FAQ</a>
+      <a href="updates.html">Updates</a>
       <a href="compare.html">Compare</a>
       <a href="report.html">Report</a>
       <a href="account.html">Account</a>
@@ -228,15 +229,15 @@
       </details>
       <details>
         <summary>Can bots march along a route on their own?</summary>
-        <p>Yes, from 6.4.7: <code class="cmd">/fightbot march --all --route &lt;route&gt;</code> marches them in rows along a route you made with <code class="cmd">/fightbot pointtool</code>, point to point, with nobody leading. Each row turns where the front turned. Add <code class="cmd">loop</code> to go round again or <code class="cmd">back</code> to march back, and <code class="cmd">left</code> or <code class="cmd">right</code> for eyes left or right.</p>
+        <p>Yes, from 6.4.7: <code class="cmd">/fightbot march --all --route &lt;route&gt;</code> marches them in rows along a route you made with <code class="cmd">/fightbot roamingpointtool</code>, point to point, with nobody leading. Each row turns where the front turned. Add <code class="cmd">loop</code> to go round again or <code class="cmd">back</code> to march back, and <code class="cmd">left</code> or <code class="cmd">right</code> for eyes left or right.</p>
       </details>
       <details>
         <summary>Can bots walk to a place and stand about, like survivors after a fight?</summary>
-        <p>Yes, from 6.4.8. Stand there and <code class="cmd">/fightbot point camp</code>, then <code class="cmd">/fightbot walk --all camp</code>: each bot walks its own way and they gather loosely round the point, close but not on top of each other. For rows instead, <code class="cmd">/fightbot march --all --point camp</code> marches them there and holds. <code class="cmd">/fightbot point tool camp</code> sets a point with one click.</p>
+        <p>Yes, from 6.4.8. Stand there and <code class="cmd">/fightbot point camp</code>, then <code class="cmd">/fightbot walk --all camp</code>: each bot walks its own way and they gather loosely round the point, close but not on top of each other. For rows instead, <code class="cmd">/fightbot march --all --point camp</code> marches them there and holds. <code class="cmd">/fightbot pointtool camp</code> sets a point with one click (6.4.10; before, it was <code class="cmd">/fightbot point tool camp</code>).</p>
       </details>
       <details>
         <summary>Can bots arrive like players pearling in?</summary>
-        <p>Yes, from 6.4.8, with the Player Cannon. <code class="cmd">/fightbot cannon</code> gives you a fishing rod named "Player Cannon" and lets you pick who comes (new bots in the gear you choose, a group, or every bot) and what they do when they land. Right-click it: the bots throw real ender pearls from about 35 blocks away and land round you a few seconds later. It breaks like any rod after one use, and nothing is said in chat.</p>
+        <p>Yes, from 6.4.8, with the Player Cannon. <code class="cmd">/fightbot cannon</code> gives you a fishing rod named "Player Cannon" and lets you pick who comes (new bots in the gear you choose, a group, or every bot) and what they do when they land. Right-click it: from 6.4.10, ender pearls fall straight down out of the sky round you and a bot lands with each one, fighting or just standing there. The screen also sets how high they fall from and how far round you they land. It breaks like any rod after one use, and nothing is said in chat.</p>
       </details>
       <details>
         <summary>My marching bots teleport to me.</summary>
@@ -266,6 +267,7 @@
     <a href="install.html">Install</a>
     <a href="wiki.html">Wiki</a>
     <a href="faq.html">FAQ</a>
+    <a href="updates.html">Updates</a>
     <a href="#" data-modrinth>Modrinth</a>
     <a href="#" data-discord>Discord</a>
     <span class="credit">Paper Fight Bot &middot; not an official Minecraft service, not approved by Mojang</span>

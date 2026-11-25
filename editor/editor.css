@@ -1,8 +1,8 @@
 /* The server editor's own styles. The site's style.css does the rest:
-   colours, type, the header, .btn, .note, tables.
+   colours, type, the glass, the header, .btn, .note, tables.
 
-   Type stays at the site's 17px or larger and click targets stay big — this
-   is a page people use on a second monitor while the server is running. */
+   Type stays at 17px or larger and click targets stay big - this is a page
+   people use on a second monitor while the server is running. */
 
 /* Several things here are hidden with the hidden attribute, and a class that
    sets display (.btn is inline-flex, .ed-tabs is flex) would otherwise beat
@@ -10,208 +10,247 @@
 [hidden]{display:none !important}
 
 /* ---------- a smaller button, for dense rows ---------- */
-.btn.sm{font-size:16px;padding:10px 18px;letter-spacing:.4px}
-.btn.sm:focus-visible{outline:3px solid var(--ember);outline-offset:3px}
-.btn.tiny{font-size:14px;padding:7px 13px}
+.btn.sm{font-size:16.5px;padding:10px 18px;border-radius:12px}
+.btn.tiny{font-size:15px;padding:7px 13px;border-radius:10px}
+.btn.danger{background:linear-gradient(180deg,#9b1f1f,#741515);border-color:rgba(255,120,110,.3)}
+.btn.danger:hover{filter:brightness(1.18)}
 
 /* ---------- the switches ----------
-   Every true/false setting is one of these: a blocky lever you can read from
-   across the room. No rounded corners anywhere — it should look like it came
-   out of the game. The word beside it says ON or OFF, so the colour is never
-   the only thing carrying the answer. */
+   Every true/false setting is one of these: a glass track with a bead that
+   slides across, and the word ON or OFF beside it, so the colour is never the
+   only thing carrying the answer. */
 .mc-sw{display:inline-flex;align-items:center;gap:12px;cursor:pointer;user-select:none;flex:none}
 .mc-sw input{position:absolute;width:1px;height:1px;opacity:0;margin:0}
-.mc-sw .track{position:relative;width:74px;height:36px;flex:none;background:#211f23;
-  box-shadow:inset 3px 3px 0 rgba(0,0,0,.85),inset -3px -3px 0 rgba(255,255,255,.07)}
-.mc-sw .knob{position:absolute;top:4px;left:4px;width:28px;height:28px;background:#5c5a60;
-  box-shadow:inset 3px 3px 0 rgba(255,255,255,.3),inset -3px -3px 0 rgba(0,0,0,.55)}
-.mc-sw .word{font-family:var(--display);font-size:17px;letter-spacing:.8px;color:var(--ash);
-  min-width:3.6ch}
-/* on: redstone-lamp green, and the knob slides to the far end */
-.mc-sw input:checked + .track{background:#1f3313;
-  box-shadow:inset 3px 3px 0 rgba(0,0,0,.8),inset -3px -3px 0 rgba(140,200,90,.18)}
-.mc-sw input:checked + .track .knob{left:42px;background:var(--grass);
-  box-shadow:inset 3px 3px 0 rgba(255,255,255,.4),inset -3px -3px 0 rgba(0,0,0,.45)}
-.mc-sw input:checked ~ .word{color:#b5e48c}
+.mc-sw .track{position:relative;width:66px;height:36px;flex:none;border-radius:999px;
+  background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.14);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.5)}
+.mc-sw .knob{position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;
+  background:radial-gradient(circle at 40% 30%,#ffffff,#cfc9d6 60%,#a59eb0);
+  box-shadow:0 2px 6px rgba(0,0,0,.55),inset 0 -1px 2px rgba(0,0,0,.2)}
+.mc-sw .word{font-weight:700;font-size:16px;letter-spacing:.6px;color:var(--text-2);min-width:3.4ch}
+/* on: ender-pearl teal, and the bead slides to the far end */
+.mc-sw input:checked + .track{background:linear-gradient(180deg,#2bb79d,#1d8d78);border-color:rgba(120,255,225,.45);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 18px -4px rgba(51,209,180,.7)}
+.mc-sw input:checked + .track .knob{left:33px}
+.mc-sw input:checked ~ .word{color:#8ff0db}
 .mc-sw input:focus-visible + .track{outline:3px solid var(--ember);outline-offset:3px}
-.mc-sw:hover .knob{filter:brightness(1.15)}
-.mc-sw.off-is-bad input:not(:checked) + .track .knob{background:#7a4440}
+.mc-sw:hover .knob{filter:brightness(1.06)}
+.mc-sw.off-is-bad input:not(:checked) + .track{border-color:rgba(255,120,110,.4)}
 /* a switch the server owns, that this one bot is overriding */
 .mc-sw.disabled{cursor:not-allowed;opacity:.5}
 @media (prefers-reduced-motion:no-preference){
-  .mc-sw .knob{transition:left .14s steps(4,end),background .14s}
+  .mc-sw .knob{transition:left .2s cubic-bezier(.3,1.4,.6,1)}
+  .mc-sw .track{transition:background .2s,border-color .2s,box-shadow .2s}
 }
 
 /* ---------- the connection strip and tabs ----------
-   Both stick together, as one block, so nothing scrolls out from under them. */
-.ed-sticky{position:sticky;top:68px;z-index:30;background:var(--void)}
-.ed-strip .strip-in{padding-top:11px;padding-bottom:11px;gap:14px}
-.ed-pill{font-family:var(--display);font-size:16px;letter-spacing:.5px;padding:6px 16px;
-  border:2px solid #2a272b;border-radius:999px;white-space:nowrap;flex:none}
-.ed-pill.ok{border-color:var(--grass);color:#b5e48c}
-.ed-pill.bad{border-color:var(--ember);color:#ff9a92}
-.ed-pill.wait{border-color:var(--gold);color:var(--gold)}
-.ed-server{color:var(--ash);font-size:15px;flex:1 1 300px;min-width:0;
+   One floating block of glass under the nav, so nothing scrolls out from
+   under it. */
+.ed-sticky{position:sticky;top:84px;z-index:30;padding:10px var(--edge-x) 0}
+.ed-sticky-in{max-width:1080px;margin:0 auto;border-radius:var(--r-lg);padding:6px 6px 6px 8px;
+  background:linear-gradient(180deg,rgba(28,22,34,.74),rgba(18,14,24,.66));
+  border:1px solid var(--edge);box-shadow:inset 0 1px 0 var(--edge-hi),0 14px 30px -18px rgba(0,0,0,.9);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.ed-strip{background:none !important;border:0 !important;box-shadow:none !important;margin:0 !important;width:auto !important;
+  max-width:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important}
+.ed-strip .strip-in{padding:6px 8px;gap:14px}
+.ed-pill{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:16px;padding:6px 14px 6px 10px;
+  border:1px solid var(--edge);border-radius:999px;white-space:nowrap;flex:none;background:rgba(255,255,255,.05)}
+.ed-pill::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor;flex:none}
+.ed-pill:has(.sword)::before{display:none}
+.ed-pill .sword{width:20px;height:20px}
+.ed-pill.ok{color:#8ff0db;border-color:rgba(51,209,180,.45);background:rgba(51,209,180,.08)}
+.ed-pill.ok::before{box-shadow:0 0 10px rgba(51,209,180,.9)}
+.ed-pill.bad{color:#ffaba3;border-color:rgba(255,90,71,.5);background:rgba(255,90,71,.08)}
+.ed-pill.wait{color:var(--gold);border-color:rgba(232,184,90,.45);background:rgba(232,184,90,.08)}
+.ed-server{color:var(--text-2);font-size:15.5px;flex:1 1 300px;min-width:0;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ed-ends{color:var(--ash);font-size:15px;flex:none;white-space:nowrap}
+.ed-ends{color:var(--text-2);font-size:15.5px;flex:none;white-space:nowrap}
 .ed-strip .btn{flex:none}
 
-/* ---------- tabs ---------- */
-.ed-tabs{display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
-.ed-main{padding:26px 0 140px}
+/* ---------- tabs: one segmented row of glass ---------- */
+.ed-tabs{display:flex;gap:4px;flex-wrap:wrap;padding:4px 2px 2px;margin:0;max-width:none}
+.ed-tabs .btn.tab{background:none;border:1px solid transparent;box-shadow:none;color:var(--text-2);
+  font-size:16px;padding:9px 15px;border-radius:12px;-webkit-backdrop-filter:none;backdrop-filter:none}
+.ed-tabs .btn.tab:hover{background:rgba(255,255,255,.07);color:var(--text)}
+.ed-tabs .btn.tab.on{color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,.08));
+  border-color:var(--edge);box-shadow:inset 0 1px 0 var(--edge-hi)}
+.ed-main{padding:26px var(--edge-x) 150px}
+.ed-main.wrap{padding-left:var(--edge-x);padding-right:var(--edge-x)}
 
 /* ---------- cards ---------- */
-.ed-card{background:var(--pit);border:3px solid #000;padding:clamp(20px,3vw,28px);margin:0 0 20px}
-.ed-card h2{font-size:clamp(22px,3vw,28px);color:#fff;margin-bottom:12px}
-.ed-card .lede{margin-bottom:16px}
+.ed-card{background:linear-gradient(180deg,var(--glass-hi),var(--glass));border:1px solid var(--edge);
+  box-shadow:inset 0 1px 0 var(--edge-hi),inset 0 -1px 0 rgba(0,0,0,.28),var(--lift);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border-radius:var(--r-lg);padding:clamp(20px,3vw,30px);margin:0 0 18px}
+.ed-card h2{font-size:clamp(23px,3vw,29px);color:#fff;margin-bottom:12px}
+.ed-card .lede{margin-bottom:16px;font-size:18px}
 .ed-card .lede:last-child,.ed-card .note:last-child{margin-bottom:0}
-.ed-card code,.ed-steps code{background:#000;padding:1px 6px;color:var(--gold)}
-.ed-steps{color:var(--ash);font-size:17px;padding-left:24px;margin:0 0 16px}
+.ed-card code,.ed-steps code{background:var(--well);padding:1px 7px;color:var(--gold);border-radius:6px;font-family:var(--mono);font-size:.94em}
+.ed-steps{color:var(--text-2);font-size:18px;padding-left:24px;margin:0 0 16px}
 .ed-steps li{margin:0 0 8px}
 
-.ed-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 4px}
+.ed-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
 .ed-row .ed-input{flex:1;min-width:180px;width:auto}
 .ed-row .btn{flex:none}
-.ed-lab{font-family:var(--display);font-size:16px;color:#fff;flex:none}
+.ed-lab{font-weight:700;font-size:16.5px;color:#fff;flex:none}
 .ed-find{margin-bottom:20px}
 .ed-head2{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 16px}
-.ed-head2 h2{font-size:clamp(22px,3vw,28px);color:#fff}
-.ed-count{color:var(--ash);font-size:15.5px}
+.ed-head2 h2{font-size:clamp(23px,3vw,29px);color:#fff;margin:0}
+.ed-count{color:var(--text-2);font-size:16px}
 .ed-state{font-size:17px;color:#fff}
-.ed-check{display:flex;align-items:center;gap:10px;color:var(--iron);font-size:16px;cursor:pointer}
-.ed-check input{width:20px;height:20px;accent-color:var(--blood)}
+.ed-check{display:flex;align-items:center;gap:10px;color:var(--text);font-size:16.5px;cursor:pointer}
+.ed-check input{width:20px;height:20px;accent-color:var(--ember)}
+select.ed-input{appearance:none;-webkit-appearance:none;padding-right:40px;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--text-2) 50%),linear-gradient(135deg,var(--text-2) 50%,transparent 50%);
+  background-position:calc(100% - 22px) 52%,calc(100% - 16px) 52%;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+select.ed-input option{background:#1b1622;color:var(--text)}
 
 /* a sub-heading inside a card */
-.ed-sub{font-family:var(--display);font-size:19px;color:#fff;margin:26px 0 10px}
+.ed-sub{font-weight:700;font-size:19.5px;color:#fff;margin:26px 0 10px}
 .ed-card .ed-sub:first-of-type{margin-top:18px}
-.btn.danger{background:#7a1a1a}
-.btn.danger:hover{background:var(--blood)}
 
 /* ---------- one switch and what it does ---------- */
 .ed-switch{display:flex;align-items:center;gap:20px;justify-content:space-between;
-  padding:16px 0;border-top:2px solid #000}
+  padding:16px 0;border-top:1px solid var(--hair)}
 .ed-switch:first-child{border-top:0}
-.ed-switch .name{font-family:var(--display);font-size:18px;color:#fff}
-.ed-switch .what{color:var(--ash);font-size:15.5px;max-width:60ch;margin-top:2px}
+.ed-switch .name{font-weight:700;font-size:18px;color:#fff}
+.ed-switch .what{color:var(--text-2);font-size:16px;max-width:60ch;margin-top:2px}
 .ed-switch > div:first-child{min-width:0}
 .ed-switch .btn.tiny{margin-top:8px}
 /* this bot is doing its own thing, not following config.yml */
-.ed-switch.own{background:#14120f;padding-left:14px;padding-right:14px;
-  box-shadow:inset 4px 0 0 var(--gold)}
+.ed-switch.own{background:rgba(232,184,90,.07);padding-left:14px;padding-right:14px;border-radius:12px;
+  box-shadow:inset 3px 0 0 var(--gold)}
 @media(max-width:560px){
   .ed-switch{flex-direction:column;align-items:flex-start;gap:12px}
 }
 
 /* ---------- settings ---------- */
-.ed-sec{background:var(--pit);border:3px solid #000;margin:0 0 14px}
-.ed-sec>summary{cursor:pointer;padding:18px 20px;font-family:var(--display);font-size:20px;color:#fff;
+.ed-sec{background:linear-gradient(180deg,var(--glass-hi),var(--glass));border:1px solid var(--edge);
+  box-shadow:inset 0 1px 0 var(--edge-hi),var(--lift);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border-radius:var(--r-lg);margin:0 0 12px;overflow:hidden}
+.ed-sec>summary{cursor:pointer;padding:18px 22px;font-family:var(--display);font-weight:600;font-size:21px;color:#fff;
   list-style:none;display:flex;align-items:center;gap:14px}
+.ed-sec>summary:hover{background:rgba(255,255,255,.04)}
 .ed-sec>summary::-webkit-details-marker{display:none}
-.ed-sec>summary::before{content:"+";color:var(--blood);font-size:22px;width:14px;flex:none}
-.ed-sec[open]>summary::before{content:"\2013"}
-.ed-sec>.body{padding:0 20px 18px}
-.ed-sechelp{color:var(--ash);font-size:15.5px;white-space:pre-wrap;margin:0 0 10px}
+.ed-sec>summary::before{content:"";width:10px;height:10px;flex:none;border-right:2.5px solid var(--ember);border-bottom:2.5px solid var(--ember);
+  transform:rotate(-45deg);margin:0 4px 0 2px}
+.ed-sec[open]>summary::before{transform:rotate(45deg) translate(-2px,-2px)}
+@media (prefers-reduced-motion:no-preference){.ed-sec>summary::before{transition:transform .2s}}
+.ed-sec>.body{padding:0 22px 18px}
+.ed-sechelp{color:var(--text-2);font-size:16px;white-space:pre-wrap;margin:0 0 10px}
 
-.setting{display:grid;grid-template-columns:minmax(220px,1fr) minmax(190px,330px);
-  gap:8px 24px;padding:16px 0;border-top:2px solid #000}
+.setting{display:grid;grid-template-columns:minmax(220px,1fr) minmax(190px,340px);
+  gap:8px 24px;padding:16px 0;border-top:1px solid var(--hair)}
 .setting:first-of-type{border-top:0}
-.setting .name{font-family:var(--display);font-size:17.5px;color:#fff}
-.setting .key{color:var(--ash);font-size:14.5px;word-break:break-all}
-.setting .help{grid-column:1/-1;color:var(--ash);font-size:15.5px;white-space:pre-wrap;margin:0}
-.ed-choices{grid-column:1/-1;margin:2px 0 0;padding:0;list-style:none;display:grid;gap:3px;font-size:15px;color:var(--ash)}
-.ed-choices li{padding:3px 8px;border-left:3px solid transparent}
-.ed-choices li b{color:#fff;font-weight:600}
-.ed-choices li.on{border-left-color:var(--gold);background:rgba(255,255,255,.05)}
+.setting .name{font-weight:700;font-size:18px;color:#fff}
+.setting .key{color:var(--text-3);font-size:15px;word-break:break-all;font-family:var(--mono)}
+.setting .help{grid-column:1/-1;color:var(--text-2);font-size:16px;white-space:pre-wrap;margin:0}
+.ed-choices{grid-column:1/-1;margin:2px 0 0;padding:0;list-style:none;display:grid;gap:3px;font-size:15.5px;color:var(--text-2)}
+.ed-choices li{padding:4px 10px;border-radius:8px}
+.ed-choices li b{color:#fff;font-weight:700}
+.ed-choices li.on{background:rgba(232,184,90,.1);box-shadow:inset 3px 0 0 var(--gold)}
 .setting .ed-input{width:100%}
-.setting input[type=checkbox]{width:26px;height:26px;accent-color:var(--blood);margin:4px 0}
-.setting.changed{background:#14120f}
-.setting.changed .name::after{content:" \2022 changed";color:var(--gold);font-family:var(--body);font-size:14px}
-.setting.bad{background:#19100f}
-.setting.bad .why{grid-column:1/-1;color:#ff9a92;font-size:15.5px;margin:0}
+.setting input[type=checkbox]{width:26px;height:26px;accent-color:var(--ember);margin:4px 0}
+.setting.changed{background:rgba(232,184,90,.06);margin:0 -12px;padding-left:12px;padding-right:12px;border-radius:12px}
+.setting.changed .name::after{content:" \2022 changed";color:var(--gold);font-weight:500;font-size:15px}
+.setting.bad{background:rgba(255,90,71,.08);margin:0 -12px;padding-left:12px;padding-right:12px;border-radius:12px}
+.setting.bad .why{grid-column:1/-1;color:#ffaba3;font-size:16px;margin:0}
 .setting input:disabled,.setting select:disabled,.setting textarea:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:620px){.setting{grid-template-columns:1fr}}
 
-.ed-savebar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--stone);
-  border-top:3px solid #000;box-shadow:0 -4px 0 rgba(0,0,0,.4)}
-.ed-savebar .strip-in{padding-top:14px;padding-bottom:14px;gap:16px}
-.ed-savebar span{font-family:var(--display);font-size:18px;color:var(--gold)}
+/* unsaved settings: a floating bar at the bottom */
+.ed-savebar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:40;width:min(1040px,calc(100% - 24px));
+  border-radius:var(--r-lg);background:linear-gradient(180deg,rgba(40,30,22,.82),rgba(26,20,16,.78));
+  border:1px solid rgba(232,184,90,.4);box-shadow:inset 0 1px 0 rgba(255,230,180,.25),0 18px 40px -16px rgba(0,0,0,.9);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.ed-savebar .strip-in{padding:12px 16px;gap:14px;max-width:none}
+.ed-savebar span{font-weight:700;font-size:18px;color:var(--gold)}
 .ed-savebar .btn{margin-left:0}
 .ed-savebar .btn:first-of-type{margin-left:auto}
 
 /* ---------- bots ---------- */
-.ed-bots{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
-.ed-bot{background:var(--pit);border:3px solid #000;padding:16px;
-  display:grid;grid-template-columns:56px 1fr;gap:4px 16px;align-content:start}
+.ed-bots{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.ed-bot{background:linear-gradient(180deg,var(--glass-hi),var(--glass));border:1px solid var(--edge);border-radius:var(--r-md);
+  box-shadow:inset 0 1px 0 var(--edge-hi),var(--lift);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  padding:16px;display:grid;grid-template-columns:56px 1fr;gap:4px 16px;align-content:start}
 /* a bot's face, cut straight out of its skin image - no canvas needed */
-.ed-face{width:56px;height:56px;background:#2a272b;grid-row:span 3;image-rendering:pixelated;
-  background-size:800% auto;background-position:-56px -56px}
+.ed-face{width:56px;height:56px;background:rgba(255,255,255,.08);grid-row:span 3;image-rendering:pixelated;border-radius:10px;
+  background-size:800% auto;background-position:-56px -56px;box-shadow:0 4px 12px -4px rgba(0,0,0,.7)}
 /* the same trick at list size: 8x the box, offset by one box */
-.ed-face.sm{width:36px;height:36px;grid-row:auto;flex:none;
+.ed-face.sm{width:36px;height:36px;grid-row:auto;flex:none;border-radius:8px;
   background-size:800% auto;background-position:-36px -36px}
-.ed-bot .nm{font-family:var(--display);font-size:19px;color:#fff;word-break:break-all}
-.ed-bot .nm small{font-family:var(--body);font-size:14px;color:var(--ash);letter-spacing:0}
-.ed-hp{height:12px;background:#2b0f0e;border:2px solid #000;margin:2px 0}
-.ed-hp>i{display:block;height:100%;background:var(--ember)}
-.ed-bot .what{color:var(--ash);font-size:15px;line-height:1.5}
+.ed-bot .nm{font-family:var(--display);font-weight:600;font-size:20px;color:#fff;word-break:break-all}
+.ed-bot .nm small{font-family:var(--body);font-size:15px;color:var(--text-2);letter-spacing:0;font-weight:400}
+.ed-hp{height:10px;background:rgba(0,0,0,.45);border-radius:999px;margin:4px 0;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+.ed-hp>i{display:block;height:100%;background:linear-gradient(90deg,#c41d22,#ff5a47);border-radius:999px}
+.ed-bot .what{color:var(--text-2);font-size:15.5px;line-height:1.5}
 .ed-bot .acts{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
 .ed-bot .acts .ed-input{flex:none;width:auto;min-width:150px}
 
 /* ---------- lists you pick from ----------
    The groups, routes, kits and saves screens are built out of these: a short
    list of rows, one of which you click to open its own screen. */
-.ed-rows{display:grid;gap:3px;background:#000;border:3px solid #000;margin:0 0 6px}
+.ed-rows{display:grid;border-radius:var(--r-md);overflow:hidden;margin:0 0 6px;
+  background:rgba(0,0,0,.18);border:1px solid var(--hair)}
+.ed-rows > * + *{border-top:1px solid var(--hair)}
 /* a line under a list, with the button that acts on what it says */
-.ed-hint{display:flex;flex-wrap:wrap;align-items:center;gap:12px;color:var(--gold);
-  font-size:16.5px;margin:10px 0 0}
-.ed-empty{background:var(--pit);padding:18px 18px;color:var(--ash);font-size:16px}
+.ed-hint{display:flex;flex-wrap:wrap;align-items:center;gap:12px;color:var(--gold);font-size:17px;margin:10px 0 0}
+.ed-empty{padding:18px;color:var(--text-2);font-size:16.5px}
 
 .ed-pickrow{display:flex;align-items:center;gap:18px;width:100%;text-align:left;
-  background:var(--pit);color:inherit;border:0;padding:16px 18px;cursor:pointer;
-  font:inherit;transition:background .12s}
-.ed-pickrow:hover{background:#1b1a1f}
+  background:none;color:inherit;border:0;padding:16px 18px;cursor:pointer;
+  font:inherit;transition:background .15s}
+.ed-pickrow:hover{background:rgba(255,255,255,.06)}
 .ed-pickrow:focus-visible{outline:3px solid var(--ember);outline-offset:-3px}
-.ed-pickrow .nm{font-family:var(--display);font-size:19px;color:#fff}
-.ed-pickrow .sub{color:var(--ash);font-size:15.5px;margin-left:auto;text-align:right;flex:none}
-.ed-pickrow::after{content:"\203A";color:var(--blood);font-size:24px;line-height:1;flex:none}
+.ed-pickrow .nm{font-weight:700;font-size:18.5px;color:#fff}
+.ed-pickrow .sub{color:var(--text-2);font-size:16px;margin-left:auto;text-align:right;flex:none}
+.ed-pickrow::after{content:"";width:9px;height:9px;flex:none;border-top:2.5px solid var(--ember);border-right:2.5px solid var(--ember);transform:rotate(45deg);margin-right:4px}
 
 /* a bot (or target) inside one of those screens, with its head and one button */
-.ed-memrow{display:flex;align-items:center;gap:16px;background:var(--pit);padding:12px 18px}
-.ed-memrow .nm{font-family:var(--display);font-size:18px;color:#fff;min-width:0}
-.ed-memrow .sub{font-family:var(--body);font-size:14.5px;color:var(--ash);
-  letter-spacing:0;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-memrow{display:flex;align-items:center;gap:16px;padding:12px 18px}
+.ed-memrow .nm{font-weight:700;font-size:18px;color:#fff;min-width:0}
+.ed-memrow .sub{font-weight:400;font-size:15px;color:var(--text-2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ed-memrow .btn{margin-left:auto;flex:none}
 /* a patrol target that is not on the server at the moment */
-.ed-memrow.gone{box-shadow:inset 4px 0 0 var(--gold)}
+.ed-memrow.gone{box-shadow:inset 3px 0 0 var(--gold)}
 .ed-memrow.gone .ed-face{opacity:.4}
 .ed-memrow.gone .sub{color:var(--gold)}
 
-.ed-danger{margin-top:30px;padding-top:20px;border-top:2px solid #000}
+.ed-danger{margin-top:30px;padding-top:20px;border-top:1px solid var(--hair)}
 
 /* ---------- tables ---------- */
-.ed-table{width:100%;border-collapse:collapse;margin:8px 0 0;font-size:16px}
-.ed-table th,.ed-table td{text-align:left;padding:12px 10px;border-top:2px solid #000;vertical-align:middle}
-.ed-table th{color:var(--ash);font-weight:400;font-size:14.5px;text-transform:uppercase;letter-spacing:.6px}
+.ed-table{width:100%;border-collapse:collapse;margin:8px 0 0;font-size:16.5px}
+.ed-table th,.ed-table td{text-align:left;padding:12px 10px;border-top:1px solid var(--hair);border-bottom:0;vertical-align:middle}
+.ed-table th{color:var(--text-3);font-weight:500;font-size:15px;background:none}
 .ed-table tr:first-child td{border-top:0}
-.ed-table b{color:#fff;font-weight:500}
-.ed-table .muted{color:var(--ash);font-size:15px}
+.ed-table b{color:#fff;font-weight:700}
+.ed-table .muted{color:var(--text-2);font-size:15.5px}
 .ed-table .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 @media(max-width:620px){
   .ed-table th{display:none}
   .ed-table td{display:block;border-top:0;padding:4px 0}
-  .ed-table tr{display:block;border-top:2px solid #000;padding:12px 0}
+  .ed-table tr{display:block;border-top:1px solid var(--hair);padding:12px 0}
   .ed-table .acts{justify-content:flex-start;margin-top:8px}
 }
 
 /* ---------- the log viewer ---------- */
-.ed-log{background:#000;border:3px solid #000;padding:14px 16px;margin:0;
-  max-height:62vh;overflow:auto;white-space:pre;font-size:14px;line-height:1.5;color:#cfcdce}
+.ed-log{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-md);padding:14px 16px;margin:0;
+  max-height:62vh;overflow:auto;white-space:pre;font-family:var(--mono);font-size:14.5px;line-height:1.55;color:#ddd8e2;
+  box-shadow:inset 0 2px 10px rgba(0,0,0,.4)}
 .ed-log:focus-visible{outline:3px solid var(--ember);outline-offset:2px}
 
 /* ---------- toast ---------- */
 .ed-toast{position:fixed;right:18px;bottom:96px;z-index:60;max-width:min(540px,calc(100vw - 36px));
-  background:var(--stone);border:3px solid #000;border-left:4px solid var(--grass);
-  padding:14px 18px;font-size:16px;line-height:1.5;box-shadow:0 6px 0 rgba(0,0,0,.45)}
-.ed-toast.err{border-left-color:var(--ember)}
+  background:linear-gradient(180deg,rgba(34,28,40,.9),rgba(22,18,28,.88));border:1px solid var(--edge);border-radius:var(--r-md);
+  padding:14px 18px 14px 20px;font-size:16.5px;line-height:1.5;color:var(--text);
+  box-shadow:inset 3px 0 0 var(--ender),inset 0 1px 0 var(--edge-hi),0 18px 40px -16px rgba(0,0,0,.9);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.ed-toast.err{box-shadow:inset 3px 0 0 var(--ember),inset 0 1px 0 var(--edge-hi),0 18px 40px -16px rgba(0,0,0,.9)}
+@media (prefers-reduced-motion:no-preference){
+  .ed-toast{animation:toast-in .22s ease-out}
+}
+@keyframes toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* on a phone the header block would eat the screen, so let it scroll away */
 @media(max-width:860px){
@@ -220,70 +259,89 @@
 }
 
 /* a whole group, where a bot would have its head */
-.ed-face.tile{display:flex;align-items:center;justify-content:center;background:var(--stone);
-  font-family:var(--display);font-size:20px;color:var(--iron);
-  box-shadow:inset 2px 2px 0 rgba(255,255,255,.1),inset -2px -2px 0 rgba(0,0,0,.8)}
+.ed-face.tile{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.1);
+  font-family:var(--display);font-weight:600;font-size:20px;color:var(--text);border:1px solid var(--edge)}
 
-/* the opening card, while it is still looking for the server */
-.ed-starting{display:flex;align-items:center;gap:16px;margin:0 0 12px}
+/* ---------- opening the editor ----------
+   While it finds the server: the loading mark, a title, and the three steps
+   it goes through, each ticked off as it happens. */
+.ed-starting{display:flex;align-items:center;gap:18px;margin:0 0 14px}
 .ed-starting h2{margin:0}
-.ed-pill{display:inline-flex;align-items:center;gap:9px}
-.ed-pill .sword{width:18px;height:18px}
+.ed-progress{list-style:none;margin:6px 0 18px;padding:0;display:grid;gap:10px;max-width:520px}
+.ed-progress li{display:flex;align-items:center;gap:12px;font-size:17.5px;color:var(--text-3)}
+.ed-progress li::before{content:"";width:22px;height:22px;flex:none;border-radius:50%;
+  border:2px solid rgba(255,255,255,.18);box-sizing:border-box}
+.ed-progress li.now{color:var(--text)}
+.ed-progress li.now::before{border-color:var(--ember);border-right-color:transparent}
+@media (prefers-reduced-motion:no-preference){
+  .ed-progress li.now::before{animation:sword-spin .8s linear infinite}
+}
+.ed-progress li.done{color:var(--text-2)}
+.ed-progress li.done::before{border:0;background:var(--ender) center/12px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.5l2.6 2.5L10 3.5' fill='none' stroke='%2303201b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  box-shadow:0 0 12px -2px rgba(51,209,180,.8)}
+.ed-progress li.fail{color:#ffaba3}
+.ed-progress li.fail::before{border-color:var(--ember);background:rgba(255,90,71,.15)}
+.ed-slow{color:var(--gold);font-size:16.5px;margin:12px 0 0}
 
 /* a row that is only there to be read, not opened */
 .ed-memrow.read{justify-content:space-between}
-.ed-memrow.read .sub{font-family:var(--body);font-size:14.5px;color:var(--ash);
-  letter-spacing:0;margin-top:3px}
+.ed-memrow.read .sub{font-weight:400;font-size:15px;color:var(--text-2);margin-top:3px}
 .ed-memrow.read > .sub{margin-top:0;flex:none}
 
-/* ---------- waiting for something ---------- */
-.ed-busy{display:flex;align-items:center;gap:12px;background:var(--pit);
-  padding:18px;color:var(--ash);font-size:16px}
-.ed-table .ed-busy{background:none;padding:10px 0}
+/* ---------- waiting for something ----------
+   A list on its way: the loading mark and what's coming, over shimmering
+   placeholder rows, so the space it will fill is already there. */
+.ed-busy{display:flex;align-items:center;gap:12px;padding:18px;color:var(--text-2);font-size:16.5px;position:relative;overflow:hidden;
+  border-radius:var(--r-md);background:rgba(255,255,255,.035)}
+.ed-busy::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);background-size:220% 100%}
+@media (prefers-reduced-motion:no-preference){
+  .ed-busy::after{animation:shimmer 1.6s ease-in-out infinite}
+}
+@keyframes shimmer{from{background-position:120% 0}to{background-position:-120% 0}}
+.ed-table .ed-busy{padding:14px}
 /* a face waiting on Mojang for its skin */
 .ed-face{display:flex;align-items:center;justify-content:center}
-.sword.waiting{width:70%;height:70%;opacity:.45}
-.ed-face.big{width:96px;height:96px;grid-row:auto;flex:none;
+.sword.waiting{width:70%;height:70%;opacity:.55}
+.ed-face.big{width:96px;height:96px;grid-row:auto;flex:none;border-radius:14px;
   background-size:800% auto;background-position:-96px -96px}
 
 /* ---------- looking at what you picked, before it is sent ---------- */
 .ed-preview{display:flex;align-items:center;gap:22px;flex-wrap:wrap;
-  background:var(--pit);border:3px solid #000;padding:18px;margin-top:14px}
-.ed-skinwhole{width:192px;height:auto;image-rendering:pixelated;
-  background:#000;box-shadow:inset 2px 2px 0 rgba(255,255,255,.08)}
+  background:rgba(0,0,0,.2);border:1px solid var(--hair);border-radius:var(--r-md);padding:18px;margin-top:14px}
+.ed-skinwhole{width:192px;height:auto;image-rendering:pixelated;border-radius:8px;
+  background:rgba(0,0,0,.5)}
 .ed-previnfo{min-width:200px}
-.ed-previnfo .name{font-family:var(--display);font-size:18px;color:#fff;word-break:break-all}
-.ed-previnfo .sub{color:var(--ash);font-size:15.5px;margin-top:4px}
-.ed-previnfo .sub.good{color:#b5e48c}
-.ed-previnfo .sub.bad{color:#ff9a92}
-.ed-bad{color:#ff9a92;font-size:16px}
-.ed-audio{width:320px;max-width:100%;filter:invert(1) hue-rotate(180deg)}
-.small-note{font-size:15.5px;color:#7e7b82;border-left:3px solid var(--line,#2a272b);
-  padding-left:14px;margin-top:14px}
+.ed-previnfo .name{font-weight:700;font-size:18px;color:#fff;word-break:break-all}
+.ed-previnfo .sub{color:var(--text-2);font-size:16px;margin-top:4px}
+.ed-previnfo .sub.good{color:#8ff0db}
+.ed-previnfo .sub.bad{color:#ffaba3}
+.ed-bad{color:#ffaba3;font-size:16.5px}
+.ed-audio{width:320px;max-width:100%;filter:invert(1) hue-rotate(180deg);border-radius:999px}
+.small-note{font-size:16px;color:var(--text-3);border-left:2px solid rgba(255,255,255,.14);padding-left:14px;margin-top:14px}
 
 /* ---------- one link, many servers ----------
    The picker sits above everything, and the chosen server's editor fills the
    page below it. Buttons are deliberately big: this is the thing you reach
    for most on a network. */
-.ed-network{background:var(--pit);border-bottom:3px solid #000;padding:22px 0 20px}
-.ed-network h2{font-size:clamp(21px,3vw,26px);color:#fff;margin:0 0 14px}
+.ed-network{padding:22px 0 6px}
+.ed-network h2{font-size:clamp(22px,3vw,27px);color:#fff;margin:0 0 14px}
 .ed-servers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-.ed-srv{display:flex;flex-direction:column;align-items:flex-start;gap:5px;
-  background:var(--stone);color:var(--iron);border:0;cursor:pointer;
-  padding:16px 20px;text-align:left;font:inherit;
-  box-shadow:inset 3px 3px 0 rgba(255,255,255,.1),inset -3px -3px 0 rgba(0,0,0,.65);
-  transition:background .12s}
-.ed-srv:hover{background:#2a272c;color:#fff}
+.ed-srv{display:flex;flex-direction:column;align-items:flex-start;gap:5px;color:var(--text);cursor:pointer;
+  padding:16px 20px;text-align:left;font:inherit;border-radius:var(--r-md);
+  background:linear-gradient(180deg,var(--glass-hi),var(--glass));border:1px solid var(--edge);
+  box-shadow:inset 0 1px 0 var(--edge-hi),var(--lift);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  transition:background .15s,border-color .15s}
+.ed-srv:hover{background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.07));color:#fff}
 .ed-srv:focus-visible{outline:3px solid var(--ember);outline-offset:3px}
-.ed-srv .nm{font-family:var(--display);font-size:21px;letter-spacing:.5px}
-.ed-srv .sub{font-size:14.5px;color:var(--ash)}
-.ed-srv.on{background:var(--blood);color:#fff;
-  box-shadow:inset 3px 3px 0 rgba(255,255,255,.22),inset -3px -3px 0 rgba(0,0,0,.45)}
-.ed-srv.on .sub{color:#ffd9d7}
-.ed-srv.off,.ed-srv:disabled{background:var(--pit);color:#6d6b70;cursor:not-allowed;
-  box-shadow:inset 2px 2px 0 rgba(255,255,255,.05),inset -2px -2px 0 rgba(0,0,0,.6)}
-.ed-srv.off .sub,.ed-srv:disabled .sub{color:#6d6b70}
-.ed-netinfo{margin:16px 0 0;color:var(--ash);font-size:15.5px}
+.ed-srv .nm{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:.4px}
+.ed-srv .sub{font-size:15px;color:var(--text-2)}
+.ed-srv.on{color:#fff;background:linear-gradient(180deg,#e2372d,#b5171c);border-color:rgba(255,255,255,.25);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 26px -12px rgba(224,52,44,.8)}
+.ed-srv.on .sub{color:#ffe0dc}
+.ed-srv.off,.ed-srv:disabled{background:rgba(255,255,255,.03);color:#7d7686;cursor:not-allowed;box-shadow:none}
+.ed-srv.off .sub,.ed-srv:disabled .sub{color:#7d7686}
+.ed-netinfo{margin:16px 0 0;color:var(--text-2);font-size:16px}
 .ed-netinfo.gone{color:var(--gold)}
 
 /* a skin's own face, beside its file name */
@@ -300,28 +358,94 @@
 .sk-face{position:absolute;left:50%;top:50%;background-repeat:no-repeat;
   image-rendering:pixelated;backface-visibility:hidden}
 .sk-3d.sk-waiting .sk-model{opacity:.25}
-.sk-3d.sk-nope::after{content:"that image would not load";color:var(--ash);font-size:16px}
+.sk-3d.sk-nope::after{content:"that image would not load";color:var(--text-2);font-size:16px}
 
 /* the panel the model sits in */
 .ed-skinview{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:clamp(14px,3vw,30px);
   align-items:start}
 @media(max-width:720px){.ed-skinview{grid-template-columns:1fr}}
-.ed-skinview .shot{background:#000;border:3px solid #000;padding:8px}
+.ed-skinview .shot{background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.08),rgba(0,0,0,.35));border:1px solid var(--hair);
+  border-radius:var(--r-md);padding:8px}
 .ed-skinside h3{margin-top:0}
 .ed-skinflat{image-rendering:pixelated;width:100%;max-width:256px;height:auto;
-  background:#000;border:3px solid #000}
-.sk-tip{color:var(--ash);font-size:16px;margin:10px 0 0}
+  background:rgba(0,0,0,.5);border-radius:8px}
+.sk-tip{color:var(--text-2);font-size:16px;margin:10px 0 0}
 
 /* a file name you can click, inside a table */
 .ed-link{background:none;border:0;padding:0;font:inherit;font-weight:700;color:#fff;
   text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:4px;
-  text-decoration-color:var(--blood);text-decoration-thickness:3px}
-.ed-link:hover{color:var(--ember)}
+  text-decoration-color:var(--ember);text-decoration-thickness:2px}
+.ed-link:hover{color:#ffc2ba}
 .ed-link:focus-visible{outline:3px solid var(--ember);outline-offset:3px}
 
 /* a person in a group, rather than a bot */
-.ed-face.tile.person{background:#1d2a1d;color:#9ad48f}
+.ed-face.tile.person{background:rgba(51,209,180,.14);color:#8ff0db;border-color:rgba(51,209,180,.35)}
 /* a setting this page will not change */
-.ed-locked{background:#000;border:3px solid #000;padding:11px 14px;display:grid;gap:3px}
-.ed-locked b{color:var(--gold);font-weight:500}
-.ed-locked span{color:var(--ash);font-size:15.5px}
+.ed-locked{background:var(--well);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-sm);padding:11px 14px;display:grid;gap:3px}
+.ed-locked b{color:var(--gold);font-weight:700}
+.ed-locked span{color:var(--text-2);font-size:16px}
+
+/* ==================================================== formations ====
+   A march's shape, drawn by dragging bots onto a grid. You're at the top,
+   walking up the screen; every square below is a spot a bot can stand on.
+   Squares a bot could be dropped on light up while you drag. */
+.fm-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+@media(max-width:900px){.fm-wrap{grid-template-columns:1fr}}
+.fm-stage{border-radius:var(--r-lg);padding:18px;overflow:auto;position:relative;
+  background:radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,.06),rgba(0,0,0,.28));border:1px solid var(--hair);
+  min-height:280px}
+.fm-leader{display:flex;flex-direction:column;align-items:center;gap:4px;margin:0 auto 6px;width:max-content}
+.fm-leader .fm-you{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(180deg,#e2372d,#a5141a);color:#fff;font-weight:700;font-size:15px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 20px -10px rgba(224,52,44,.9)}
+.fm-leader small{color:var(--text-2);font-size:14.5px}
+.fm-leader .fm-arrow{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:11px solid var(--ember);margin-bottom:2px}
+.fm-gaplabel{text-align:center;color:var(--text-3);font-size:14px;margin:0 0 8px}
+.fm-grid{display:grid;margin:0 auto;width:max-content;touch-action:none;user-select:none;-webkit-user-select:none}
+.fm-cell{width:var(--fm-cell,44px);height:var(--fm-cell,44px);border-radius:10px;border:1px dashed rgba(255,255,255,.13);
+  background:rgba(255,255,255,.025);padding:0;cursor:pointer;position:relative;display:grid;place-items:center;
+  color:transparent;font:inherit;transition:background .12s,border-color .12s}
+.fm-cell:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.28)}
+.fm-cell:focus-visible{outline:3px solid var(--ember);outline-offset:2px}
+.fm-cell.mid{background-image:linear-gradient(rgba(255,90,71,.08),rgba(255,90,71,.08))}
+.fm-cell.can{border-style:solid;border-color:rgba(51,209,180,.55);background:rgba(51,209,180,.1)}
+.fm-cell.over{border-color:var(--ender);background:rgba(51,209,180,.28);box-shadow:0 0 16px -2px rgba(51,209,180,.7)}
+.fm-cell.no{opacity:.35}
+.fm-bot{width:calc(var(--fm-cell,44px) - 6px);height:calc(var(--fm-cell,44px) - 6px);border-radius:9px;
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(214,207,222,.92));
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.18),0 6px 14px -6px rgba(0,0,0,.9);
+  display:grid;place-items:center;color:#2a2230;font-weight:700;font-size:14px;pointer-events:none}
+.fm-bot.face{background-size:800% auto;background-position:calc((var(--fm-cell,44px) - 6px) * -1) calc((var(--fm-cell,44px) - 6px) * -1);
+  image-rendering:pixelated;color:transparent}
+.fm-cell.filled{border-style:solid;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06);cursor:grab}
+.fm-cell.lifted .fm-bot{opacity:.25}
+.fm-ghost{position:fixed;z-index:80;pointer-events:none;width:44px;height:44px;border-radius:10px;transform:translate(-50%,-50%) scale(1.08);
+  background:linear-gradient(180deg,#fff,#d6cfde);box-shadow:0 14px 30px -8px rgba(0,0,0,.9),0 0 0 2px rgba(51,209,180,.8)}
+.fm-ghost.face{background-size:800% auto;background-position:-44px -44px;image-rendering:pixelated}
+.fm-ghost.bin{box-shadow:0 14px 30px -8px rgba(0,0,0,.9),0 0 0 2px var(--ember);opacity:.75}
+.fm-tray{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;margin:0 0 14px;border-radius:var(--r-md);
+  background:rgba(0,0,0,.2);border:1px solid var(--hair)}
+.fm-source{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;cursor:grab;touch-action:none;flex:none;
+  background:linear-gradient(180deg,#fff,#d6cfde);box-shadow:inset 0 -3px 0 rgba(0,0,0,.18),0 8px 18px -8px rgba(0,0,0,.9);border:0;padding:0}
+.fm-source:focus-visible{outline:3px solid var(--ember);outline-offset:3px}
+.fm-source .fm-plus{font-size:28px;line-height:1;color:#2a2230;font-weight:700}
+.fm-tray p{margin:0;color:var(--text-2);font-size:16px;flex:1;min-width:200px}
+.fm-tray.bin{border-color:rgba(255,90,71,.6);background:rgba(255,90,71,.12)}
+.fm-side{display:grid;gap:14px}
+.fm-side .ed-card{margin:0}
+.fm-list{display:grid;gap:0}
+.fm-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border:0;background:none;color:inherit;font:inherit;
+  text-align:left;cursor:pointer;border-radius:12px;width:100%}
+.fm-item:hover{background:rgba(255,255,255,.06)}
+.fm-item.on{background:rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.fm-item .nm{font-weight:700;font-size:17.5px;color:#fff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fm-item .chip{flex:none}
+.fm-stats{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.fm-field{display:grid;gap:6px;margin:0 0 14px}
+.fm-field label,.fm-field .lab{font-weight:700;font-size:16.5px;color:#fff}
+.fm-field .val{color:var(--gold);font-weight:700}
+.fm-field input[type=range]{width:100%;accent-color:var(--ember);height:28px}
+.fm-field .help{color:var(--text-2);font-size:15px}
+.fm-starts{display:flex;gap:8px;flex-wrap:wrap}
+.fm-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.fm-old{max-width:62ch}

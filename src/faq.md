@@ -365,7 +365,7 @@ there. Turn on `/fightbot debug on` and the log says why a bot at the edge isn't
 ## Can bots march along a route on their own?
 
 Yes, from 6.4.7: `/fightbot march --all --route <route>` marches them in rows along a route you made with
-`/fightbot pointtool`, point to point, with nobody leading. Each row turns where the front turned. Add
+`/fightbot roamingpointtool`, point to point, with nobody leading. Each row turns where the front turned. Add
 `loop` to go round again or `back` to march back, and `left` or `right` for eyes left or right.
 
 <!-- id: points -->
@@ -373,16 +373,17 @@ Yes, from 6.4.7: `/fightbot march --all --route <route>` marches them in rows al
 
 Yes, from 6.4.8. Stand there and `/fightbot point camp`, then `/fightbot walk --all camp`: each bot walks
 its own way and they gather loosely round the point, close but not on top of each other. For rows instead,
-`/fightbot march --all --point camp` marches them there and holds. `/fightbot point tool camp` sets a point
-with one click.
+`/fightbot march --all --point camp` marches them there and holds. `/fightbot pointtool camp` sets a point
+with one click (6.4.10; before, it was `/fightbot point tool camp`).
 
 <!-- id: cannon -->
 ## Can bots arrive like players pearling in?
 
 Yes, from 6.4.8, with the Player Cannon. `/fightbot cannon` gives you a fishing rod named "Player Cannon"
 and lets you pick who comes (new bots in the gear you choose, a group, or every bot) and what they do when
-they land. Right-click it: the bots throw real ender pearls from about 35 blocks away and land round you a few
-seconds later. It breaks like any rod after one use, and nothing is said in chat.
+they land. Right-click it: from 6.4.10, ender pearls fall straight down out of the sky round you and a bot
+lands with each one, fighting or just standing there. The screen also sets how high they fall from and how
+far round you they land. It breaks like any rod after one use, and nothing is said in chat.
 
 <!-- id: teleport -->
 ## My marching bots teleport to me.

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Updates — Paper Fight Bot</title>
+<meta name="description" content="Every Paper Fight Bot release, newest first, with what changed in each one.">
+<meta property="og:title" content="Updates — Paper Fight Bot">
+<meta property="og:description" content="Every Paper Fight Bot release, newest first, with what changed in each one.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://fightmc.xyz/updates.html">
+<meta property="og:image" content="https://fightmc.xyz/assets/banner.png">
+<meta name="theme-color" content="#09070d">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Pixelify+Sans:wght@500..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="index.html"><img src="assets/logo.png" alt=""><span><span class="p">PAPER </span>FIGHT <b>BOT</b></span></a>
+    <nav>
+      <a href="install.html">Install</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="faq.html">FAQ</a>
+      <a href="updates.html">Updates</a>
+      <a href="compare.html">Compare</a>
+      <a href="report.html">Report</a>
+      <a href="account.html">Account</a>
+      <a href="#" data-modrinth>Download</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="phead">
+  <div class="wrap">
+    <h1>Updates</h1>
+    <p class="lede">Every release, newest first, and what changed in each. FightBot updates itself, so most servers
+      get these on their next restart.</p>
+  </div>
+</div>
+
+<section class="tight">
+  <div class="wrap">
+    <div class="up-tools">
+      <label for="upFind" class="up-count" style="position:absolute;left:-9999px">Search the updates</label>
+      <input type="search" id="upFind" class="ed-input" placeholder="Search: cannon, mace, 6.4…" disabled>
+      <span class="up-count" id="upCount" aria-live="polite"></span>
+    </div>
+    <div class="up-list" id="upList">
+      <p class="loading"><span class="sword" aria-hidden="true"></span><span>Fetching every release from Modrinth&hellip;</span></p>
+    </div>
+    <div class="glass up-empty" id="upNone" hidden>
+      <p style="margin:0">Nothing matches that. Try one word, like <code class="cmd">pearl</code> or a version number.</p>
+    </div>
+    <noscript><div class="note">This list comes from Modrinth and needs JavaScript. Every release is also on
+      <a href="https://modrinth.com/plugin/paper-fight-bot/changelog">Modrinth's changelog</a>.</div></noscript>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap f-in">
+    <a href="install.html">Install</a>
+    <a href="wiki.html">Wiki</a>
+    <a href="faq.html">FAQ</a>
+    <a href="updates.html">Updates</a>
+    <a href="#" data-modrinth>Modrinth</a>
+    <a href="#" data-discord>Discord</a>
+    <span class="credit">Paper Fight Bot &middot; not an official Minecraft service, not approved by Mojang</span>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script type="module" src="assets/app.js"></script>
+<script type="module" src="assets/updates.js"></script>
+</body>
+</html>

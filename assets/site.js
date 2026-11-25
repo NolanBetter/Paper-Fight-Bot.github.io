@@ -1,7 +1,7 @@
 /* Paper Fight Bot. Change CONFIG and every page follows. */
 
 const CONFIG = {
-  version:  "6.4.9",      // what the pages say until Modrinth answers (see liveFromModrinth)
+  version:  "6.4.10",      // what the pages say until Modrinth answers (see liveFromModrinth)
   downloads: "9.9K",
   minecraft: "1.20.5+",
   modrinth: "https://modrinth.com/plugin/paper-fight-bot",
@@ -26,9 +26,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll("[data-year]").forEach(el => el.textContent = new Date().getFullYear());
 
+  mobileMenu();
   wikiFollow();
   liveFromModrinth();
 });
+
+/* On a phone the links don't fit in the bar, so they fold away behind a Menu
+   button and open as a panel under it. Escape, a tap outside or picking a
+   link closes it. Without this script the links simply scroll in the bar. */
+function mobileMenu() {
+  const bar = document.querySelector(".bar");
+  const inner = bar && bar.querySelector(".bar-in");
+  const nav = inner && inner.querySelector("nav");
+  if (!nav || inner.querySelector(".menu-btn")) return;
+  nav.id = nav.id || "site-nav";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "menu-btn";
+  btn.setAttribute("aria-expanded", "false");
+  btn.setAttribute("aria-controls", nav.id);
+  btn.innerHTML = '<span class="menu-ico" aria-hidden="true"></span>Menu';
+  inner.insertBefore(btn, nav);
+  bar.classList.add("has-menu");
+  const set = open => {
+    bar.classList.toggle("open", open);
+    btn.setAttribute("aria-expanded", String(open));
+  };
+  btn.addEventListener("click", () => set(!bar.classList.contains("open")));
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && bar.classList.contains("open")) { set(false); btn.focus(); } });
+  document.addEventListener("click", e => { if (!inner.contains(e.target)) set(false); });
+  nav.addEventListener("click", e => { if (e.target.closest("a")) set(false); });
+}
 
 /* The newest release and the download count, straight from Modrinth's public
    API, so the home page never says an old version again. Only the numbers are

@@ -56,6 +56,23 @@ function tableRow(line) {
     .map(c => c.trim().split(HELD).join("|"));
 }
 
+/** One level of a list, and every level inside it. */
+function listHtml(items, start, depth) {
+  const tag = items[start].ordered ? "ol" : "ul";
+  let html = `<${tag}>`, i = start;
+  while (i < items.length && items[i].depth >= depth) {
+    if (items[i].depth > depth) {
+      const sub = listHtml(items, i, items[i].depth);
+      html = html.endsWith("</li>") ? html.slice(0, -5) + sub.html + "</li>" : html + "<li>" + sub.html + "</li>";
+      i = sub.next;
+      continue;
+    }
+    html += `<li>${inline(items[i].text)}</li>`;
+    i++;
+  }
+  return { html: html + `</${tag}>`, next: i };
+}
+
 /**
  * opts.headings false turns # lines into bold paragraphs instead of headings.
  * FAQ answers use that, because the question is already the heading.
@@ -82,7 +99,7 @@ export function renderMarkdown(src, opts) {
 
     // horizontal rule
     if (/^\s*(---|\*\*\*|___)\s*$/.test(line)) {
-      out.push('<hr style="border:0;border-top:3px solid #000;margin:32px 0">');
+      out.push('<hr style="border:0;border-top:1px solid rgba(255,255,255,.1);margin:32px 0">');
       i++;
       continue;
     }
@@ -127,15 +144,15 @@ export function renderMarkdown(src, opts) {
       continue;
     }
 
-    // lists
+    // lists. An item indented under another is a list inside it, so the
+    // changelogs' points and their sub-points keep their shape.
     if (/^\s*[-*+]\s+/.test(line) || /^\s*\d+\.\s+/.test(line)) {
-      const ordered = /^\s*\d+\.\s+/.test(line);
       const items = [];
       while (i < lines.length && (/^\s*[-*+]\s+/.test(lines[i]) || /^\s*\d+\.\s+/.test(lines[i]))) {
-        items.push(lines[i++].replace(/^\s*(?:[-*+]|\d+\.)\s+/, ""));
+        const m = lines[i++].match(/^(\s*)([-*+]|\d+\.)\s+(.*)$/);
+        items.push({ depth: m[1].replace(/\t/g, "    ").length, ordered: /\d/.test(m[2]), text: m[3] });
       }
-      const tag = ordered ? "ol" : "ul";
-      out.push(`<${tag}>` + items.map(t => `<li>${inline(t)}</li>`).join("") + `</${tag}>`);
+      out.push(listHtml(items, 0, items[0].depth).html);
       continue;
     }
 
