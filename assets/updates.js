@@ -29,7 +29,7 @@ const el = (tag, props = {}, ...kids) => {
 
 const base = v => String(v || "").replace(/-spigot$/i, "");
 
-/** 6.4.10 after 6.4.9, and 6.0.0 after its betas. */
+/** 6.4.10 after 6.4.9, 1.21.1 after 1.21, and 6.0.0 after its betas. */
 function compare(a, b) {
   const pa = base(a).split(/[.-]/), pb = base(b).split(/[.-]/);
   for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
@@ -37,9 +37,12 @@ function compare(a, b) {
     const nx = /^\d+$/.test(x), ny = /^\d+$/.test(y);
     if (nx && ny) { if (+x !== +y) return +x - +y; continue; }
     if (x === y) continue;
-    if (x === "") return 1;          // 6.0.0 is newer than 6.0.0-beta2
-    if (y === "") return -1;
-    return x < y ? -1 : 1;
+    // one has run out: a number after it means a later release (1.21.1 after 1.21),
+    // a word means a test build before it (6.0.0-beta2 before 6.0.0)
+    if (x === "") return ny ? -1 : 1;
+    if (y === "") return nx ? 1 : -1;
+    if (nx !== ny) return nx ? 1 : -1;  // 6.0.0.1 after 6.0.0-beta
+    return x.localeCompare(y, "en", { numeric: true });   // beta10 after beta2
   }
   return 0;
 }
@@ -95,14 +98,16 @@ function group(versions) {
   return out.sort((a, b) => compare(b.version, a.version));
 }
 
+const idOf = g => "v" + g.version.replace(/[^0-9a-z]+/gi, "-");
+
 function fileOf(build) {
   if (!build || !build.files || !build.files.length) return null;
   return build.files.find(f => f.primary) || build.files[0];
 }
 
-function release(g, open) {
+function release(g, open, newest) {
   const chips = el("span", { class: "up-chips" });
-  if (open) chips.append(el("span", { class: "chip new", text: "Newest" }));
+  if (newest) chips.append(el("span", { class: "chip new", text: "Newest" }));
   if (g.type !== "release") chips.append(el("span", { class: "chip pre", text: g.type === "beta" ? "Beta" : "Test build" }));
   if (g.paper) chips.append(el("span", { class: "chip", text: "Paper" }));
   if (g.spigot) chips.append(el("span", { class: "chip", text: "Spigot" }));
@@ -111,7 +116,7 @@ function release(g, open) {
   if (g.downloads) chips.append(el("span", { class: "chip", text: short(g.downloads) + " downloads" }));
 
   const body = el("div", { class: "up-body" });
-  const d = el("details", { class: "up", id: "v" + g.version.replace(/[^0-9a-z]+/gi, "-") },
+  const d = el("details", { class: "up", id: idOf(g) },
     el("summary", {},
       el("span", { class: "up-v", text: g.version }),
       el("span", { class: "up-lead", text: g.lead }),
@@ -157,13 +162,21 @@ async function main() {
   }
 
   // a link to one release (updates.html#v6-4-10) opens that one instead of the newest
-  const wanted = location.hash.replace(/^#/, "");
-  const nodes = groups.map((g, i) => release(g, wanted ? false : i === 0));
+  const asked = () => {
+    const h = decodeURIComponent(location.hash.replace(/^#/, ""));
+    return groups.findIndex(g => idOf(g) === h);
+  };
+  const first = asked();
+  const nodes = groups.map((g, i) => release(g, i === (first >= 0 ? first : 0), i === 0));
   list.replaceChildren(...nodes);
-  if (wanted) {
-    const hit = document.getElementById(wanted);
-    if (hit) { hit.open = true; hit.scrollIntoView({ block: "start" }); }
-  }
+  if (first > 0) nodes[first].scrollIntoView({ block: "start" });
+  addEventListener("hashchange", () => {
+    const i = asked();
+    if (i < 0) return;
+    nodes[i].hidden = false;
+    nodes[i].open = true;
+    nodes[i].scrollIntoView({ block: "start" });
+  });
 
   const say = n => { count.textContent = n === groups.length ? groups.length + " releases" : n + " of " + groups.length + " releases"; };
   say(groups.length);

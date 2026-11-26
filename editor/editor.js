@@ -2440,7 +2440,7 @@ function fmDraw() {
 
   const order = fmOrder();
   const slot = new Map(order.map((p, i) => [fmKey(p[0], p[1]), i]));
-  const faces = botList.filter(b => b.skin);
+  const faces = botList.filter(b => b.skin && /^[0-9a-f]{16,80}$/i.test(b.skin));
   const cells = [];
   for (let b = minB; b <= lastB; b++) {
     for (let a = minA; a <= maxA; a++) {
@@ -2784,9 +2784,10 @@ $("fmUse").addEventListener("click", async () => {
     catch (e) { toast(e.message, true); }
     return;
   }
-  if (fm.dirty) { await fmSave(true); return; }
+  const saved = (fm.data.layouts || []).find(l => same(l.name, fm.name));
+  if (fm.dirty || !saved) { await fmSave(true); return; }
   try {
-    fmTake(await ed.request("layouts.use", { name: fm.name }));
+    fmTake(await ed.request("layouts.use", { name: saved.name }));
     fmDraw();
     toast("Marches take " + fm.name + " now.");
   } catch (e) { toast(e.message, true); }
