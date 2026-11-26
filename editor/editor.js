@@ -2432,7 +2432,7 @@ function fmDraw() {
 
   // squares as big as fit, and as far apart as the bots will stand
   const stageW = Math.max(260, $("fmStage").clientWidth - 40);
-  const cell = Math.max(30, Math.min(46, Math.floor((stageW - (cols - 1) * (4 + sideGap * 8)) / cols)));
+  const cell = Math.max(26, Math.min(46, Math.floor((stageW - (cols - 1) * Math.min(40, 4 + sideGap * 8)) / cols)));
   grid.style.setProperty("--fm-cell", cell + "px");
   grid.style.gridTemplateColumns = "repeat(" + cols + ", " + cell + "px)";
   grid.style.columnGap = Math.min(40, 4 + sideGap * 8) + "px";

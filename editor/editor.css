@@ -76,6 +76,13 @@
 .ed-tabs .btn.tab.on{color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,.08));
   border-color:var(--edge);box-shadow:inset 0 1px 0 var(--edge-hi)}
 .ed-main{padding:26px var(--edge-x) 150px}
+/* the tabs are sections, but they sit straight under the bar, not a page's worth below it */
+.ed-main > section{padding:0}
+/* a file picker's own button, in glass like the rest */
+.ed-main input[type=file]{color:var(--text-2);font-family:var(--body);font-size:16px}
+.ed-main input[type=file]::file-selector-button{font-family:var(--body);font-weight:700;font-size:15px;color:var(--text);
+  background:rgba(255,255,255,.1);border:1px solid var(--edge);border-radius:var(--r-sm);padding:8px 16px;margin-right:14px;cursor:pointer}
+.ed-main input[type=file]::file-selector-button:hover{background:rgba(255,255,255,.17);color:#fff}
 .ed-main.wrap{padding-left:var(--edge-x);padding-right:var(--edge-x)}
 
 /* ---------- cards ---------- */
@@ -390,7 +397,7 @@ select.ed-input option{background:#1b1622;color:var(--text)}
    walking up the screen; every square below is a spot a bot can stand on.
    Squares a bot could be dropped on light up while you drag. */
 .fm-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
-@media(max-width:900px){.fm-wrap{grid-template-columns:1fr}}
+@media(max-width:900px){.fm-wrap{grid-template-columns:minmax(0,1fr)}}
 .fm-stage{border-radius:var(--r-lg);padding:18px;overflow:auto;position:relative;
   background:radial-gradient(120% 90% at 50% 0%,rgba(255,255,255,.06),rgba(0,0,0,.28));border:1px solid var(--hair);
   min-height:280px}
@@ -416,7 +423,7 @@ select.ed-input option{background:#1b1622;color:var(--text)}
   box-shadow:inset 0 -3px 0 rgba(0,0,0,.18),0 6px 14px -6px rgba(0,0,0,.9);
   display:grid;place-items:center;color:#2a2230;font-weight:700;font-size:14px;pointer-events:none}
 .fm-bot.face{background-size:800% auto;background-position:calc((var(--fm-cell,44px) - 6px) * -1) calc((var(--fm-cell,44px) - 6px) * -1);
-  image-rendering:pixelated;color:transparent}
+  image-rendering:pixelated;color:transparent;background-color:#d6cfde}
 .fm-cell.filled{border-style:solid;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06);cursor:grab}
 .fm-cell.lifted .fm-bot{opacity:.25}
 .fm-ghost{position:fixed;z-index:80;pointer-events:none;width:44px;height:44px;border-radius:10px;transform:translate(-50%,-50%) scale(1.08);
