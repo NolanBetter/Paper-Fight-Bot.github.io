@@ -438,6 +438,21 @@ function changes(v) {
     c.changed.length ? copyButton(text) : null),
     el("p", { className: "hint", textContent: "Compared with FightBot's own config today. Everything else is left as FightBot has it." }),
     c.changed.length ? codeBox(lines, "changes") : null);
+  // what its owner changed since the version before this one
+  const i = versions.indexOf(v), prev = i >= 0 ? versions[i + 1] : null;
+  if (prev) {
+    const d = compare(theirs, read(prev.yaml));
+    const n = d.changed.length + d.unknown.length + d.added.length;
+    const lines = [
+      ...asYaml(d.changed, it => "was " + (it.def === "" ? '""' : it.def)),
+      ...d.unknown.map(u => ({ text: u.path + ": " + u.value, kind: "add", note: "added" })),
+      ...d.added.map(path => ({ text: path, kind: "gone", note: "taken out" }))];
+    box.append(el("details", { className: "cfg-more", open: n > 0 && n <= 30 },
+      el("summary", { textContent: n ? (n === 1 ? "1 change" : n + " changes") + " since its version before (" + (prev.label || longDate(prev.at)) + ")"
+        : "No changes since its version before (" + (prev.label || longDate(prev.at)) + ")" }),
+      v.note ? el("p", { className: "hint", textContent: "What its owner says changed: " + v.note }) : null,
+      n ? codeBox(lines) : null));
+  }
   if (c.added.length) {
     box.append(el("details", { className: "cfg-more" },
       el("summary", { textContent: (c.added.length === 1 ? "1 setting is" : c.added.length + " settings are") + " new in FightBot since this config" + (theirs.version ? " (written by " + theirs.version + ")" : "") }),

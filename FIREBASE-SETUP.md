@@ -211,7 +211,7 @@ player types on the site.
 - **"You are not allowed to do that" when saving a page.** Your role is still
   `user`. Step 3.
 - **Reports list is empty but you filed one.** You are signed in as a different
-  account than the one that filed it. Check the email in the nav.
+  account than the one that filed it. Click your name at the top: the email is there.
 - **"Missing or insufficient permissions".** The rules were not published, or
   only partly pasted. Redo step 2.4 with the whole file.
 - **Nothing signed-in works at all and the console mentions gstatic.** An ad
