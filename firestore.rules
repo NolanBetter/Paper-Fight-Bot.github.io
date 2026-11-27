@@ -84,6 +84,114 @@ service cloud.firestore {
       allow write: if isOwner();
     }
 
+    // ----------------------------------------------------------- extensions
+    // Skin packs and configs people share (extensions.html). Anyone can see
+    // what's live. You need an account to share, and it goes live at once.
+    // The owner can take anything down with a reason; whoever shared it can
+    // fix it and send it back ("pending"), and only the owner puts it live
+    // again. Skins and icons must be PNGs; a config is text. Nothing else.
+
+    function text(v, lo, hi) {
+      return v is string && v.size() >= lo && v.size() <= hi;
+    }
+    function png(v, hi) {
+      return v is string && v.size() <= hi
+        && v.matches('data:image/png;base64,iVBORw0KGgo[A-Za-z0-9+/]*={0,2}');
+    }
+    function myName(n) {
+      // the Minecraft name on your account, or nothing if you haven't one
+      return (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+              && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('mcName', '') == n)
+        || n == '';
+    }
+    function projectOk(d) {
+      return d.keys().hasOnly(['kind', 'title', 'summary', 'about', 'icon', 'version', 'fb', 'category',
+                               'owner', 'ownerName', 'status', 'reason', 'count', 'downloads', 'createdAt', 'updatedAt'])
+        && d.keys().hasAll(['kind', 'title', 'summary', 'about', 'icon', 'version', 'fb', 'category',
+                            'owner', 'ownerName', 'status', 'reason', 'count', 'downloads', 'createdAt', 'updatedAt'])
+        && d.kind in ['skins', 'configs']
+        && text(d.title, 3, 60) && text(d.summary, 0, 140) && text(d.about, 0, 6000)
+        && (d.icon == '' || png(d.icon, 60000))
+        && text(d.version, 0, 24) && text(d.fb, 0, 16) && text(d.category, 1, 20)
+        && text(d.ownerName, 0, 16) && d.status in ['live', 'removed', 'pending'] && text(d.reason, 0, 500)
+        && d.count is int && d.count >= 0 && d.count <= 2000
+        && d.downloads is int && d.downloads >= 0
+        && d.createdAt is timestamp && d.updatedAt is timestamp;
+    }
+
+    match /projects/{pid} {
+      function visible(d) {
+        return d.status == 'live' || (signedIn() && (d.owner == request.auth.uid || isOwner()));
+      }
+      allow read: if visible(resource.data);
+
+      allow create: if signedIn()
+        && projectOk(request.resource.data)
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.status == 'live' && request.resource.data.reason == ''
+        && request.resource.data.count == 0 && request.resource.data.downloads == 0
+        && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+        && myName(request.resource.data.ownerName);
+
+      allow update: if
+        // whoever shared it: its details - never who owns it, its downloads,
+        // or the reason it was taken down. Taken down, they may send it back.
+        (signedIn() && resource.data.owner == request.auth.uid
+          && projectOk(request.resource.data)
+          && request.resource.data.diff(resource.data).unchangedKeys()
+               .hasAll(['kind', 'owner', 'downloads', 'createdAt', 'reason'])
+          && request.resource.data.updatedAt == request.time
+          && (request.resource.data.ownerName == resource.data.ownerName || myName(request.resource.data.ownerName))
+          && (request.resource.data.status == resource.data.status
+              || (resource.data.status == 'removed' && request.resource.data.status == 'pending')))
+        // the owner of the site: take it down with a reason, or put it live again
+        || (isOwner()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'reason', 'updatedAt'])
+          && request.resource.data.status in ['live', 'removed', 'pending']
+          && text(request.resource.data.reason, 0, 500)
+          && (request.resource.data.status != 'removed' || request.resource.data.reason.size() >= 3)
+          && request.resource.data.updatedAt == request.time)
+        // anyone: one more download of something that's live
+        || (resource.data.status == 'live'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloads'])
+          && request.resource.data.downloads == resource.data.downloads + 1);
+
+      allow delete: if signedIn() && (resource.data.owner == request.auth.uid || isOwner());
+
+      function project() {
+        return get(/databases/$(database)/documents/projects/$(pid)).data;
+      }
+      function sharedByMe() {
+        return signedIn() && project().owner == request.auth.uid;
+      }
+
+      // a skin pack's skins: one PNG each
+      match /skins/{sid} {
+        allow read: if visible(project());
+        allow create, update: if sharedByMe()
+          && request.resource.data.keys().hasOnly(['name', 'png', 'slim', 'at'])
+          && request.resource.data.keys().hasAll(['name', 'png', 'slim', 'at'])
+          && text(request.resource.data.name, 1, 32)
+          && png(request.resource.data.png, 24000)
+          && request.resource.data.slim is bool
+          && request.resource.data.at == request.time;
+        allow delete: if sharedByMe() || isOwner();
+      }
+
+      // a config's versions: the file as text
+      match /versions/{vid} {
+        allow read: if visible(project());
+        allow create: if sharedByMe()
+          && request.resource.data.keys().hasOnly(['fb', 'label', 'note', 'yaml', 'at'])
+          && request.resource.data.keys().hasAll(['fb', 'label', 'note', 'yaml', 'at'])
+          && text(request.resource.data.fb, 0, 16) && text(request.resource.data.label, 0, 24)
+          && text(request.resource.data.note, 0, 1000) && text(request.resource.data.yaml, 1, 200000)
+          && request.resource.data.at == request.time;
+        allow update: if false;
+        allow delete: if sharedByMe() || isOwner();
+      }
+    }
+
     // everything else is closed
     match /{document=**} {
       allow read, write: if false;

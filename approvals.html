@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Approvals — Paper Fight Bot</title>
+<meta name="description" content="Uploads waiting for approval.">
+<meta property="og:title" content="Approvals — Paper Fight Bot">
+<meta property="og:description" content="Uploads waiting for approval.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://fightmc.xyz/approvals.html">
+<meta property="og:image" content="https://fightmc.xyz/assets/banner.png">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#09070d">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Pixelify+Sans:wght@500..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="index.html"><img src="assets/logo.png" alt=""><span><span class="p">PAPER </span>FIGHT <b>BOT</b></span></a>
+    <nav aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="install.html">Install</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="faq.html">FAQ</a>
+      <a href="updates.html">Updates</a>
+      <a href="compare.html">Compare</a>
+      <a href="extensions.html">Extensions</a>
+      <a href="report.html">Report</a>
+      <a href="download.html" class="nav-dl">Download</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="phead">
+  <div class="wrap">
+    <h1>Approvals</h1>
+    <p class="lede">Uploads you took down that have been fixed and sent back. Approve one and it's live again; keep it down
+      and say why, and whoever shared it can fix it again.</p>
+  </div>
+</div>
+<section class="tight" style="padding-top:0">
+  <div class="wrap">
+    <div class="seg" role="tablist" aria-label="Which" id="apTabs">
+      <button type="button" role="tab" aria-selected="true" data-tab="pending">Waiting</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="removed">Taken down</button>
+    </div>
+    <div class="ap-list" id="apList"><p class="loading"><span class="sword" aria-hidden="true"></span><span>Loading&hellip;</span></p></div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap f-in">
+    <a href="install.html">Install</a>
+    <a href="wiki.html">Wiki</a>
+    <a href="faq.html">FAQ</a>
+    <a href="updates.html">Updates</a>
+    <a href="extensions.html">Extensions</a>
+    <a href="download.html">Download</a>
+    <a href="#" data-modrinth>Modrinth</a>
+    <a href="#" data-discord>Discord</a>
+    <span class="credit">Paper Fight Bot &middot; not an official Minecraft service, not approved by Mojang</span>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script type="module" src="assets/app.js"></script>
+<script type="module" src="assets/approvals.js"></script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download — Paper Fight Bot</title>
+<meta name="description" content="Download Paper Fight Bot for Paper, Purpur or Spigot: the right jar for your server and Minecraft version, and every version before it.">
+<meta property="og:title" content="Download — Paper Fight Bot">
+<meta property="og:description" content="Download Paper Fight Bot for Paper, Purpur or Spigot: the right jar for your server and Minecraft version, and every version before it.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://fightmc.xyz/download.html">
+<meta property="og:image" content="https://fightmc.xyz/assets/banner.png">
+<meta name="theme-color" content="#09070d">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Pixelify+Sans:wght@500..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="index.html"><img src="assets/logo.png" alt=""><span><span class="p">PAPER </span>FIGHT <b>BOT</b></span></a>
+    <nav aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="install.html">Install</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="faq.html">FAQ</a>
+      <a href="updates.html">Updates</a>
+      <a href="compare.html">Compare</a>
+      <a href="extensions.html">Extensions</a>
+      <a href="report.html">Report</a>
+      <a href="download.html" class="nav-dl" aria-current="page"><span class="nav-hl" aria-hidden="true"></span>Download</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="dl-hero">
+  <div class="wrap">
+    <div class="dl-proj glass">
+      <img class="dl-icon" id="dlIcon" src="assets/logo.png" alt="" width="96" height="96">
+      <div class="dl-about">
+        <h1 id="dlTitle">Paper Fight Bot</h1>
+        <p class="dl-sum" id="dlSum">PvP bots that actually fight. Real server-side players that path to you, crit, dodge, pearl and clutch.</p>
+        <p class="dl-stats">
+          <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><b data-downloads>9.9K</b> downloads</span>
+          <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg><b id="dlFollows">&mdash;</b> followers</span>
+          <span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Updated <b id="dlUpdated">recently</b></span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="wrap dl-grid">
+    <div class="dl-get glass" id="dlGet">
+      <h2>Get FightBot</h2>
+      <p class="dl-q">What does your server run?</p>
+      <div class="seg" role="radiogroup" aria-label="Server type" id="dlType">
+        <button type="button" role="radio" aria-checked="true" data-type="paper">Paper or Purpur</button>
+        <button type="button" role="radio" aria-checked="false" data-type="spigot">Spigot or CraftBukkit</button>
+      </div>
+      <label class="dl-q" for="dlMc">Which Minecraft version?</label>
+      <div class="sel"><select id="dlMc" disabled><option>Loading&hellip;</option></select></div>
+      <div class="dl-pick" id="dlPick" aria-live="polite">
+        <p class="loading"><span class="sword" aria-hidden="true"></span><span>Finding the newest build&hellip;</span></p>
+      </div>
+    </div>
+    <aside class="dl-side">
+      <div class="glass dl-note">
+        <h3>Which one?</h3>
+        <p><b>Paper or Purpur</b> (or another Paper fork): the plain build, Minecraft 1.20.5 and up.</p>
+        <p><b>Spigot or CraftBukkit</b>: the Spigot build, Minecraft 26.1 and up.</p>
+        <p>Older than 1.20.5? Use 3.17.1 with LibsDisguises, from the list below.</p>
+        <p style="margin:0">Already running FightBot? It updates itself: the new version downloads on its own and goes in at the next restart.</p>
+      </div>
+      <a class="glass dl-also" href="#" data-modrinth>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>
+        <span>Also on Modrinth</span>
+      </a>
+    </aside>
+  </div>
+</section>
+
+<section class="tight" style="padding-top:0">
+  <div class="wrap">
+    <div class="dl-vhead">
+      <h2 id="all">All versions</h2>
+      <span class="up-count" id="dlCount" aria-live="polite"></span>
+    </div>
+    <div class="dl-filters">
+      <div class="seg sm" role="radiogroup" aria-label="Server type" id="dlFType">
+        <button type="button" role="radio" aria-checked="true" data-type="">All</button>
+        <button type="button" role="radio" aria-checked="false" data-type="paper">Paper</button>
+        <button type="button" role="radio" aria-checked="false" data-type="spigot">Spigot</button>
+      </div>
+      <div class="sel sm"><label for="dlFMc" class="vh">Minecraft version</label><select id="dlFMc"><option value="">Any Minecraft version</option></select></div>
+      <label class="tick"><input type="checkbox" id="dlBetas"><span class="tick-box" aria-hidden="true"></span>Show betas</label>
+    </div>
+    <div class="dl-table" id="dlTable" role="table" aria-label="Every version">
+      <p class="loading"><span class="sword" aria-hidden="true"></span><span>Fetching every version from Modrinth&hellip;</span></p>
+    </div>
+    <div class="dl-pages" id="dlPages"></div>
+    <noscript><div class="note">This page needs JavaScript. Every version is also on
+      <a href="https://modrinth.com/plugin/paper-fight-bot/versions">Modrinth</a>.</div></noscript>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap f-in">
+    <a href="install.html">Install</a>
+    <a href="wiki.html">Wiki</a>
+    <a href="faq.html">FAQ</a>
+    <a href="updates.html">Updates</a>
+    <a href="extensions.html">Extensions</a>
+    <a href="download.html">Download</a>
+    <a href="#" data-modrinth>Modrinth</a>
+    <a href="#" data-discord>Discord</a>
+    <span class="credit">Paper Fight Bot &middot; not an official Minecraft service, not approved by Mojang</span>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script type="module" src="assets/app.js"></script>
+<script type="module" src="assets/download.js"></script>
+</body>
+</html>

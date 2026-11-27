@@ -23,15 +23,16 @@
 <header class="bar">
   <div class="bar-in">
     <a class="brand" href="index.html"><img src="assets/logo.png" alt=""><span><span class="p">PAPER </span>FIGHT <b>BOT</b></span></a>
-    <nav>
-      <a href="install.html">Install</a>
+    <nav aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="install.html" aria-current="page"><span class="nav-hl" aria-hidden="true"></span>Install</a>
       <a href="wiki.html">Wiki</a>
       <a href="faq.html">FAQ</a>
       <a href="updates.html">Updates</a>
       <a href="compare.html">Compare</a>
+      <a href="extensions.html">Extensions</a>
       <a href="report.html">Report</a>
-      <a href="account.html">Account</a>
-      <a href="#" data-modrinth>Download</a>
+      <a href="download.html" class="nav-dl">Download</a>
     </nav>
   </div>
 </header>
@@ -64,11 +65,11 @@
       <div class="step">
         <div>
           <h3>Download the jar</h3>
-          <p>Grab the newest full release from Modrinth &mdash; the plain version on Paper or Purpur, the one
-            ending in <span class="cmd">-spigot</span> on Spigot or CraftBukkit. Betas are there too, but start
-            on a stable build unless you are chasing a specific fix.</p>
+          <p>Pick your server type and Minecraft version on the download page, and it gives you the right jar:
+            the plain build on Paper or Purpur, the <span class="cmd">-spigot</span> one on Spigot or CraftBukkit.
+            Betas are there too, but start on a stable build unless you are chasing a specific fix.</p>
           <div class="cta-row" style="margin-top:6px">
-            <a class="btn" href="#" data-modrinth>Open Modrinth</a>
+            <a class="btn" href="download.html">Download FightBot</a>
           </div>
         </div>
       </div>
@@ -152,6 +153,8 @@
     <a href="wiki.html">Wiki</a>
     <a href="faq.html">FAQ</a>
     <a href="updates.html">Updates</a>
+    <a href="extensions.html">Extensions</a>
+    <a href="download.html">Download</a>
     <a href="#" data-modrinth>Modrinth</a>
     <a href="#" data-discord>Discord</a>
     <span class="credit">Paper Fight Bot &middot; not an official Minecraft service, not approved by Mojang</span>

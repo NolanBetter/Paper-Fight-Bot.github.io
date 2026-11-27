@@ -1,0 +1,1189 @@
+# Which FightBot version wrote this file. Don't edit it - when you update
+# the plugin, FightBot uses it to bring your config up to date for you,
+# keeping your settings and saving the old file in old-configs/.
+config-version: 6.4.6
+
+# FightBot Configuration
+# New here? In game, type  /fb guide  - it walks you through the setup,
+# one step at a time. /fb skins does the same for skins.
+# Change something here, then run /fb reload in game (or restart) - or
+# change it in your browser with /fb web.
+#
+# The settings are in twelve groups:
+#   1. Fighting
+#   2. Weapons and PvP styles
+#   3. Orders and groups
+#   4. Marching and formations
+#   5. Walking, building and mining
+#   6. Roaming and patrolling
+#   7. Who the bots are
+#   8. Bots that join, and the Player Cannon
+#   9. Filming
+#   10. Voice and AI
+#   11. Performance
+#   12. The server
+# Search for a group's name (or a setting's) to jump to it. Moving
+# settings about doesn't matter - FightBot finds them by name.
+
+
+# ══════════════════════════════════════════════════════════════════════
+#   1. FIGHTING
+#   How bots fight: their stats, combat switches, retreating, aiming,
+#   potions, water buckets and cobwebs.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Bot stats ───────────────────────────────────────────────────────
+# How often (0.0 to 1.0) a bot jumps to land a critical hit. Like a
+# player, it jumps and swings on the way down - the game decides if it's a
+# crit, so they only happen when a player's would.
+crit-chance: 0.30
+
+# Extra damage from combo hits, as a fraction of the bot's attack damage.
+# 0.0 = off (recommended). The bot's normal attacks already do full weapon
+# damage - anything above 0 stacks on top and feels like a Strength potion.
+combo-damage: 0.0
+
+# Bot vs bot fights: health in HP at which a bot backs off to eat
+retreat-health: 4.0
+
+# Bot health in HP. 20 = exactly a real player (10 hearts), which is the
+# default now that bots ARE players - anything higher makes them soak hits
+# a real player wouldn't survive, and makes things like crystals look weak.
+max-health: 20.0
+
+# Top speed a bot may move, in blocks per tick. A sprinting player is about
+# 0.28 and a walking one about 0.215, so leave this near 0.28 unless you want
+# deliberately fast or slow bots.
+max-move-speed: 0.28
+
+# Ticks between a bot's swings. 12 is roughly a sword's cooldown; lower is
+# faster (and less human), higher is slower.
+attack-interval-ticks: 12
+
+# Bot movement speed (default player walk speed is 0.20)
+move-speed: 0.32
+
+# Base fist damage in HP (1.0 = a player's fist). Held weapons add
+# their own attack damage on top, exactly like players.
+attack-damage: 1.0
+
+# Delay in ticks before a bot equips its next totem after one pops.
+# 20 ticks = 1 second. Real players take a moment to re-totem too.
+auto-totem-delay: 15
+
+# ── Equipment ───────────────────────────────────────────────────────
+# A bot's inventory screen is laid out like a player's: helmet, chestplate,
+# leggings and boots in the top row, then the offhand (totem or shield) and
+# the main hand (its weapon); a row of panes; and what it carries below.
+# Everything else - axe, food, cobwebs, pearls, water bucket, mace, wind
+# charges, elytra, pickaxe - can sit ANYWHERE in what it carries. It finds
+# and uses whatever it has. Shift-click puts things where they belong.
+
+# ── Combat item toggles ──────────────────────────────────────────────
+combat:
+  # With WorldGuard or PvPManager on the server: in a fight, bots don't
+  # follow anyone into a region with PvP off - they wait at its edge till
+  # their target comes out - and leave alone a player PvPManager protects
+  # (PvP switched off, a newbie, just respawned). A bot in a fight, or in
+  # one in the last 15 seconds, can't get into such a region at all: not
+  # walking, running away, knocked back or by pearl - the way PvPManager
+  # walls in a player in combat. Off: they go after their target wherever
+  # it is, as before.
+  avoid-no-pvp: false
+  # Fight back when attacked - standing about, roaming or patrolling. Off: it
+  # takes the hit and carries on. Patrols still go after their route's targets
+  # either way. Both are also switches in each bot's settings.
+  fight-back:
+    players: true   # a player hits it: it hits back (never at creative or spectator players)
+    bots: true      # another bot hits it on purpose: it hits back (a stray sweep doesn't count)
+    mobs: true      # a mob attacks it while it isn't fighting anyone: it hits back until the mob's dead or gone
+  use-shield: true        # raise a shield (held in the offhand) to block hits
+  shield-use: 75          # how often it puts the shield up between its own swings, 0 to 100 (%). A hit it
+                          #   sees coming, it blocks a little more often still. 55 is how it was before 6.1.0
+  use-axe-swap: true      # swap to the axe to break raised shields
+  use-cobwebs: true       # cobwebs at all - when, and how often: the cobwebs section below
+  use-pearls: true        # pearl behind runners, panic-pearl to escape
+  mace-defence: true      # someone coming down at it with a mace: its shield up in time,
+                          #   a sprint out of the way, or a pearl away - not every time
+  mace-dodge: 100         # how hard it tries to get out from under a mace dive, 0 to 400 (%). 100 is how it
+                          #   was before 6.3.0. Higher: it sees the dive from further off, reacts sooner, all
+                          #   but never just stands there, and runs further clear. Lower: the other way. The
+                          #   shield is left as it is - shield-use above is still how often it blocks
+  mace-shield-swap: false # a totem in its offhand and a shield in its pack: for a mace dive the shield
+                          #   comes out, and the totem goes back when they've landed. While the shield
+                          #   is out the totem can't save it - which is why this is off unless you ask
+  use-water-bucket: true  # wash out cobwebs, MLG clutch big falls
+  # A bot caught off guard: the hit that starts a fight takes at most this % of
+  # its health - a mace from the sky included - so it lives to fight back.
+  # Every hit after that is normal. 100: off (a hit can take it all).
+  first-hit-cap: 50
+  # How hard bots hit, as a % of what the game gives the same hit from a
+  # player (the weapon, enchantments, a crit, Strength and the target's
+  # armour all count, exactly as for a player). 100: the same as a player.
+  # Lower it if bots feel too strong - 75 is three quarters. 10 to 200.
+  damage-percent: 100
+  # Players every bot knocks out in a single hit, whatever it's holding - a
+  # challenge mode for anyone who finds the bots too easy. Player names, not
+  # case sensitive. Empty by default.
+  one-hit-players: []
+  pearl-self-damage: true # bots take the 5 HP pearl damage like players
+  pearl-cooldown-seconds: 3  # delay between ender pearl throws
+  # How far a bot pearls to get away from someone - low on health, or from a
+  # mace coming down - in blocks (4 to 35). It aims for ground about that far
+  # off, away from them. 0: a full-strength throw, the way it was (low on
+  # health that can fly 30 blocks or more; from a mace, about 10).
+  pearl-away-distance: 0
+  # Someone stepping into reach gets hit after a moment - somewhere between
+  # these two (20 ticks = 1 second) - not the very tick they arrive.
+  reaction:
+    min-ticks: 3   # the soonest it hits back (20 ticks = 1 second)
+    max-ticks: 7   # the latest
+  miss-chance: 0.08       # now and then a swing misses, mostly at the edge of reach
+  swing-jitter-ticks: 3   # swings come up to this many ticks late, not like clockwork
+  # Swing once the weapon has charged up (the attack bar is full), like a
+  # good player. A half-charged hit does far less, and only a charged one can
+  # be a critical. Matters most for slow weapons: an axe, a mace, a trident.
+  wait-for-charge: true
+  # Axe fighting. A raised shield gets hit with the axe (use-axe-swap), which
+  # knocks it out for 5 seconds - then the bot punishes while it's down.
+  axe:
+    crit-chance: 0.80        # how often it jumps for a critical hit with an axe (0 to 1) -
+                             #   axe players crit nearly every hit, there's time while it charges
+    punish-with-sword: true  # axe as its weapon, a sword in its pack: the sword comes out for
+                             #   the fast hits while their shield is knocked out
+    back-off: true           # its own shield knocked out: it mostly keeps its distance until
+                             #   it's back, rather than trading hits
+
+# ── Retreat tiers (% of max health that triggers each tier) ──────────
+# Tier 1: backpedal while eating, stays in the fight
+# Tier 2: sprints away, eats at a distance, comes back at full health
+# Tier 3: backpedals webbing the chaser, then sprints away to eat
+# Tier 4: panic ender pearl in a random direction, regens, returns
+retreat:
+  tier1-health: 60   # below this % health: steps back and eats, still fighting
+  tier2-health: 40   # below this: runs off to eat, back at full health
+  tier3-health: 25   # below this: cobwebs the chaser, then runs off to eat
+  tier4-health: 12   # below this: pearls away to heal, then comes back
+
+# ── Head movement ───────────────────────────────────────────────────
+# How a bot turns its head while it fights, watches someone or walks around.
+# Outside a fight - marching, guarding, watching someone, walking about - it
+# always turns at a person's pace, and a walking bot looks ahead along the
+# way it's going.
+head-movement:
+  # How it aims in a fight. false (default): the classic style - instant,
+  # locked-on aim. true: it turns at a person's pace and its aim drifts a
+  # little around you, instead of snapping round and staring dead on your
+  # head. It also waits until it's facing you before it swings.
+  natural: false
+  turn-speed: 20      # the fastest it turns, in degrees per tick (20 ticks a second) - in a fight only with natural: true
+  aim-drift: 2.5      # natural only: how far its aim wanders off your head, in degrees (0 = none)
+  # A bot with nothing to do glances about now and then, or looks at someone
+  # close by for a few seconds, like a person standing around. Bots in a
+  # formation, or told where to look with /fb look, stay still.
+  idle-glance: true
+
+# ── Splash potions ──────────────────────────────────────────────────
+# Splash potions anywhere in the bot's inventory get thrown at its own
+# feet for the buff. Bots are real players, so every effect behaves
+# exactly as it would on you - no special cases.
+potions:
+  enabled: true            # false: bots never drink or throw potions
+  cooldown-seconds: 2      # the least time between two potions from one bot
+  health-threshold: 80     # % health below which it considers healing potions
+
+# ── Water bucket handling ───────────────────────────────────────────
+water:
+  web-reaction-ticks: 25   # pause before bucketing itself out of a cobweb
+  pickup-range: 4.0        # must be this close to pick the water back up
+  pickup-timeout-seconds: 12  # after this the water is cleaned up, bucket lost
+
+# ── Cobwebs ──────────────────────────────────────────────────────────
+# How bots use the cobwebs they carry (combat.use-cobwebs, or Cobwebs in a
+# bot's settings, turns them off). Placed like a player places them.
+cobwebs:
+  how-often: 100          # how keen bots are on cobwebs (10 to 400): 100 now and then, 50 half as often;
+                          # past 100 a bot doesn't hold its webs for long - 200 webs someone close within 2 seconds
+  cooldown-seconds: 2     # the least time between one cobweb and the next (at how-often 100)
+  trap-feet: true         # in a fight, a cobweb at the feet of someone close: stuck, they're easy to hit
+  trap-head: true         # then one on top, on their head: they can't swing back until they cut it
+  ahead-of-runners: true  # a cobweb in the way of someone running off
+  while-healing: true     # a cobweb on someone chasing it while it backs off to heal
+  cut-own: true           # stuck in a cobweb with somewhere to go, it cuts its way out with a sword or shears
+
+
+# ══════════════════════════════════════════════════════════════════════
+#   2. WEAPONS AND PVP STYLES
+#   Gear wearing out, then each way of fighting: mace, elytra, spear,
+#   bows, crystals and TNT carts.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Gear durability, mending & replacement ───────────────────────────
+# Bots' armour and weapons now wear out and break like a player's.
+gear:
+  durability: true          # armour/weapons take damage and can break
+  # A bot standing about gets its gear back to full: a bot that hasn't been
+  # fighting (a practice dummy) always has full gear, and one that has been in
+  # a fight gets it back once it's been out of one this long. 0: straight away.
+  repair-after-fight-seconds: 30
+  # Mending: if worn gear has Mending and the bot has bottles o' enchanting
+  # anywhere in its inventory, it throws them down in front of itself and
+  # picks up the XP orbs, like a player. The repair is the game's own: a
+  # bottle is 3-11 XP, each point mends 2 durability, one damaged piece at a
+  # time - so a worn-out netherite set takes over a hundred bottles.
+  # If the gear has no Mending, the bot saves its XP instead.
+  mending: true
+  mending-clicks-per-second: 3.0  # throw rate (higher looks less human)
+  mending-reaction-ticks: 20      # pause before it starts throwing (20 = 1s)
+  mending-throw-speed: 0.5        # how hard it throws each bottle (0.1-1.5)
+  mending-throw-angle: 45         # how far down it throws: 0 straight ahead,
+                                  #   90 straight down at its feet
+  # Bots throw in bursts, then pause to fight back - a player can't sword you
+  # while holding a bottle, and endless throwing would look robotic.
+  mending-burst: 4                # bottles per burst
+  mending-burst-pause-ticks: 40   # pause between bursts (40 = 2s)
+  # Replacing broken gear from the inventory
+  replace-broken: true
+  replace-delay-ticks: 30    # pause before swapping in fresh gear (30 = 1.5s)
+
+# ── Mace PvP (needs a 1.21+ server for maces & wind charges) ─────────
+# Bots fight with the mace the way players do, using the game's own rules:
+# the real wind charge, real elytra flight and firework boosts, and a real
+# mace smash - damage, Density, Breach, Wind Burst and fall damage all come
+# from the game. Give a bot a mace and what it needs for each move:
+#   wind jump:   mace + wind charges. It jumps, throws a wind charge at its
+#                feet, and smashes on the way down.
+#   elytra dive: mace + elytra + firework rockets. It takes off, climbs,
+#                flies over the target, swaps the elytra for its chestplate
+#                and drops onto them. With a Wind Burst mace the smash throws
+#                it back up: the elytra goes back on, a rocket, and round it
+#                comes for another dive - again and again (elytra-combo).
+#                After a miss it goes round again while it has rockets, or
+#                saves itself with a wind charge, a water bucket or the elytra.
+mace:
+  enabled: true         # false: no mace moves (or turn it off per bot in its menu)
+  wind-jump: true       # jump, a wind charge at its feet, smash on the way down
+  elytra: true          # elytra and rockets: climb, fly over, dive and smash
+  elytra-combo: true    # smash, thrown back up by Wind Burst, elytra on, rocket, dive, smash...
+                        #   until one misses or the rockets run out (also: round again after a miss)
+  dive-height: 24       # how high above the target an elytra dive starts (8-60 blocks)
+  wind-chain-max: 3     # smashes in a row when a Wind Burst mace throws it back up
+  cooldown-seconds: 6   # at least this long between mace attacks
+  pearl-launch: true    # from further off: a pearl in next to the target, then a wind jump and smash
+  damage-percent: 100   # a mace hit's damage, % of the game's (on top of combat.damage-percent). 10-200
+  how-often: 100        # how keen it is on the big moves (wind jump, pearl launch, elytra):
+                        #   100 = normal, 50 = half as often, 200 = twice (10-400)
+                        #   (cooldown-seconds above still applies; normal pearls use
+                        #   combat.pearl-cooldown-seconds)
+
+# ── Elytra ──────────────────────────────────────────────────────────
+# A bot with an elytra and firework rockets anywhere in its inventory flies
+# after a player who gets far away - up, across on rockets, and a glide down
+# that lands it beside them - then fights on foot. Someone flying off on an
+# elytra gets chased in the air and hit mid-flight. Its chestplate goes back
+# on when it lands. (Mace bots dive from the elytra instead - see mace:.)
+# Off for now - turn it on to try it (or for one bot, in its settings menu).
+elytra:
+  enabled: false        # true: bots with an elytra and rockets fly in fights
+  chase: true           # fly after a target that runs far off
+  chase-distance: 24    # further off than this, it flies after them (12 to 200)
+  air-fights: true      # chase players flying on an elytra and hit them in the air
+  max-rockets: 8        # rockets it may use on one flight (1 to 64)
+
+# ── Spears (1.21.11 and up) ─────────────────────────────────────────
+# A bot holding a spear fights like a spear player: it keeps 2 to 4 blocks
+# off and jabs (a spear can't hit closer than 2 blocks, and never crits),
+# and now and then lowers it and charges - the faster it's going when it
+# hits, the harder. The jab, the charge and Lunge are all the game's own.
+# With an elytra and rockets too (and elytra: switched on), it charges from
+# the air: at someone on the ground it goes up, out and round, and comes
+# back in low and fast with the spear lowered - again while its rockets
+# last - and at someone flying it goes straight at them. At elytra speed one
+# hit can pop a totem. (A bot with a mace dives with that instead.)
+# Off for now - turn it on to try it (or for one bot, in its settings menu).
+spear:
+  enabled: false        # true: bots fight with a spear the way players do
+  charge: true          # lower the spear and charge now and then
+  lunge: true           # with Lunge on the spear: jab at nothing to dash in at someone a few
+                        #   blocks off, or out again when it's losing (pearls are for further)
+  elytra-charge: true   # spear charges from the elytra (needs elytra: switched on too)
+
+# ── Bows and crossbows ──────────────────────────────────────────────
+# A bot with a bow or crossbow and arrows anywhere in its inventory shoots
+# at players it can't hit with its weapon: further off than min-distance, or
+# somewhere it can't walk to. It draws (or loads), allows for the drop and
+# for where they're running, and lets go. The game does the shot: power,
+# enchantments, tipped arrows and all. When they come close, its weapon
+# comes back out. Also a switch in each bot's settings.
+ranged:
+  enabled: true       # false: bows and crossbows stay in the pack
+  min-distance: 8     # closer than this, it fights hand to hand (3 to 30)
+  max-distance: 40    # further than this, it doesn't try (up to 100)
+  aim-error: 1.0      # how unsteady its aim is, in degrees (0 = perfect)
+
+# ── Crystal PvP ──────────────────────────────────────────────────────
+# Bots fight with end crystals the way players do, with the game's own rules:
+# obsidian down beside their target (or obsidian and bedrock already there),
+# a crystal on top, and a hit - the game's real explosion does the damage,
+# armour, Blast Protection and totems included. Before each crystal the bot
+# works out how hard it would hit them and itself, picks the spot that hurts
+# them most, and never sets one off that would hurt itself too much.
+# Give a bot end crystals, obsidian, and totems for its offhand.
+# Also a switch in each bot's settings.
+crystal:
+  enabled: true          # false: no end crystals, even when it carries them
+  per-second: 8.0        # crystals placed and set off per second (1 to 20). Fast-crystal servers suit 8+
+  range: 5.0             # crystal fighting starts when its target is this close (3 to 8)
+  max-self-damage: 10.0  # never sets off a crystal that would cost itself more than this much health
+                         # (after armour) - unless it would kill its target
+
+# ── Cart PvP (TNT minecarts) ─────────────────────────────────────────
+# Quick as a player who knows it: a cobweb on its target, a rail beside them,
+# a TNT minecart on the rail, and a burning arrow into the cart. A bow with
+# Flame lights its own arrow; otherwise the bot puts fire down just before the
+# cart and shoots through it. A crossbow is kept loaded - it loads as the
+# fight starts and again straight after each shot - so firing is one click.
+# Give a bot TNT minecarts, rails, cobwebs, arrows, a bow or crossbow, and
+# flint and steel (not needed with a Flame bow). Totems help: a cart blast is
+# big. Also a switch in each bot's settings.
+cart:
+  enabled: true          # false: no TNT minecarts, even when it carries them
+  cooldown: 3.0          # seconds between one cart and the next
+
+
+# ══════════════════════════════════════════════════════════════════════
+#   3. ORDERS AND GROUPS
+#   What a busy bot does with a new order, and groups.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Orders ──────────────────────────────────────────────────────────
+# A bot does one task at a time: fighting, roaming or patrolling.
+#   must-stop-first: true  - a busy bot turns down a new order until it's
+#                            stopped (/fightbot stop <bot>). Group orders
+#                            skip busy bots and say who was left out.
+#   must-stop-first: false - a new order just takes over: the bot drops what
+#                            it was doing and starts the new task.
+# Adding a bot to a group: a free bot joins in with whatever the group is
+# doing together (roaming, patrolling, a fight). A busy bot keeps at its own
+# task while must-stop-first is true, and drops it to join in when it's false.
+orders:
+  must-stop-first: true  # true: /fb stop a busy bot before a new order. false: new orders take over
+  # Typing /fb fight, the names offered for who's fought are real players
+  # only. A bot comes after --bot and a group after --group:
+  #   /fb fight Bot1 Steve | /fb fight Bot1 --bot Bot2 | /fb fight Bot1 --group red
+  # true: bots are offered with the players as well, the way it was before.
+  # A bot's name typed where a player goes works either way.
+  bots-in-player-names: false
+  # Spawning where bots already stand. false: each bot goes exactly where you
+  # say - stand on a ledge and /fb spawn one at a time to line them up. Bots
+  # standing about only shove each other if they're actually touching.
+  # true: a new bot (or batch) spreads out round the bots already there,
+  # instead of on top of them. (A batch, /fb spawn 10, always spreads out.)
+  spawn-apart: false
+  # @b in the game's own commands means every bot, the way @a means every
+  # player: /tp @b ~ ~ ~, /effect give @b[distance=..20] speed,
+  # /kill @b[limit=1,sort=nearest]. Every option @a takes works after it.
+  # FightBot's own commands take --distance <blocks> instead:
+  # /fb fight --distance 20 Steve, /fb stop --group red --distance 30.
+  # false: @b is left as it was typed.
+  bot-selector: true
+
+# ── Groups ──────────────────────────────────────────────────────────
+# Players can be in groups too, on a team with bots: /fb groupadd <group>
+# <player>. /fb groupadd <group> --all puts in every bot that isn't in a
+# group yet; --group <other> moves a whole group in.
+groups:
+  # Teammates hitting each other. false: a bot never fights back against
+  # someone in its own group - a player or a bot - and never goes after
+  # them. true: it fights back like it would against anyone.
+  # Off, a bot also won't use a crystal or a TNT cart that would blow up a
+  # teammate.
+  friendly-fire: false
+  # A bot that dies keeps its place in its group. Spawn a bot of that name
+  # again (/fb spawn <name>, or /fb scene load) and it's straight back in the
+  # group. With death.hardcore on, a dead bot spectating is still listed in
+  # its group. /fb remove and /fb groupremove still take bots out.
+  keep-after-death: false
+
+# ══════════════════════════════════════════════════════════════════════
+#   4. MARCHING AND FORMATIONS
+#   Marching in rows, surrounding, and bodyguards.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Marching and surrounding ─────────────────────────────────────────
+# /fb march <bot|--all|--group g> [player|here]: bots march in rows behind
+# you - or, with "here", hold rows on the spot you stand on.
+# /fb surround <bot|--all|--group g> [player|here]: a ring round you.
+# /fb stop (or --stop) ends it. Turning corners isn't perfect - bots swing
+# round to their new places - but in a straight line the rows stay tight.
+formation:
+  march:
+    width: 3            # bots side by side in each row (1 to 64): the middle first, then left and right.
+                        #   /fb formation width <number> changes it in game
+    widen: true         # a crowd marches wider: once the rows would be more than twice as deep as
+                        #   they're wide, they widen to keep it at that (1000 bots: 23 across, 44 deep).
+                        #   false: always "width" across, however long that makes the line
+    rows: 0             # a march this many rows long (1 to 64), as wide as it needs to be for
+                        #   all its bots - width and widen then don't apply. 0: off.
+                        #   /fb formation shows it with heads, and changes it
+    gap: 1              # empty blocks between you and the first row
+    side-gap: 0         # empty blocks between bots in a row (0 = shoulder to shoulder)
+    row-gap: 0          # empty blocks between one row and the next (0 = straight behind)
+    # A layout drawn spot by spot in the web editor (/fb web, Formations: drag
+    # bots onto a grid behind you). Its name here and marches take its shape -
+    # more bots than it has spots form rows behind it. "" (nothing): plain rows,
+    # set by width / rows above. /fb formation picks one in game too.
+    layout: ""
+    # Where marchers look: /fb march <bots> [player] [left|straight|right].
+    # Nothing said: this. player: at the player they march behind (marching a
+    # route or a point, with nobody to follow: straight ahead). straight:
+    # straight ahead, the way they're going. left and right turn their heads
+    # like a parade's "eyes left", look-angle degrees, and a little up.
+    look: player        # player, straight, left or right
+    look-angle: 45
+    look-up: 10         # and this many degrees up
+  surround:
+    radius: 0           # 0: the ring grows with the number of bots. Or a fixed radius in blocks
+    spacing: 1.0        # blocks from one bot to the next round the ring (when radius is 0)
+    min-radius: 2.0     # the smallest the ring gets (when radius is 0)
+  teleport-distance: 0 # 0: never - bots always walk to their place, however far, and wait if it's in another world. A number (16+): further than that from its place (or in another world), a bot is brought there.
+                        #   Marching behind you, a place far down the column counts from further off: this
+                        #   many blocks plus its own distance from you, so the back rows walk round a turn
+  # A bot marching, surrounding or protecting never fights back against the
+  # player it's following - you can turn round and hit your own bots. Anyone
+  # else who hits it still gets a fight. false: it fights back as usual.
+  ignore-leader: true
+  # /fb protect <bot|--all|--group g> [player] [behind|front|side]: bodyguards.
+  # They keep their places round the player like a march, and when someone -
+  # a player or a bot - hurts that player, they all go after them.
+  protect:
+    mode: behind        # behind, front (rows ahead, meeting trouble first) or side (flanking left and right)
+    width: 3            # bots side by side in each row (1 to 9)
+    gap: 1              # empty blocks between the player and the first row
+    look: outward       # outward: they look where the player looks. leader: they look at the player
+    retaliate: true     # false: they only stand guard
+    forget-after: 10    # seconds without a hit on the player before they let the attacker go
+
+# ══════════════════════════════════════════════════════════════════════
+#   5. WALKING, BUILDING AND MINING
+#   How bots get about: gaps and jumps, pillaring and bridging, and
+#   breaking blocks in the way.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Movement ────────────────────────────────────────────────────────
+movement:
+  # A bot sprint-jumps across open ground like a player closing a gap -
+  # faster than running - when someone it's fighting or hunting is 12 blocks
+  # or more away, or running from it, and may jump in for a crit as it
+  # reaches them. Otherwise it runs. Marching, guarding and roaming bots
+  # never sprint-jump.
+  sprint-jump: true
+  # Gaps up to 3 blocks wide (a ditch, a gap on a hillside) are jumped across
+  # instead of walked round, waited at, or bridged. The far side can be a block
+  # higher or lower. A single missing block is just walked round.
+  jump-gaps: true
+  # Wider gaps, up to 12 blocks, while it's after someone: a 4-block gap gets
+  # a block placed at the far end mid-jump (it can fumble that, like a player),
+  # and wider ones are bridged out until 3 blocks are left, then jumped.
+  gap-blocks: true
+
+# ── Building ────────────────────────────────────────────────────────
+# Bots can place blocks to reach you. There are two kinds, each with its own
+# switch - and each can also be set per bot in its settings menu.
+#
+#   pillar - when you're above them and there's no way to walk up, they go
+#            straight up: crouch, look down, jump, place, block after block,
+#            until they're level with you.
+#   bridge - when there's a gap or water between you and no way round it,
+#            they bridge across at their own level. Never from halfway up a
+#            pillar.
+#
+# Either way they only build when they have to: stairs, slopes and paths
+# round a gap always come first. Every block placed is written to the debug
+# log with where and why.
+building:
+  pillar: true    # jump and place blocks under itself to get up to you
+  bridge: false   # place blocks out over gaps and the void to reach you
+  # Building (pillaring, bridging, crossing gaps) with blocks they carry,
+  # using them up like a player - no blocks in its kit, no building. Any full
+  # solid block it carries will do (not obsidian, TNT, or sand and gravel,
+  # which fall).
+  #   kit:   once a bot has been given anything (a kit, gear); a bot with an
+  #          empty inventory builds as it always has
+  #   true:  always - a bot with nothing builds nothing
+  #   false: never - bots build without carrying any blocks
+  only-own-blocks: kit
+  # The blocks bots may build with (or prefer, with only-own-blocks). Each bot
+  # picks one when it spawns and keeps it, so a group of bots won't all build
+  # in the same block. Only solid blocks are allowed - anything else is
+  # skipped with a warning.
+  blocks:
+    - COBBLESTONE
+
+# ── Mining ──────────────────────────────────────────────────────────
+# A bot carrying a pickaxe mines what's in its way, as a player would: the
+# block between it and who it's fighting, and - when there's no way to walk
+# to them, walled in or behind a wall - its way through to them. Anything a
+# player can mine goes; never bedrock, barriers, portals, chests, furnaces,
+# spawners or the like, and never anything a protection plugin forbids.
+# A bot with no pickaxe never breaks anything. A free-roaming bot with one
+# that stops to look at some grass will now and then pull it up, too.
+mining:
+  enabled: true  # false: bots never break blocks, pickaxe or not
+
+# ══════════════════════════════════════════════════════════════════════
+#   6. ROAMING AND PATROLLING
+#   Wandering about, walking routes, patrols, hunting and random
+#   teleports.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Roaming ─────────────────────────────────────────────────────────
+# Bots can walk routes, or wander about freely, when they aren't fighting.
+# Routes are made in-game - /fightbot roaming - and kept in data.yml.
+#
+# Free roamers now and then wander over to a bit of grass and look at it.
+roaming:
+  free-radius: 24           # free roaming stays this many blocks from where it started (more for a crowd that started together, so they have room)
+  # A group sent free roaming walks together behind a leader. true: each bot
+  # in it goes its own way instead (the same as "apart" on the end of
+  # /fb roamingfree; "together" there gets a squad back).
+  free-apart: false
+  pause-min-seconds: 3      # free roaming: how long it stands about between strolls -
+  pause-max-seconds: 8      #   somewhere between these two
+  point-pause-seconds: 1.5  # routes: roughly how long it pauses at each point
+  stop-at-points: true      # routes: false walks straight on through each point, turning as it goes, without stopping
+
+# ── Patrolling ──────────────────────────────────────────────────────
+# A patrol walks a route and goes after that route's targets - only those.
+patrolling:
+  spot-range: 16            # how close a target has to be, in sight, to be spotted
+  give-up-seconds: 10       # how long a target can be out of reach before it goes back to its route
+
+
+# ── Hunting and random teleports ────────────────────────────────────
+# /fb hunt <bots> [player]: bots hunt a player - or whoever is nearest - the
+# way a player would with the locator bar. They know which way, not where:
+# they head that way and fight once they see them. /fb rtp <bots> [world]
+# sends each bot to its own random safe spot in a world.
+rtp:
+  radius: 1000           # how far from the world's spawn /fb rtp goes, in blocks (16 to 30000000) - never past the world border
+
+# ══════════════════════════════════════════════════════════════════════
+#   7. WHO THE BOTS ARE
+#   Names, skins, capes and models, ping, dying, LuckPerms ranks and
+#   anticheats.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Bot identity: names and skins ───────────────────────────────────
+identity:
+  # Stop bots taking the name of anyone who has played on this server.
+  # Bots have UUIDs of their own, so they can never touch a real player's
+  # data either way - this is only about names. Turn it off to let bots use
+  # any name, e.g. on a scripted server. If a real player joins while a bot
+  # has their name, the bot steps aside either way.
+  protect-real-names: true
+
+  # A bot whose name has been on the server before (ArenaBot, say, spawned
+  # again) joins as a returning player instead of a newcomer. Plugins that
+  # greet first-time players, or send them to a first-join spawn world
+  # (Multiverse, EssentialsSpawn), then leave it alone, like anyone coming
+  # back. false: every bot joins as new, as it always has. Names that have
+  # joined are kept in plugins/FightBot/returning.yml.
+  returning-players: false
+
+  # Where names come from when spawning with --random:
+  #   file    - pick from botnames.yml
+  #   random  - make one up, the way players name themselves: jake2011,
+  #             SleepyPanda, itz_ava, NoahPlays (never a short "rare" name)
+  #   numbers - plain numbered names, for anonymous or scripted bots
+  # (number-format below only takes effect when this is set to numbers)
+  # If botnames.yml is empty, or every name in it is already taken, this
+  # falls back to making one up and tells you why in chat.
+  name-source: random
+
+  # Pattern for 'numbers' mode.
+  #
+  # "%<digits>n" means one character picked at random from those digits, and
+  # you can chain as many as you like:
+  #   "%01n"                 -> 0 or 1
+  #   "%0123n"               -> 0, 1, 2 or 3
+  #   "%01n%01n%01n%01n"     -> 1011, 0000, 1100 ...
+  #   "%0123456789n" x3      -> 158, 529, 007 ...
+  #   "%123n%456n"           -> 26, 15, 34 ...
+  # Anything outside a group is kept as typed, so "Bot%01n%01n" gives Bot00,
+  # Bot01, Bot10 or Bot11.
+  #
+  # Mind how many names a pattern can make: "%01n" only has two, so a third
+  # bot gets a made-up name instead, and FightBot tells you why.
+  #
+  # The older whole-number style still works too: "%03d" gives a random
+  # number padded to three digits, like 042 or 517.
+  number-format: "%03d"
+
+  # Optional key for the skin signing service. Not required - it just makes
+  # signing your own images faster and lifts the rate limit. Get one free at
+  # https://mineskin.org if you're converting a lot of skins at once.
+  # Without one, the service takes a few images at a time. When the console
+  # says it asked FightBot to wait, that's normal - FightBot waits and carries
+  # on by itself until every image is signed. /fb skins shows how it's going.
+  skin-api-key: ""
+
+  # Where skins come from:
+  #   random - (the default) FightBot's own skins: about a thousand built in,
+  #            ready at once, plus names
+  #            it finds by itself (find-skins, below). With name-source:
+  #            random, a bot gets one of the found names and wears that
+  #            name's own skin. Until some are found, bots get a made-up name
+  #            and a built-in skin.
+  #   mojang - borrow the skins of the real accounts listed below
+  #   folder - a random skin from plugins/FightBot/skins/ - just drop .png
+  #            skin images (64x64) in there, then /fb reload: they're
+  #            signed automatically, a few seconds each
+  #   none   - plain Steve/Alex
+  skin-source: random
+
+  # A name you type for a bot - /fb spawn Dream, /fb save 1 Dream - that's a
+  # real Minecraft account: the bot wears that account's skin (and cape, if
+  # it has one), whatever skin-source says (except none). Spawn yourself on
+  # an alt and it looks just like you. The first time, FightBot asks Mojang
+  # (a second or so - at most 4, then it spawns with a skin as usual); after
+  # that it's kept in skins/cache/. From the console, a command block or
+  # another plugin it never waits: the bot spawns at once (so a script's next
+  # command finds it) and wears the skin from the next time that name is
+  # spawned. Random names (--random, a number) are
+  # left to skin-source. false: typed names get a skin like any other bot.
+  # A name someone has played here with is still refused while
+  # protect-real-names (above) is on.
+  skin-from-name: true
+
+  # How random finds more skins. While nobody is on the server (bots don't
+  # count), FightBot checks a few names every few seconds and keeps each one
+  # that's a real account with a skin of its own - not Steve, Alex or another
+  # default skin. They're kept in skins/cache/names.txt, so they're never
+  # checked twice. Not every name has a skin, so it finds fewer than one each
+  # time. These are real people's names and skins: if the real owner joins,
+  # the bot steps aside.
+  # The console says when it finds some (at most every 10 minutes), and
+  # /fb skins shows how many it has and what it's doing.
+  find-skins:
+    enabled: true           # finds more skins by itself, from real players' names
+    every-seconds: 10       # how often it looks (5 to 3600)
+    only-when-empty: true   # false: keep looking while players are on too
+    max: 5000               # stops once it has found this many (up to 50000)
+
+  # Capes. Minecraft only shows real capes - ones Mojang gave an account - so
+  # a cape can't be made from a picture. Bots wear capes that come with a
+  # borrowed skin: found names (random) and skin-names accounts (mojang) that
+  # had a cape on. chance is how many bots in 100 get one, as near as the
+  # skins it has allow. enabled: false - bots wear no capes.
+  capes:
+    enabled: true           # false: bots wear no capes
+    chance: 30              # % of bots with a cape (0-100)
+
+  # Customizable Player Models. With the CPM plugin on the server, each new
+  # bot wears one of the models in plugins/FightBot/models/ (.cpmmodel files,
+  # from the CPM editor: File > Export with "Export mode: Model". A .cpmproject
+  # is the editor's save file - export it first). Only players with the CPM
+  # mod see models - everyone else sees the bot's skin.
+  models:
+    enabled: true           # false: bots wear no CPM models
+    chance: 100             # % of bots that wear a model (0-100)
+    # Crash guard, automatic. Right now the Simple Voice Chat and CPM mods crash
+    # some players' games (Minecraft 26.3) when Voice Chat draws an icon above
+    # someone. So with CPM on the server, every bot shows as connected to voice
+    # chat (no icon) and stays quiet - no voice lines, no AI answers.
+    # false: bots talk as normal - only once both mods have fixed it.
+    voice-safe: true
+
+  # Real Minecraft usernames whose skins the bots may wear (mojang mode).
+  # Skins can't be invented - Mojang signs them - so they have to be taken
+  # from accounts that exist. Each --random bot picks one of these at random.
+  #
+  # They're downloaded in the background and cached in skins/cache/, so the
+  # very first bot after you add a name may appear plain; every one after
+  # that is instant. Delete a cache file to re-download it.
+  skin-names: []
+  #  - Notch
+
+  # Skins a bot never wears, from the ones FightBot found - for one you'd
+  # rather not see.
+  # Each is the end of its textures.minecraft.net address (the long code), or
+  # the whole address. /fb skins shows what's going on.
+  skip-skins: []
+  #  - jeb_
+
+# ── Connection quality ──────────────────────────────────────────────
+# A bot has no real connection, so the server measures its ping as 0 - which
+# gives it away instantly in the player list. Instead each bot gets its own
+# ping inside this range, and every few seconds it moves up or down a little
+# from where it was, the way a real connection wanders.
+ping:
+  enabled: true  # bots show a ping in the tab list that changes a little
+  min: 15       # best ping a bot can show, in milliseconds
+  max: 140      # worst it can show - it never goes outside min and max
+  step: 12      # the most it can move in one change
+  change-every-min-seconds: 1   # how often it changes: somewhere between
+  change-every-max-seconds: 4   # these two, picked fresh each time
+
+# ── When a bot dies ─────────────────────────────────────────────────
+# Bots are real players, so the server already prints "X was slain by Y"
+# by itself. Ours would be a second, identical line - hence it's off.
+death:
+  own-message: false   # print FightBot's own death line too (duplicates vanilla)
+  leave-message: true  # "X left the game" when a dead bot's body is cleared - sent like a
+                       #   player's, so plugins that change or hide leave messages do it for bots too
+  sound: true          # the loud wither "boom" every player hears when a bot dies
+  # What a bot drops when it dies:
+  #   auto   - like a player: everything it had, or nothing if the world
+  #            keeps inventories (the keepInventory game rule)
+  #   always - everything it had, even where inventories are kept
+  #   never  - nothing
+  drop-items: auto
+  # Hardcore: a bot that dies stays in the game as a spectator where it fell,
+  # like a player in a hardcore world - still in the tab list, but out of the
+  # fight for good. Handy for last-one-standing events and videos. Each bot
+  # also has its own Hardcore switch (/fightbot settings <bot>).
+  # /fightbot list shows who's dead; /fightbot remove <bot> or
+  # /fightbot remove --dead takes them out. They leave when the server stops.
+  hardcore: false
+
+# ── LuckPerms ───────────────────────────────────────────────────────
+# With LuckPerms on the server, each bot gets its LuckPerms data as it joins,
+# just like a player: its groups, permissions, prefix and suffix. Tab list,
+# name tag and chat plugins show a bot's prefix like anyone else's, a
+# permission check on a bot is answered by LuckPerms, and /lp user <bot>
+# works - give a bot a rank and every bot of that name has it from then on.
+luckperms:
+  enabled: true  # false: FightBot leaves LuckPerms alone
+  # A LuckPerms group every bot is in while it's here, on top of its own -
+  # say "bot", for a [Bot] prefix or permissions only bots have. It's kept in
+  # memory only, never saved. Make the group first: /lp creategroup bot
+  # Empty: bots get the groups a new player gets.
+  group: ""
+
+# ── Anticheats ──────────────────────────────────────────────────────
+# Anticheats judge players by what their game sends, and bots have no game:
+# some flag a bot for "out of order" or missing packets whenever it fights.
+# The NPC tag (the one Citizens and other NPC plugins use) tells anticheats
+# and other plugins that follow it to leave a player alone.
+#   auto  - tag bots when an anticheat is installed (the default)
+#   true  - always tag them
+#   false - never: every plugin treats bots exactly like players
+anticheat:
+  npc-tag: auto  # tag bots as NPCs, so anticheats leave them alone
+
+
+# ══════════════════════════════════════════════════════════════════════
+#   8. BOTS THAT JOIN, AND THE PLAYER CANNON
+#   Bots logging in like players and going after someone (off at first),
+#   and the fishing rod that brings bots in by ender pearl.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Joining: bots that log in by themselves ─────────────────────────
+# Off by default - /fb spawn never changes either way. Turned on, now and
+# then a bot joins the server the way a player does ("X joined the game"),
+# at the spot below, and goes about what it came for: walking to a point,
+# going after a player, or both. /fb join <number> sends that many in
+# straight away (players and command blocks alike) - everything else is set here.
+joining:
+  enabled: false  # true: bots log in by themselves, like players
+  # Bots join by themselves at random times. false: only /fb join sends them in.
+  on-their-own: true
+  # Where they join: spawn (the main world's spawn), or "x y z world"
+  at: spawn
+  # How far round that spot they appear, in blocks, so they don't all turn up in one block
+  spread: 4
+  # A bot joins after a random wait between these, in seconds
+  every-min-seconds: 30
+  every-max-seconds: 120   # the longest wait
+  # Never more than this many joined bots in the game at once (spawned bots don't count)
+  max-bots: 10
+  # Only while at least this many real players are online
+  min-players: 1
+  # A group they're put in as they join - made if it isn't there. "" for none
+  group: ""
+  # A save to join wearing - its gear and settings (1 to 7, see /fb saves). 0: the usual gear
+  save: 0
+  # What they come for:
+  #   point - walk to the point below
+  #   hunt  - go after a player and fight them
+  #   both  - walk to the point, then go after a player
+  objective: hunt
+  # The point, for point and both: "x y z world" (or spawn)
+  point: ""
+  # Who they go after: nearest (the nearest player in their world) or random
+  hunt: nearest
+  # Hit on the way to the point:
+  #   fight  - fight back (as a bot always does), then carry on to the point
+  #   ignore - take no notice and keep going
+  #   run    - run from whoever hit it, then carry on
+  when-attacked: fight
+  # Once it's reached its point, or its fight is over:
+  #   wander - stay and wander about there
+  #   leave  - log off, like a player ("X left the game")
+  #   hunt   - go after a player (again), and keep on until it dies
+  afterwards: wander
+
+
+# ── Player Cannon ───────────────────────────────────────────────────
+# /fb cannon: a screen to pick who comes, how many, their gear and what they
+# do, and a fishing rod called Player Cannon to take. Right-click it: ender
+# pearls fall straight down out of the sky round you, and a bot lands with
+# each one - fighting straight away or just standing there. One use - it
+# breaks like any rod. Nothing is said in chat and no sound plays that a
+# pearl wouldn't make: to everyone else it's players pearling in. Taking rods
+# needs fightbot.cannon; anyone can use one they're given (fightbot.cannon.use).
+# /fb cannon give <player> [how many] [protect|charge|attack|stand] from the
+# console. These are what the screen starts on.
+cannon:
+  enabled: true
+  bots: 5               # new bots a rod brings (1 to max-bots)
+  max-bots: 30          # the most one rod can bring
+  gear: random          # random (a sword or mace loadout each), a ready-made one's name (diamond-sword, mace...) or a kit number
+  on-landing: protect   # protect: they go for whoever you're fighting, and guard you. charge: everyone near you but you.
+                        #   attack: whoever pulled the rod. stand: they land and stand about
+  height: 30            # how high the pearls appear, in blocks (8 to 60) - they fall straight down
+                        #   round you. Under a roof they come from as high as it allows; with no room, bots just arrive
+  spread: 4             # how far round you they land, in blocks (2 to 16) - a big crowd spreads a little wider
+  arrive-seconds: 1.5   # the pearls come down one after another over this long (0: all at once, up to 10)
+
+# ══════════════════════════════════════════════════════════════════════
+#   9. FILMING
+#   Recording and replaying, saved scenes, and emotes.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Recording and replaying ─────────────────────────────────────────
+# /fb record <name> copies you exactly - where you are, where you look,
+# crouching, sprinting, every swing - a tick at a time, until /fb record stop.
+# /fb replay <bot|--all|--group g> <name> [here] [loop] has bots act it out,
+# the same on every take. here: from where each bot stands, instead of where
+# you recorded it. Recordings are kept in plugins/FightBot/recordings/.
+recording:
+  max-seconds: 600      # the longest a recording can be (10 to 3600)
+  fight-back: false     # a bot acting one out that gets hit: false stays on its marks;
+                        #   true fights back, then goes back to where it was in the recording
+  # When a bot gets to the end of a recording: walk-back (it walks back to
+  # where the recording starts, ready for the next take), teleport-back (it's
+  # put back there at once) or stay (it stays where the recording ends). A
+  # loop starts again from there.
+  at-end: walk-back
+
+# ── Saved scenes ────────────────────────────────────────────────────
+# /fb scene save <name> writes down every bot (or, with --group <group>,
+# the bots in those groups): where each stands and faces, gear, skin,
+# health, settings, group, and what it's doing (a formation, a route, a
+# replay, where it's looking). /fb scene load <name> brings back the ones
+# that aren't in the game, between takes. Kept in plugins/FightBot/scenes/.
+
+# ── Playing as a bot (/fb control) ──────────────────────────────────
+# /fb control <bot> lets you play as a bot; /fb control --stop hands it back.
+control:
+  go-back: true          # handing it back puts you where you were before you took it over (false: you stay where the bot is)
+  stop-hands-back: true  # /fb stop while you're controlling a bot hands it back (typed again, it stops every bot)
+  voice: true            # with Simple Voice Chat: what you say in voice chat comes out of the bot you're playing as (not in a voice chat group)
+
+# ── Actions (/fb action) ────────────────────────────────────────────
+# /fb action <bots> jump (or crouch, left-click, right-click) does it once.
+# Put "repeat" on the end and it does it over and over - the same command
+# again, /fb action <bots> stop or /fb stop ends it.
+actions:
+  repeat: false  # true: jump, crouch and the clicks always keep going till stopped ("once" on the end: just the one)
+
+# ── Emotes ──────────────────────────────────────────────────────────
+# Emotecraft emotes on bots: /fb emote <bot|--all|--group <group>> <emote>.
+# Needs the Emotecraft plugin; only players with the Emotecraft mod see them.
+# Put emote files (.json or .emotecraft) in plugins/FightBot/emotes/ - the
+# server's own emotes work too. /fb emote list shows them all.
+emotes:
+  enabled: true  # false: bots never emote
+
+
+# ══════════════════════════════════════════════════════════════════════
+#   10. VOICE AND AI
+#   Voice lines over Simple Voice Chat, and talking with bots.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Voice lines (Simple Voice Chat) ─────────────────────────────────
+# With the Simple Voice Chat plugin on the server, bots show up in voice chat
+# like players - and talk. Players hear them with the voice chat mod, and can
+# turn bots up or down with the "FightBot" slider in voice chat's volume
+# settings. Without Simple Voice Chat, none of this does anything.
+# /fightbot vc shows how it's going.
+voice:
+  enabled: true  # false: bots never talk in voice chat
+  # Bots say FightBot's own lines by themselves - "hello" as they join, a
+  # word when they pull up grass while roaming, and so on. false: they only
+  # talk when a line is played with /fightbot vc (or the web editor).
+  on-their-own: true
+  # How bots show up in voice chat. Each bot gets one when it joins - like
+  # real players, some talk, some are deafened (voice chat turned off - the
+  # crossed-out speaker), and some don't have the mod at all. Chances out of
+  # the total. Change one bot: /fightbot vc presence <bot|--all> <talks|deafened|no-mod>
+  presence:
+    talks: 50      # talk in voice chat
+    deafened: 20   # have voice chat turned off
+    no-mod: 30     # don't have the mod
+  # How far away bots are heard, in blocks. 0 = voice chat's own distance.
+  distance: 0
+  # How loud bots are: 1.0 = normal, 0.5 = half as loud, 2.0 = twice. Every
+  # line is first evened out to the same loudness, so a loud recording
+  # doesn't blare. Never louder than clipping. (Players can also turn bots
+  # down with the "FightBot" slider in voice chat's settings.)
+  volume: 1.0
+  # A bot waits at least this long between two lines, in seconds...
+  min-gap-seconds: 4
+  # ...and at most this many bots talk by themselves at the same time.
+  max-talking: 3
+  # The moments bots say FightBot's own lines by themselves. Each line has
+  # its own odds ("hello" is 1 in 50 joins, "am_i_muted" 1 in 200), and
+  # chance here is a % of those: 100 = as FightBot sets them, 200 = twice as
+  # often, 0 = never. cooldown: seconds before that bot talks about it again.
+  # Only bots that "talk" say anything - deafened bots and bots without the mod
+  # stay quiet, even when a line is played by command.
+  #   spawn - as it joins        grass - it pulls up grass while roaming
+  #   greet - a player walks up  fight - a fight starts
+  #   kill  - it beats someone   low-health - it's nearly dead (under 30%)
+  #   totem - it pops a totem    death - as it dies
+  #   idle  - now and then, when it isn't fighting (a roll every 10 seconds)
+  triggers:
+    spawn:      { enabled: true, chance: 100, cooldown: 0 }
+    grass:      { enabled: true, chance: 100, cooldown: 60 }
+    greet:      { enabled: true, chance: 100, cooldown: 120 }
+    fight:      { enabled: true, chance: 100, cooldown: 45 }
+    kill:       { enabled: true, chance: 100, cooldown: 15 }
+    low-health: { enabled: true, chance: 100, cooldown: 30 }
+    totem:      { enabled: true, chance: 100, cooldown: 10 }
+    death:      { enabled: true, chance: 100, cooldown: 0 }
+    idle:       { enabled: true, chance: 100, cooldown: 60 }
+  # Sound files you add: put .mp3 or .wav files in plugins/FightBot/voice/ and
+  # play one with /fightbot vc <file name>. These are never said by a bot on
+  # its own. Everyone near the bot is told it's a sound file added by this
+  # server and who played it, and each play is written to voice/plays.log -
+  # so nobody can pass a file off as something FightBot's bots say.
+  # Playing them needs the fightbot.voice.custom permission (ops have it).
+  custom:
+    enabled: true     # false: /fightbot vc can't play your own sound files
+    max-seconds: 15   # longer files are cut off here (up to 60)
+    # The chat note "<bot> is playing "<file>" - a sound file added by this
+    # server, played by <player>". false: no note, and everyone near the bot
+    # hears the file. Every play is still written to voice/plays.log.
+    show-who-played: true
+
+# ── AI chat ─────────────────────────────────────────────────────────
+# Talk to a bot in Simple Voice Chat - stand by it, face it, say something -
+# and it answers out loud in a word or two ("Hi", "Good"), then gets back to
+# fighting. It uses your own key for Groq, Google Gemini or OpenAI, so it
+# costs what they charge (Groq and Gemini have free plans, with limits - the
+# newest Gemini models may need billing on). When the key hits its limit,
+# bots just stop answering. Players are told, the first time they're near a
+# bot, that what they say to it goes to that company. Only bots that talk in
+# voice chat answer (voice.* settings). /fb ai shows how it's going, and
+# /fb ai watch shows each step live in your chat while you test it.
+ai:
+  enabled: false          # true: players can chat with bots (needs an api-key below)
+  provider: groq          # groq (has a free plan), gemini or openai
+  api-key: ""             # from console.groq.com (Groq), aistudio.google.com (Gemini) or platform.openai.com
+  model: ""               # blank: the default (gemini-3.8-flash / gpt-4o-mini / openai/gpt-oss-20b on Groq)
+  voice: ""               # blank: Kore (Gemini) / alloy (OpenAI) / autumn (Groq)
+  range: 8                # talk to a bot this close (2-32 blocks), facing it
+  replies: 0              # answers per chat (0: no limit) - then it just fights
+  limited-replies: 2      # for players with fightbot.ai.limited: give that to your default
+                          # group and take it off a rank you sell, and only they're limited
+  words: 3                # longest answer, in words (1-12)
+  chat-again-minutes: 5   # after this long, a new chat can start
+  max-per-hour: 120       # answers a server gives an hour at most (0: no limit)
+  # Only if a company renames its models (blank: FightBot's defaults):
+  listen-model: ""        # speech-to-text (gpt-4o-mini-transcribe / whisper-large-v3-turbo on Groq)
+  speak-model: ""         # text-to-speech (gemini-3.8-flash-tts / gpt-4o-mini-tts / canopylabs/orpheus-v1-english)
+  base-url: ""            # OpenAI-compatible address (blank: api.openai.com)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#   11. PERFORMANCE
+#   Keeping a server with lots of bots running smoothly.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Performance ─────────────────────────────────────────────────────
+# A bot is a real player to the server, and the server does a lot for every
+# player that a bot has no use for. These keep bots light. /fightbot reload
+# applies a change to the bots already in the game too.
+performance:
+  # Mobs spawn around players - and each player raises how many there can be.
+  # false: mobs don't spawn around a bot on its own (they still do around real
+  # players), so fifty bots don't fill the world with monsters. (Paper and
+  # Purpur. On Spigot mobs spawn round bots as they do round players.)
+  mob-spawning: false
+  # How far around each bot the world is kept loaded, and how far it keeps
+  # running (mobs moving, crops growing), in chunks. A player needs these for
+  # what they see; a bot only needs the ground near it. 2 to 32, or "server"
+  # to give bots the same as players. (Paper and Purpur.)
+  view-distance: 4
+  simulation-distance: 3  # how far round each bot the world keeps running, in chunks (2 to 32)
+  # The locator bar (1.21.6+) shows where other players are. The server works
+  # it out again for every player each time anyone moves, so a crowd of bots
+  # costs a lot. false: bots aren't on it, and it's as cheap as before.
+  locator-bar: false
+  # A bot with nothing to do - standing still, not hurt, nobody near it to
+  # fight - is checked twice a second instead of twenty times. It wakes up
+  # the moment it's hit, pushed or given something to do.
+  rest-when-idle: true
+  # A bot no player is within 24 blocks of makes no footstep sounds. For every
+  # step of every player the server works out who should hear it, so a big
+  # army walking together spent a lot of each tick on sounds nobody heard.
+  # With a crowd round a player, the 16 bots nearest them make the footsteps.
+  quiet-steps: true
+  # A free-roaming bot with no player near enough to see it (64 blocks, or
+  # the server's own entity range for players if that's further) stands
+  # where it is instead of strolling about, and costs next to nothing, until
+  # someone comes near. Nobody can see the difference. Players in spectator
+  # count, so a camera filming from far off still sees them roam.
+  unseen-roamers-rest: true
+  # The most bots each player is sent: the ones nearest them. 0: all of them.
+  # A player's game has to draw every bot it's sent, so a few hundred bots
+  # round someone cost them frames however fast the server is. With 150 here,
+  # a player in a crowd of 1000 gets the 150 nearest, and the rest as they
+  # come closer. The others still fight, march and count; that player just
+  # isn't sent them, and they're off that player's tab list meanwhile.
+  # 20 or more.
+  max-visible-bots: 0
+
+# ══════════════════════════════════════════════════════════════════════
+#   12. THE SERVER
+#   Messages, the web editor, proxies, updates, reloads, restarts and
+#   the debug log.
+# ══════════════════════════════════════════════════════════════════════
+
+# ── Messages ────────────────────────────────────────────────────────
+messages:
+  # FightBot tells staff (anyone with fightbot.use) in chat when something
+  # happens by itself: a bot was kicked or can't be hit, an update is out,
+  # the web editor changed something... false: those only go to the console -
+  # handy on scripted or recorded servers. Replies to your own commands still
+  # show, and so does the label on a sound file a server added (that's what
+  # stops anyone passing one off as something FightBot's bots say).
+  staff-notices: true
+  # When Funnyfam14, FightBot's author, joins, he's told - privately, in
+  # chat - that this server runs FightBot: its version, how many bots are
+  # in, and any update waiting. Nobody else sees it, it gives no
+  # permissions, and nothing leaves the server. false to turn it off.
+  author-notice: true
+
+# ── Web editor ──────────────────────────────────────────────────────
+# Change FightBot from your browser: settings, skins, voice lines, the bots
+# that are on, and the debug logs. Type /fightbot web in game for a link to
+# the editor at fightmc.xyz. The link is a one-off: it stops working when
+# it's left unused, after max-hours, or on /fightbot web stop - and anyone
+# who has it can change FightBot here, so keep it to yourself.
+# Nothing on the server needs opening up: the server and the page both
+# connect out to a relay, and everything is encrypted with a key that's only
+# in your link - the relay can't read any of it.
+# Needs the fightbot.web permission (ops have it).
+web:
+  enabled: true       # false: /fb web is turned off
+  idle-minutes: 30    # a link stops working after this long unused
+  max-hours: 4        # ...and after this long, however much it's used
+  read-only: false    # true: the editor can look at everything, but change nothing
+  # Where the editor and its relay are. auto: as fightmc.xyz says.
+  relay: auto
+  page: auto  # the editor page (auto: as fightmc.xyz says)
+
+# ── Network: Velocity and BungeeCord ────────────────────────────────
+# Put the same FightBot jar in your proxy's plugins folder (Velocity or
+# BungeeCord) as well as on each server. The servers link up to it by
+# themselves, and then:
+#   - bots count in the network's player count and the server list's hover
+#     list (and, on Velocity, the tab list - see the proxy's own config)
+#   - /fbp on the proxy runs FightBot commands on any server
+#   - /fb send <bot> <server> moves a bot to another server, gear and all
+#   - kits and saves can be shared between servers (below)
+# /fb network shows how it's going. On a server without a proxy in front,
+# none of this runs.
+network:
+  enabled: auto        # auto: only when this server is behind a proxy. true / false
+  proxy: auto          # where FightBot on the proxy is. auto: this machine, or what the
+                       #   proxy says. Or "address:port" - the proxy's link-port, 25599
+  secret: ""           # empty: Velocity's forwarding secret is used (modern forwarding).
+                       #   BungeeCord: paste what's in the proxy's
+                       #   plugins/FightBot/link-secret.txt
+  server-name: ""      # this server's name in the proxy's config - only if the proxy
+                       #   can't tell which server this is by itself
+  share-kits: false    # true: kits are the same on every server that shares them
+  share-saves: false   # true: the same for saves
+                       #   (what's here before the first share is kept in old-kits/)
+  share-skins: false   # true: skin images and signed skins (skins/) are shared too -
+                       #   one added here goes to every server that shares them
+  share-voice: false   # true: the same for your voice lines (voice/, .mp3 and .wav)
+                       #   (a file replaced or deleted by another server is kept in old-files/)
+
+# ── Updates ─────────────────────────────────────────────────────────
+# When the server starts, and twice a day after, FightBot asks Modrinth for
+# the newest FightBot release made for your Minecraft version. A newer one is
+# downloaded into the server's update folder (plugins/update), checked, and
+# goes in by itself the next time the server starts - nothing changes while
+# it's running. Admins (anyone with fightbot.use) are told in chat.
+# /fb update looks right away, whatever check is set to.
+updates:
+  check: true       # false: FightBot never looks by itself
+  download: true    # false: only tell admins - download it yourself
+  betas: false      # true: betas count too - the newest of either is downloaded
+
+# ── Plugin reloads ──────────────────────────────────────────────────
+# Reloading FightBot while the server keeps running - PlugManX's
+# /plugman reload FightBot, /reload, or turning it off and on again - used
+# to leave bots standing about uncontrolled. Now every bot is written down
+# first and comes straight back afterwards: same place, skin, gear, health,
+# settings and group, still doing what it was (roaming, patrolling,
+# fighting). A server restart still starts with no bots, as always.
+reload:
+  keep-bots: true      # false: a reload just removes the bots
+
+# ── Restarts ────────────────────────────────────────────────────────
+# Bots written down as the server stops come back as it starts up again:
+# where they stood, with their inventory, skin, health, settings and group.
+# Not what they were doing - a fight or a route starts afresh. They come
+# back a few at a time, so a big army doesn't hold the start up, and if the
+# server goes down while bringing them back, the next start doesn't try
+# again (they're kept in restart-bots-failed.yml).
+restart:
+  keep-bots: true      # false: a restart starts with no bots, as before
+  max-bots: 100        # at most this many come back (0 = all of them)
+  per-second: 10       # how many come back each second (1 to 200)
+  # A bot in a world that isn't loaded yet when the server starts (a world
+  # plugin such as Multiverse loads it a little later) waits for it this many
+  # seconds, and comes back in it as soon as it loads (0 to 3600).
+  wait-for-world: 120
+  # Still not loaded after that: spawn (it comes back at the main world's
+  # spawn instead), remove (it isn't brought back), or wait (it keeps
+  # waiting, however long - for a world that only loads when someone goes
+  # there; it's kept over the next restart too).
+  missing-world: spawn
+  # For this many seconds after a bot comes back from before a restart,
+  # other plugins can't move it. Plugins that send new players to spawn -
+  # EssentialsX, Multiverse's first-spawn, lobby plugins - see every bot as a
+  # new player, and moved bots that had just come back in their own world to
+  # the main world's spawn. The console names the plugin (0 to 60; 0: off).
+  # FightBot's own commands still move them, and bots you spawn aren't held.
+  hold-in-place-seconds: 10
+  # The bots are also written down every so many seconds while the server
+  # runs, so they come back even if it crashes or is killed without a proper
+  # stop (10 to 3600; 0: only when the server stops).
+  save-every-seconds: 60
+
+# ── Debug logging ───────────────────────────────────────────────────
+# Writes a full account of what every bot does to plugins/FightBot/debug/,
+# one file per server session: who it fought, where it stood, what it chose
+# and why. Leave this off unless you're chasing a bug - a busy fight writes
+# a lot of lines. Toggle live with /fightbot debug on|off.
+debug:
+  enabled: false  # true: write what bots decide to plugins/FightBot/debug/
+  # What else a debug log records about your server, to help find a problem.
+  # Nothing is ever sent anywhere: it's a file on your server, and it's up to
+  # you who you show it to. Turn these off to leave them out of the log.
+  include:
+    # The plugins your server runs, and their versions (and which of them run
+    # code when a player joins, which slows spawning bots down).
+    plugins: true
+    # How fast your server runs: TPS, how long a tick takes, a line every
+    # minute, and a note when the server freezes - with which plugin (or the
+    # server itself) it was busy in, and each minute where its time went.
+    tps: true

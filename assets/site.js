@@ -1,7 +1,7 @@
 /* Paper Fight Bot. Change CONFIG and every page follows. */
 
 const CONFIG = {
-  version:  "6.4.10",      // what the pages say until Modrinth answers (see liveFromModrinth)
+  version:  "6.4.11",      // what the pages say until Modrinth answers (see liveFromModrinth)
   downloads: "9.9K",
   minecraft: "1.20.5+",
   modrinth: "https://modrinth.com/plugin/paper-fight-bot",
@@ -18,27 +18,42 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-discord]").forEach(el => el.href = CONFIG.discord);
   document.querySelectorAll("[data-libs]").forEach(el => el.href = CONFIG.libs);
 
-  const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-  document.querySelectorAll(".bar nav a").forEach(a => {
-    const href = a.getAttribute("href");
-    if (href && href.toLowerCase() === here) a.setAttribute("aria-current", "page");
-  });
-
   document.querySelectorAll("[data-year]").forEach(el => el.textContent = new Date().getFullYear());
 
-  mobileMenu();
   wikiFollow();
   liveFromModrinth();
 });
 
-/* On a phone the links don't fit in the bar, so they fold away behind a Menu
-   button and open as a panel under it. Escape, a tap outside or picking a
-   link closes it. Without this script the links simply scroll in the bar. */
-function mobileMenu() {
-  const bar = document.querySelector(".bar");
-  const inner = bar && bar.querySelector(".bar-in");
+/* The bar along the top.
+   - The page you are on sits in a lens of brighter glass, drawn into its link
+     in the HTML so it is there on the first frame (and flows across to the new
+     link when you change page, where the browser does view transitions). With
+     a mouse, the lens slides after the pointer.
+   - Drop-downs (Admin, your account) live in .bar-tools, filled in by app.js.
+   - When the links don't fit, they fold away behind a Menu button and open as
+     a panel under the bar. Escape, a tap outside or picking a link closes it.
+     Without this script the links simply scroll in the bar. */
+const bar = (() => {
+  const el = document.querySelector(".bar");
+  const inner = el && el.querySelector(".bar-in");
   const nav = inner && inner.querySelector("nav");
-  if (!nav || inner.querySelector(".menu-btn")) return;
+  if (!nav || inner.querySelector(".menu-btn")) return null;
+
+  // the page you're on, for pages whose HTML doesn't say (and its lens)
+  if (!nav.querySelector('[aria-current="page"]')) {
+    const here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+    const a = [...nav.querySelectorAll("a")].find(x => (x.getAttribute("href") || "").toLowerCase() === here);
+    if (a) a.setAttribute("aria-current", "page");
+  }
+  const home = nav.querySelector('[aria-current="page"]');
+  if (home && !home.querySelector(".nav-hl")) {
+    const hl = document.createElement("span");
+    hl.className = "nav-hl"; hl.setAttribute("aria-hidden", "true");
+    home.prepend(hl);
+  }
+
+  const tools = inner.querySelector(".bar-tools") || Object.assign(document.createElement("div"), { className: "bar-tools" });
+  if (!tools.parentNode) nav.after(tools);
   nav.id = nav.id || "site-nav";
   const btn = document.createElement("button");
   btn.type = "button";
@@ -46,17 +61,95 @@ function mobileMenu() {
   btn.setAttribute("aria-expanded", "false");
   btn.setAttribute("aria-controls", nav.id);
   btn.innerHTML = '<span class="menu-ico" aria-hidden="true"></span>Menu';
-  inner.insertBefore(btn, nav);
-  bar.classList.add("has-menu");
-  const set = open => {
-    bar.classList.toggle("open", open);
+  tools.after(btn);
+
+  const closeAll = except => document.querySelectorAll(".dd.open").forEach(d => {
+    if (d === except) return;
+    d.classList.remove("open");
+    const b = d.querySelector(".dd-btn");
+    if (b) b.setAttribute("aria-expanded", "false");
+  });
+  const setMenu = open => {
+    el.classList.toggle("open", open);
     btn.setAttribute("aria-expanded", String(open));
+    if (open) closeAll();
   };
-  btn.addEventListener("click", () => set(!bar.classList.contains("open")));
-  document.addEventListener("keydown", e => { if (e.key === "Escape" && bar.classList.contains("open")) { set(false); btn.focus(); } });
-  document.addEventListener("click", e => { if (!inner.contains(e.target)) set(false); });
-  nav.addEventListener("click", e => { if (e.target.closest("a")) set(false); });
-}
+  btn.addEventListener("click", () => setMenu(!el.classList.contains("open")));
+  nav.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
+
+  // drop-downs: a .dd holds a .dd-btn and its .dd-panel
+  document.addEventListener("click", e => {
+    const b = e.target.closest(".dd-btn");
+    if (b) {
+      const d = b.closest(".dd");
+      const open = !d.classList.contains("open");
+      closeAll(d);
+      d.classList.toggle("open", open);
+      b.setAttribute("aria-expanded", String(open));
+      if (open) {
+        setMenu(false);
+        const first = d.querySelector(".dd-panel input, .dd-panel .dd-item");
+        if (first && matchMedia("(pointer:fine)").matches) setTimeout(() => first.focus({ preventScroll: true }), 60);
+      }
+      return;
+    }
+    // where the click was when it happened: a drop-down that redraws itself
+    // (Sign in -> Log in) has already taken the clicked button off the page
+    const path = e.composedPath ? e.composedPath() : [e.target];
+    if (!path.some(n => n.classList && n.classList.contains("dd"))) closeAll();
+    if (!path.includes(inner)) setMenu(false);
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Escape") return;
+    const d = document.querySelector(".dd.open");
+    if (d) { closeAll(); const b = d.querySelector(".dd-btn"); if (b) b.focus(); return; }
+    if (el.classList.contains("open")) { setMenu(false); btn.focus(); }
+  });
+
+  // fold when the links don't fit: measured with them out, in one go, so nothing flickers
+  // (with every animation held, or the menu would fade in and out each time)
+  let lastW = -1;
+  const fit = force => {
+    if (force !== true && innerWidth === lastW) return;   // a phone's address bar sliding away is only height
+    lastW = innerWidth;
+    const was = el.classList.contains("folded");
+    el.classList.add("measuring");
+    el.classList.remove("folded");
+    const need = nav.scrollWidth, have = nav.clientWidth;
+    const fold = need > have + 1 || innerWidth < 520;
+    el.classList.toggle("folded", fold);
+    void nav.offsetWidth;
+    el.classList.remove("measuring");
+    if (!fold) setMenu(false);
+    if (was !== fold) lensTo(null);
+  };
+
+  // the lens follows a mouse along the links, and settles back on yours
+  const lens = home && home.querySelector(".nav-hl");
+  const fine = matchMedia("(hover:hover) and (pointer:fine)");
+  const lensTo = a => {
+    if (!lens) return;
+    if (!a || a === home || el.classList.contains("folded") || a.classList.contains("nav-dl")) {
+      lens.style.transform = ""; lens.style.width = ""; return;
+    }
+    lens.style.width = a.offsetWidth + "px";
+    lens.style.transform = "translateX(" + (a.offsetLeft - home.offsetLeft) + "px)";
+  };
+  if (lens) {
+    nav.classList.add("lens");
+    nav.addEventListener("pointerover", e => { if (fine.matches) lensTo(e.target.closest("a")); });
+    nav.addEventListener("pointerleave", () => lensTo(null));
+    nav.addEventListener("focusin", e => { if (e.target.matches(":focus-visible")) lensTo(e.target.closest("a")); });
+    nav.addEventListener("focusout", () => lensTo(null));
+  }
+
+  fit(true);
+  addEventListener("resize", () => fit(), { passive: true });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fit(true));
+  // app.js says when the drop-downs change size (Sign in -> your name)
+  addEventListener("pfb:bar", () => fit(true));
+  return { fit, closeAll };
+})();
 
 /* The newest release and the download count, straight from Modrinth's public
    API, so the home page never says an old version again. Only the numbers are

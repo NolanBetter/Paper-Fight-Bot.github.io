@@ -7,9 +7,13 @@ stylesheet, ES modules.
     install.html    installation and first fight
     compare.html    FightBot beside FakePlayer and VexBot
     ai.html         setting up AI voice chat with Groq
-    wiki.html       the FightBot wiki, 6.4.10
+    wiki.html       the FightBot wiki, 6.4.11
     faq.html        common questions
     updates.html    every release and its changelog, read live from Modrinth
+    download.html   the download page: the right jar for your server, and every version (Modrinth's API)
+    extensions.html skin packs and configs people share (Extensions on the way)
+    project.html    one skin pack or config: ?id=<its id>
+    approvals.html  owner only: uploads that were taken down, fixed and sent back
     report.html     bug report form
     reports.html    your reports, and the reply threads
     admin.html      owner only, edits the FAQ and wiki in Markdown
@@ -32,6 +36,16 @@ stylesheet, ES modules.
       defaults.js        the FAQ and wiki the site ships with, as data
       md.js              the Markdown renderer
       updates.js         the Updates page: Modrinth's version list, grouped and searchable
+      download.js        the download page
+      ui.js              shared bits: the sliding lens for segmented picks, dates, version sorting
+      ext-data.js        Extensions: Firestore reads and writes, and the checks on every file
+      ext-form.js        Extensions: the share / change details form, and small confirm boxes
+      extensions.js      Extensions: browsing, Yours, sharing
+      project.js         Extensions: one pack or config (3D skins, the zip, config changes, approvals)
+      approvals.js       Admin -> Approvals
+      fbconfig.js        reads FightBot's config.yml: what a shared config changes, and blanking secrets
+      fightbot-config.yml  FightBot's own config.yml, for comparing shared configs against
+      zip.js             a .zip made in the browser, for Download all
       app.js             accounts, nav, reports, threads, content editing
       fightbot-web.js    talks to a Minecraft server for editor/ — leave as is
       logo.png           the square mark

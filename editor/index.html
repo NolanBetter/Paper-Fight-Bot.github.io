@@ -31,7 +31,7 @@
     <nav>
       <a href="../wiki.html">Wiki</a>
       <a href="../faq.html">FAQ</a>
-      <a href="../index.html">Back to site</a>
+      <a href="../index.html">Home</a>
     </nav>
   </div>
 </header>
@@ -53,9 +53,14 @@
   <div class="strip ed-strip">
     <div class="wrap strip-in">
       <span id="conn" class="ed-pill wait"><span class="sword" aria-hidden="true"></span>Connecting&hellip;</span>
-      <span id="server" class="ed-server"></span>
+      <button type="button" class="ed-brief" id="brief" aria-expanded="false" aria-controls="details" hidden>
+        <span id="briefText"></span><span class="chev" aria-hidden="true"></span><span class="vh">More about the server</span>
+      </button>
       <span id="ends" class="ed-ends"></span>
       <button class="btn ghost sm" id="finish" hidden>Close</button>
+    </div>
+    <div class="ed-details" id="details">
+      <div class="ed-details-in"><span id="server" class="ed-server"></span><span id="endsFull" class="ed-server ed-ends-full"></span></div>
     </div>
   </div>
 
@@ -250,7 +255,7 @@
           Clicking a square adds or takes out a bot too.</p>
         <div class="fm-tray" id="fmTray">
           <button class="fm-source" id="fmSource" type="button" aria-label="A bot to drag onto the grid"><span class="fm-plus" aria-hidden="true">+</span></button>
-          <p id="fmTrayText">Drag from here onto a lit square. Bots have to touch, side by side or corner to corner.</p>
+          <p id="fmTrayText">Drag from here onto a lit square.</p>
         </div>
         <div class="fm-stage" id="fmStage">
           <div class="fm-leader" aria-hidden="true"><span class="fm-arrow"></span><span class="fm-you">You</span><small>walking this way</small></div>
@@ -274,12 +279,12 @@
           <div class="fm-field">
             <span class="lab">Gap between rows: <span class="val" id="fmRowVal"></span></span>
             <input type="range" id="fmRow" min="0" max="8" step="0.5" aria-label="Gap between rows, in blocks">
-            <label class="ed-check"><input type="checkbox" id="fmRowServer"> The server's setting</label>
+            <label class="ed-check tick"><input type="checkbox" id="fmRowServer"><span class="tick-box" aria-hidden="true"></span>The server's setting</label>
           </div>
           <div class="fm-field">
             <span class="lab">Gap between bots in a row: <span class="val" id="fmSideVal"></span></span>
             <input type="range" id="fmSide" min="0" max="8" step="0.5" aria-label="Gap between bots in a row, in blocks">
-            <label class="ed-check"><input type="checkbox" id="fmSideServer"> The server's setting</label>
+            <label class="ed-check tick"><input type="checkbox" id="fmSideServer"><span class="tick-box" aria-hidden="true"></span>The server's setting</label>
           </div>
           <div class="fm-field">
             <span class="lab">Start again from</span>

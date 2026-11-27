@@ -112,7 +112,6 @@ const stamp = value => {
 // computer instead of living in one browser.
 
 const SEEN_CAP = 300;
-let navDot = null;
 let unreadStop = null;
 
 function seenMap() {
@@ -144,11 +143,23 @@ function isNew(id, r) {
 function paintUnread() {
   const n = state.unread.size;
   const label = n > 9 ? "9+" : String(n);
+  const owner = isOwner();
 
-  if (navDot) {
-    navDot.textContent = label;
-    navDot.style.display = n ? "inline-block" : "none";
-    navDot.title = n === 1 ? "1 report is waiting on you" : n + " reports are waiting on you";
+  for (const c of navCounts) {
+    c.n.textContent = label;
+    c.n.hidden = !n || c.owner !== owner;
+  }
+  if (approvalCount) { approvalCount.textContent = pending > 9 ? "9+" : String(pending); approvalCount.hidden = !pending; }
+  // the dot on the button: reports waiting on you, and uploads waiting on the owner
+  const all = n + (owner ? pending : 0);
+  const dotOn = owner ? $(".dd-admin .bar-dot") : $(".dd-me .bar-dot");
+  const dotOff = owner ? $(".dd-me .bar-dot") : $(".dd-admin .bar-dot");
+  if (dotOff) dotOff.hidden = true;
+  if (dotOn) {
+    dotOn.textContent = all > 9 ? "9+" : String(all);
+    dotOn.hidden = !all;
+    dotOn.title = (n ? (n === 1 ? "1 report is waiting on you" : n + " reports are waiting on you") : "")
+      + (owner && pending ? (n ? ", " : "") + (pending === 1 ? "1 upload to approve" : pending + " uploads to approve") : "");
   }
 
   // the matching "new" chips on the reports list, when that is the page
@@ -159,7 +170,7 @@ function paintUnread() {
 
   // and in the tab title, for anyone who leaves the site open
   const bare = document.title.replace(/^\(\d+\+?\)\s+/, "");
-  document.title = n ? "(" + label + ") " + bare : bare;
+  document.title = all ? "(" + (all > 9 ? "9+" : all) + ") " + bare : bare;
 }
 
 /** Follow the reports that concern you, live. */
@@ -219,81 +230,236 @@ const touch = () => ({
 });
 
 // --------------------------------------------------------------- the nav
+// Two drop-downs at the end of the bar (site.js opens and closes them):
+//   Admin - only for the owner: Reports, Approvals, Edit pages
+//   you   - "Sign in" (create an account, log in, or Google, right there in the
+//           drop-down), or once you are in, your head and name: your account,
+//           your reports, your uploads, sign out.
+
+const ICON = {
+  shield: '<path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/>',
+  flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+  check: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.6 2.6L16 9.7"/>',
+  pencil: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19z"/><path d="M14 7l3 3"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  inbox: '<path d="M4 13l2.5-8h11L20 13v6H4z"/><path d="M4 13h4.5l1 2.5h5l1-2.5H20"/>',
+  upload: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',
+  out: '<path d="M15 4h4v16h-4"/><path d="M10 8l-4 4 4 4M6 12h10"/>',
+  key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l3 3"/>',
+  plus: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6 1.3 0 2.5.3 3.6.8M19 15v6M16 18h6"/>'
+};
+const svg = name => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[name] + "</svg>";
+const GOOGLE_G = '<svg viewBox="0 0 48 48" aria-hidden="true" style="width:20px;height:20px"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"/><path fill="#FBBC05" d="M10.5 28.6c-.5-1.4-.8-2.9-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.6 10.7z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>';
+
+const el = (tag, props, ...kids) => {
+  const e = Object.assign(document.createElement(tag), props || {});
+  kids.forEach(k => k != null && e.append(k));
+  return e;
+};
+const html = (tag, props, inner) => { const e = el(tag, props); e.innerHTML = inner; return e; };
+const barChanged = () => dispatchEvent(new Event("pfb:bar"));
+
+let navCounts = [];       // the little numbers: how many reports are waiting on you
+let approvalCount = null; // and, for the owner, how many uploads wait to be approved
+let pending = 0;
+let pendingStop = null;
 
 function mountNav() {
-  const nav = $(".bar nav");
-  if (!nav || nav.querySelector(".auth")) return;
+  const tools = $(".bar .bar-tools");
+  if (!tools || tools.querySelector(".dd")) return;
 
-  const reports = document.createElement("a");
-  reports.href = "reports.html";
-  reports.textContent = "Reports";
-  reports.hidden = true;
-  // the dot is sized here as well as in the stylesheet, so a cached
-  // style.css cannot leave it invisible or the wrong shape
-  navDot = document.createElement("span");
-  navDot.className = "dot";
-  navDot.style.cssText = "display:none;min-width:19px;height:19px;margin-left:7px;padding:0 5px;"
-    + "box-sizing:border-box;border-radius:10px;background:#e0443e;color:#fff;"
-    + "font:700 12px/19px system-ui,-apple-system,Segoe UI,sans-serif;text-align:center;"
-    + "vertical-align:middle;box-shadow:0 0 0 2px rgba(10,10,12,.55)";
-  reports.appendChild(navDot);
-  nav.appendChild(reports);
+  // ---- Admin
+  const admin = el("div", { className: "dd dd-admin", hidden: true });
+  const adminBtn = html("button", { type: "button", className: "dd-btn plain" },
+    svg("shield").replace("<svg", '<svg class="ico"') + '<span class="lbl">Admin</span><span class="bar-dot" hidden></span><span class="chev"></span>');
+  adminBtn.setAttribute("aria-haspopup", "true"); adminBtn.setAttribute("aria-expanded", "false");
+  const adminPanel = el("div", { className: "dd-panel" });
+  const repN = el("span", { className: "n", hidden: true });
+  const appN = el("span", { className: "n", hidden: true });
+  const item = (href, icon, label, n) => {
+    const a = html("a", { className: "dd-item", href }, svg(icon) + "<span>" + label + "</span>");
+    if (n) a.append(n);
+    return a;
+  };
+  adminPanel.append(el("p", { className: "dd-title", textContent: "Admin" }),
+    item("reports.html", "flag", "Reports", repN),
+    item("approvals.html", "check", "Approvals", appN),
+    item("admin.html", "pencil", "Edit pages"));
+  admin.append(adminBtn, adminPanel);
 
-  const admin = document.createElement("a");
-  admin.href = "admin.html";
-  admin.textContent = "Edit";
-  admin.hidden = true;
-  nav.appendChild(admin);
+  // ---- you
+  const me = el("div", { className: "dd dd-me" });
+  const meBtn = el("button", { type: "button", className: "dd-btn auth loading" });
+  meBtn.setAttribute("aria-haspopup", "true"); meBtn.setAttribute("aria-expanded", "false");
+  const mePanel = el("div", { className: "dd-panel" });
+  me.append(meBtn, mePanel);
+  tools.append(admin, me);
 
-  const pill = document.createElement("a");
-  pill.className = "auth";
-  pill.href = "account.html";
-  // sized here as well as in the stylesheet, so a cached style.css cannot
-  // blow the head up to full size and shove the nav off screen
-  pill.style.cssText = "display:inline-flex;align-items:center;gap:8px;flex:none;" +
-    "white-space:nowrap;text-decoration:none;line-height:1";
-  nav.appendChild(pill);
+  const myN = el("span", { className: "n", hidden: true });
+  navCounts = [{ n: repN, owner: true }, { n: myN, owner: false }];
+  approvalCount = appN;
+
+  // anything that needs you signed in can ask for the drop-down: pfb:signin
+  addEventListener("pfb:signin", e => {
+    if (state.user) return;
+    const step = (e.detail && e.detail.step) || "menu";
+    // after the click that asked has finished, or its "click outside" closes it again
+    setTimeout(() => {
+      signInStep(mePanel, step);
+      bar && bar.closeAll();
+      me.classList.add("open");
+      meBtn.setAttribute("aria-expanded", "true");
+      scrollTo({ top: 0, behavior: "smooth" });
+    }, 0);
+  });
 
   refresh.push(() => {
-    // Until Firebase has said who you are, show a spinning sword rather than
-    // "Sign in" followed by the Reports and Edit links popping in behind it.
+    // Until Firebase has said who you are, a spinning sword rather than
+    // "Sign in" and then your name popping in over it.
     if (!state.ready) {
-      reports.hidden = true;
       admin.hidden = true;
-      pill.className = "auth loading";
-      pill.replaceChildren(sword(), Object.assign(document.createElement("span"),
-        { className: "who", textContent: "Loading" }));
+      meBtn.className = "dd-btn auth loading";
+      meBtn.replaceChildren(sword(), el("span", { className: "who", textContent: "Loading" }));
+      barChanged();
       return;
     }
-
-    pill.className = "auth";
-    reports.hidden = !state.user;
     admin.hidden = !isOwner();
-    pill.textContent = "";
-    const name = displayName();
-    if (!name) { pill.textContent = "Sign in"; return; }
-
+    if (!state.user) {
+      meBtn.className = "dd-btn plain";
+      meBtn.innerHTML = '<span class="who">Sign in</span><span class="chev"></span>';
+      if (!mePanel.dataset.step || mePanel.dataset.step === "signed-in") signInStep(mePanel, "menu");
+      barChanged();
+      return;
+    }
+    meBtn.className = "dd-btn";
+    meBtn.replaceChildren();
     const mc = state.profile && state.profile.mcName;
     if (mc) {
-      const img = document.createElement("img");
-      img.width = HEAD_PX; img.height = HEAD_PX;
-      img.style.cssText = "width:" + HEAD_PX + "px;height:" + HEAD_PX +
-        "px;image-rendering:pixelated;display:block;flex:none";
+      const img = el("img", { width: HEAD_PX, height: HEAD_PX, alt: "" });
       paintHead(img, mc, 64);
-      pill.appendChild(img);
+      meBtn.append(img);
+    } else {
+      meBtn.insertAdjacentHTML("beforeend", svg("user").replace("<svg", '<svg class="ico"'));
     }
-    const who = document.createElement("span");
-    who.className = "who";
-    who.style.cssText = "max-width:13ch;overflow:hidden;text-overflow:ellipsis";
-    who.textContent = name;
-    pill.appendChild(who);
+    meBtn.append(el("span", { className: "who", textContent: displayName() }),
+      el("span", { className: "bar-dot", hidden: true }), el("span", { className: "chev" }));
 
+    // the panel: who you are, then where to go
+    mePanel.dataset.step = "signed-in";
+    const head = el("div", { className: "dd-head" });
+    if (mc) { const img = el("img", { width: 40, height: 40, alt: "" }); paintHead(img, mc, 80); head.append(img); }
+    head.append(el("div", {}, el("b", { textContent: mc || "Signed in" }),
+      el("small", { textContent: (state.user && state.user.email) || "" })));
+    const out = html("button", { type: "button", className: "dd-item" }, svg("out") + "<span>Sign out</span>");
+    out.addEventListener("click", () => signOut(auth));
+    mePanel.replaceChildren(head,
+      item("account.html", "user", "Your account"),
+      isOwner() ? null : item("reports.html", "inbox", "Your reports", myN),
+      item("extensions.html#mine", "upload", "Your uploads"),
+      el("div", { className: "dd-sep" }), out);
+    if (!mePanel.firstChild) return;
     paintUnread();   // in case the count arrived before the nav existed
+    barChanged();
   });
 }
 
+/** The signed-out drop-down: three ways in, each a step of its own. */
+function signInStep(panel, step) {
+  panel.dataset.step = step;
+  const note = el("p", { className: "dd-note", hidden: true });
+  const say = (text, bad) => { note.textContent = text || ""; note.className = "dd-note " + (bad ? "bad" : "good"); note.hidden = !text; };
+  const back = () => { const b = el("button", { type: "button", className: "dd-link", textContent: "Back" }); b.addEventListener("click", () => signInStep(panel, "menu")); return b; };
+  const field = (label, type, id, auto) => {
+    const i = el("input", { type, id, autocomplete: auto || "off", required: type !== "text" });
+    if (type === "email") i.inputMode = "email";
+    return [el("label", { htmlFor: id }, label, i), i];
+  };
+  const busy = (b, on, text) => { b.disabled = on; if (text) b.querySelector("span").textContent = text; };
+  const done = () => { bar && bar.closeAll(); };
+
+  const google = html("button", { type: "button", className: "dd-item google" }, GOOGLE_G + "<span>Log in with Google</span>");
+  google.addEventListener("click", async () => {
+    try {
+      const cred = await signInWithPopup(auth, new GoogleAuthProvider());
+      await ensureProfile(cred.user);
+      done();
+    } catch (e) { say(friendly(e), true); }
+  });
+
+  let body;
+  if (step === "login") {
+    const [lE, email] = field("Email", "email", "ddEmail", "email");
+    const [lP, pass] = field("Password", "password", "ddPass", "current-password");
+    const go = html("button", { type: "submit", className: "dd-item main" }, "<span>Log in</span>");
+    const reset = el("button", { type: "button", className: "dd-link", textContent: "Forgot your password?" });
+    const form = el("form", { className: "dd-form" }, lE, lP, go, note, el("div", { className: "row" }, back(), reset));
+    form.addEventListener("submit", async ev => {
+      ev.preventDefault();
+      busy(go, true, "Logging in");
+      try { await signInWithEmailAndPassword(auth, email.value.trim(), pass.value); done(); }
+      catch (e) { say(friendly(e), true); }
+      busy(go, false, "Log in");
+    });
+    reset.addEventListener("click", async () => {
+      if (!email.value.trim()) return say("Put your email in first.", true);
+      try { await sendPasswordResetEmail(auth, email.value.trim()); say("Reset email sent. Check your inbox."); }
+      catch (e) { say(friendly(e), true); }
+    });
+    body = [el("p", { className: "dd-title", textContent: "Log in" }), form];
+  } else if (step === "register") {
+    const [lU, user] = field("Minecraft name (you can add it later)", "text", "ddMc", "username");
+    const [lE, email] = field("Email", "email", "ddREmail", "email");
+    const [lP, pass] = field("Password (six or more characters)", "password", "ddRPass", "new-password");
+    const go = html("button", { type: "submit", className: "dd-item main" }, "<span>Create account</span>");
+    const form = el("form", { className: "dd-form" }, lU, lE, lP, go, note, el("div", { className: "row" }, back()));
+    form.addEventListener("submit", async ev => {
+      ev.preventDefault();
+      const mc = user.value.trim();
+      if (mc && !/^[A-Za-z0-9_]{3,16}$/.test(mc)) return say("Minecraft name is three to sixteen letters, numbers or underscores.", true);
+      busy(go, true, "Creating your account");
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email.value.trim(), pass.value);
+        await setDoc(doc(db, "users", cred.user.uid), { email: cred.user.email, mcName: mc, role: "user", createdAt: serverTimestamp() });
+        if (state.profile) state.profile.mcName = mc;
+        done();
+      } catch (e) { say(friendly(e), true); }
+      busy(go, false, "Create account");
+    });
+    body = [el("p", { className: "dd-title", textContent: "Create an account" }), form];
+  } else {
+    const login = html("button", { type: "button", className: "dd-item main" }, "<span>Log in</span>");
+    login.addEventListener("click", () => signInStep(panel, "login"));
+    const reg = html("button", { type: "button", className: "dd-item" }, svg("plus") + "<span>Create account</span>");
+    reg.addEventListener("click", () => signInStep(panel, "register"));
+    body = [el("p", { className: "dd-title", textContent: "Sign in" }),
+      el("p", { className: "dd-note", style: "color:var(--text-3);padding:0 8px 8px", textContent: "For reports, and for sharing skins and configs on Extensions." }),
+      login, reg, google, note];
+  }
+  const wrap = el("div", { className: "dd-step" }, ...body);
+  panel.replaceChildren(wrap);
+  if (step !== "menu") { const f = wrap.querySelector("input"); if (f) setTimeout(() => f.focus({ preventScroll: true }), 30); }
+}
+
+/** For the owner: uploads that are waiting to be approved, followed live. */
+function watchApprovals() {
+  if (pendingStop) { pendingStop(); pendingStop = null; }
+  pending = 0;
+  paintUnread();
+  if (!isOwner()) return;
+  pendingStop = onSnapshot(query(collection(db, "projects"), where("status", "==", "pending")), snap => {
+    pending = snap.size;
+    paintUnread();
+  }, () => {});
+}
+
 const refresh = [];
-const rerender = () => refresh.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
+const rerender = () => {
+  refresh.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
+  // for the other scripts on the page (Extensions): who is signed in, now
+  window.pfbAuth = { ready: state.ready, user: state.user, profile: state.profile, owner: isOwner(),
+    name: (state.profile && state.profile.mcName) || "" };
+  dispatchEvent(new CustomEvent("pfb:auth", { detail: window.pfbAuth }));
+};
 
 // ----------------------------------------------------------- account page
 
@@ -1263,6 +1429,7 @@ onAuthStateChanged(auth, async user => {
   applyLock();
   rerender();
   watchUnread();
+  watchApprovals();
 });
 
 if (document.readyState === "loading") {

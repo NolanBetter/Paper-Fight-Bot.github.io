@@ -57,7 +57,7 @@ This is the one manual step, and it is deliberately manual.
    id. Open it.
 5. Find the **role** field. It says `user`. Click it, change it to `owner`,
    and save.
-6. Reload the site. The nav now shows **Reports** and **Edit**.
+6. Reload the site. The bar now shows **Admin**, with Reports, Approvals and Edit pages.
 
 From then on:
 
@@ -112,6 +112,32 @@ FightBot. If that ever becomes a problem, the Blaze plan lifts it to 200,000
 and costs pennies at this size.
 
 ---
+
+## 5. Extensions (skin packs and configs)
+
+**One thing to do: paste the new `firestore.rules`** (Firestore Database ->
+Rules, delete what's there, paste the whole file, **Publish**). That's all.
+No Cloud Storage, no indexes, no paid plan: every skin and icon is a small
+PNG stored in Firestore itself, and every list is read without an index.
+
+What the new rules allow (the part headed "extensions"):
+
+- **Anyone** can see and download what's live, and count a download (by one,
+  nothing else).
+- **Signed in** people can share a skin pack or a config. It goes live at once.
+  Only they can change it, add or take out skins, upload a new version of a
+  config, or delete it. They can never change who owns it or its downloads.
+- **Skins and icons must be PNGs** (the rules check the file's own first
+  bytes), 24 KB a skin and 60 KB an icon at most. A config is text, 200 KB at
+  most. Nothing else can be stored. The site redraws every picture before it
+  sends it, and blanks API keys and secrets in a config.
+- **You** (the owner) can take anything down with a reason. It vanishes for
+  everyone but you and whoever shared it, who sees the reason, can fix it and
+  press "Send it for approval". It then waits in **Admin -> Approvals** until
+  you approve it (or keep it down, with a new reason).
+
+The rules were tested against the Firestore emulator: 73 checks, including a
+jar dressed up as a PNG being refused and nobody making themselves owner.
 
 ## How the pieces behave
 
@@ -194,6 +220,8 @@ player types on the site.
 
 ## What it costs
 
-Nothing, at this scale. The Spark free plan covers 50,000 document reads a day
-and unlimited email sign ins. A busy bug tracker for one plugin will not come
-close.
+Nothing, at this scale. The Spark free plan covers 50,000 document reads a day,
+1 GB stored, and unlimited email sign ins. A busy bug tracker for one plugin
+will not come close. Extensions cost a read for each pack in a list and one for
+each skin when a pack is opened; a 64x64 skin is about 3 KB, so even ten
+thousand skins are a few dozen MB.

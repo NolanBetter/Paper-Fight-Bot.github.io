@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extensions — Paper Fight Bot</title>
+<meta name="description" content="Skin packs and configs for Paper Fight Bot, shared by the people who use it - and soon, add-ons.">
+<meta property="og:title" content="Extensions — Paper Fight Bot">
+<meta property="og:description" content="Skin packs and configs for Paper Fight Bot, shared by the people who use it - and soon, add-ons.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://fightmc.xyz/extensions.html">
+<meta property="og:image" content="https://fightmc.xyz/assets/banner.png">
+<meta name="theme-color" content="#09070d">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&family=Pixelify+Sans:wght@500..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="index.html"><img src="assets/logo.png" alt=""><span><span class="p">PAPER </span>FIGHT <b>BOT</b></span></a>
+    <nav aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="install.html">Install</a>
+      <a href="wiki.html">Wiki</a>
+      <a href="faq.html">FAQ</a>
+      <a href="updates.html">Updates</a>
+      <a href="compare.html">Compare</a>
+      <a href="extensions.html" aria-current="page"><span class="nav-hl" aria-hidden="true"></span>Extensions</a>
+      <a href="report.html">Report</a>
+      <a href="download.html" class="nav-dl">Download</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="phead">
+  <div class="wrap">
+    <h1>Extensions</h1>
+    <p class="lede">Skin packs and configs for FightBot, shared by the people who use it. Download anything here for free;
+      sign in to share your own.</p>
+  </div>
+</div>
+
+<section class="tight" style="padding-top:0">
+  <div class="wrap">
+    <div class="ex-tabs">
+      <div class="seg" role="tablist" aria-label="What to show" id="exTabs">
+        <button type="button" role="tab" aria-selected="false" data-tab="extensions" aria-controls="exPanel">Extensions</button>
+        <button type="button" role="tab" aria-selected="true" data-tab="skins" aria-controls="exPanel">Skins</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="configs" aria-controls="exPanel">Configs</button>
+        <button type="button" role="tab" aria-selected="false" data-tab="mine" aria-controls="exPanel" id="exMineTab" hidden>Yours</button>
+      </div>
+      <button type="button" class="btn" id="exShare" hidden>Share a skin pack</button>
+    </div>
+
+    <div id="exPanel" role="tabpanel" aria-live="polite">
+      <div class="ex-tools" id="exTools">
+        <label class="vh" for="exFind">Search</label>
+        <input type="search" id="exFind" class="ed-input" placeholder="Search by name or who made it">
+        <div class="sel sm"><label class="vh" for="exCat">Kind</label><select id="exCat"><option value="">Every kind</option></select></div>
+        <div class="sel sm"><label class="vh" for="exSort">Sort</label><select id="exSort">
+          <option value="new">Newest</option><option value="updated">Recently updated</option><option value="downloads">Most downloaded</option>
+        </select></div>
+      </div>
+      <div class="ex-grid" id="exGrid">
+        <p class="loading"><span class="sword" aria-hidden="true"></span><span>Loading&hellip;</span></p>
+      </div>
+    </div>
+
+    <div class="glass ex-wip" id="exWip" hidden>
+      <span class="chip pre">Work in progress</span>
+      <h2>Extensions are on the way</h2>
+      <p>Add-ons that give FightBot new things to do, shared here the same way as skins and configs: sign in, upload, and
+        anyone can download them.</p>
+      <p>Because an extension runs on your server, every one will be checked before it can be downloaded. Until that's
+        ready, there's nothing to upload here yet.</p>
+    </div>
+  </div>
+</section>
+
+
+</main>
+
+<footer>
+  <div class="wrap f-in">
+    <a href="install.html">Install</a>
+    <a href="wiki.html">Wiki</a>
+    <a href="faq.html">FAQ</a>
+    <a href="updates.html">Updates</a>
+    <a href="extensions.html">Extensions</a>
+    <a href="download.html">Download</a>
+    <a href="#" data-modrinth>Modrinth</a>
+    <a href="#" data-discord>Discord</a>
+    <span class="credit">Paper Fight Bot &middot; not an official Minecraft service, not approved by Mojang</span>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script type="module" src="assets/app.js"></script>
+<script type="module" src="assets/extensions.js"></script>
+</body>
+</html>

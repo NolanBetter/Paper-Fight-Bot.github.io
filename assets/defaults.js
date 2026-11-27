@@ -584,7 +584,7 @@ Any shape you like, drawn in your browser: \`/fb web\`, then the **Formations** 
 
 - **You're at the top of the grid**, walking up the screen. Every square below is a spot a bot can stand on.
 - **Drag the bot from the tray onto a square** to add one. Drag bots about to move them, and drag one back to the tray to take it out. Clicking a square adds a bot or takes one out too, and the keyboard works the same way.
-- **Bots have to touch**, side by side or corner to corner, so a shape is always one group. The squares a bot could go on light up while you drag. The grid always keeps two empty squares round every edge, so a shape can grow any way.
+- **Bots stay together:** each one touches another (side by side or corner to corner) or has **one empty square** between them (6.4.11; before, they had to touch). The squares a bot could go on light up while you drag. The grid always keeps two empty squares round every edge, so a shape can grow any way, gaps and all.
 - **The gaps:** each shape has its own gap between rows and between bots in a row (0 to 8 blocks), or uses \`formation.march.row-gap\` and \`side-gap\`. The squares on screen move apart to match.
 - **Start again from** rows, a wedge, a square, a line, a column or a diamond, then change it.
 - Give it a name and **Save**. **Use for marches** puts it in use (or back to plain rows). Save as many as you like.
@@ -662,7 +662,7 @@ The formation shapes from before 6.3.0 (\`/fb formation --all wedge\`, \`square 
 
 \`/fb charge --all\` sends an army in. The bots drop what they're doing (marching behind you, holding a formation, standing about) and attack **everyone within 32 blocks of them**, each going for whoever is nearest to it.
 
-- They never attack you, the player they were following, or one another.
+- They never attack you, the player they were following, one another, or anyone in their own group (6.4.11).
 - Give a radius, 4 to 128 blocks: \`/fb charge --group army 64\`.
 - Add \`players\` or \`bots\` to attack only those: \`/fb charge --all 48 players\`. The default is \`everyone\`.
 - If nobody is in range, nothing happens and the bots keep their formation.
@@ -798,6 +798,7 @@ The **Player Cannon** (6.4.8) brings bots in round you by ender pearl, like a gr
 - **Bots of yours** stay where they are, doing what they were, until their pearls land; then they're there. A bot that was already fighting keeps fighting the same one after it lands.
 - **Under a tree or an overhang** a pearl starts just below it. **Under a low roof** there's no room for one to fall, so the bots are simply there.
 - **A big crowd** spreads a little wider than the spread you picked, so nobody lands on anyone.
+- **One shot, one side.** Bots that came in on the same rod never fight each other, and with **Fight everyone near** they leave their own group alone too (6.4.11).
 - **Who can use it:** anyone holding one (\`fightbot.cannon.use\`, everyone by default). Taking them from \`/fb cannon\` needs \`fightbot.cannon\` (ops). Someone without \`fightbot.cannon.use\` just has a fishing rod. \`/fb cannon give <player> [how many] [protect|charge|attack|stand]\` hands one out from the console.
 - Scripted Solutions is getting a Player Cannon of its own, with teams of players and bots. This one may go once that's out. \`cannon.enabled: false\` turns it off.
 

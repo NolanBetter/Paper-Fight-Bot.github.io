@@ -38,10 +38,19 @@
 .mc-sw.off-is-bad input:not(:checked) + .track{border-color:rgba(255,120,110,.4)}
 /* a switch the server owns, that this one bot is overriding */
 .mc-sw.disabled{cursor:not-allowed;opacity:.5}
+.mc-sw .knob{left:3px;transform:translateX(0)}
+.mc-sw input:checked + .track .knob{left:3px;transform:translateX(30px)}
+.mc-sw:active .knob{width:34px}
+.mc-sw:active input:checked + .track .knob{transform:translateX(24px)}
+.mc-sw .word{display:inline-block}
+.mc-sw .word.pop{animation:sw-pop .42s var(--spring)}
+@keyframes sw-pop{from{transform:scale(.7);opacity:.3}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:no-preference){
-  .mc-sw .knob{transition:left .2s cubic-bezier(.3,1.4,.6,1)}
-  .mc-sw .track{transition:background .2s,border-color .2s,box-shadow .2s}
+  .mc-sw .knob{transition:transform .48s var(--spring),width .16s var(--ease),filter .2s}
+  .mc-sw .track{transition:background .3s ease,border-color .3s,box-shadow .35s}
 }
+@media (prefers-reduced-motion:reduce){.mc-sw .word.pop{animation:none}}
+.ed-check.tick input{width:1px;height:1px}
 
 /* ---------- the connection strip and tabs ----------
    One floating block of glass under the nav, so nothing scrolls out from
@@ -53,8 +62,8 @@
   -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
 .ed-strip{background:none !important;border:0 !important;box-shadow:none !important;margin:0 !important;width:auto !important;
   max-width:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important}
-.ed-strip .strip-in{padding:6px 8px;gap:14px}
-.ed-pill{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:16px;padding:6px 14px 6px 10px;
+.ed-strip .strip-in{padding:4px 6px;gap:10px;flex-wrap:nowrap}
+.ed-pill{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:15px;padding:5px 12px 5px 9px;
   border:1px solid var(--edge);border-radius:999px;white-space:nowrap;flex:none;background:rgba(255,255,255,.05)}
 .ed-pill::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor;flex:none}
 .ed-pill:has(.sword)::before{display:none}
@@ -63,18 +72,39 @@
 .ed-pill.ok::before{box-shadow:0 0 10px rgba(51,209,180,.9)}
 .ed-pill.bad{color:#ffaba3;border-color:rgba(255,90,71,.5);background:rgba(255,90,71,.08)}
 .ed-pill.wait{color:var(--gold);border-color:rgba(232,184,90,.45);background:rgba(232,184,90,.08)}
-.ed-server{color:var(--text-2);font-size:15.5px;flex:1 1 300px;min-width:0;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ed-ends{color:var(--text-2);font-size:15.5px;flex:none;white-space:nowrap}
-.ed-strip .btn{flex:none}
+/* the short line (bots, TPS); tap it for the server's whole line */
+.ed-brief{display:inline-flex;align-items:center;gap:8px;min-width:0;flex:0 1 auto;margin-right:auto;cursor:pointer;
+  font:500 15px/1.2 var(--body);color:var(--text-2);background:none;border:1px solid transparent;border-radius:999px;padding:6px 10px}
+.ed-brief:hover,.ed-brief[aria-expanded="true"]{color:var(--text);background:rgba(255,255,255,.06);border-color:var(--hair)}
+.ed-brief > span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ed-brief .chev{width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;flex:none;
+  transform:translateY(-2px) rotate(45deg);opacity:.75}
+.ed-brief[aria-expanded="true"] .chev{transform:translateY(2px) rotate(-135deg)}
+@media (prefers-reduced-motion:no-preference){.ed-brief .chev{transition:transform .35s var(--spring)}}
+.ed-details{display:grid;grid-template-rows:0fr}
+.ed-details.open{grid-template-rows:1fr}
+@media (prefers-reduced-motion:no-preference){.ed-details{transition:grid-template-rows .35s var(--ease)}}
+.ed-details-in{overflow:hidden;min-height:0}
+.ed-server{display:block;color:var(--text-2);font-size:15px;line-height:1.5;padding:2px 16px 8px;overflow-wrap:anywhere}
+.ed-ends{color:var(--text-3);font-size:14.5px;flex:none;white-space:nowrap}
+.ed-strip .btn{flex:none;padding:7px 14px;font-size:15px}
 
 /* ---------- tabs: one segmented row of glass ---------- */
-.ed-tabs{display:flex;gap:4px;flex-wrap:wrap;padding:4px 2px 2px;margin:0;max-width:none}
-.ed-tabs .btn.tab{background:none;border:1px solid transparent;box-shadow:none;color:var(--text-2);
-  font-size:16px;padding:9px 15px;border-radius:12px;-webkit-backdrop-filter:none;backdrop-filter:none}
+.ed-tabs{display:flex;gap:2px;flex-wrap:wrap;padding:2px;margin:0;max-width:none;position:relative;isolation:isolate}
+.ed-tabs .btn.tab{position:relative;background:none;border:1px solid transparent;box-shadow:none;color:var(--text-2);
+  font-size:15px;padding:7px 13px;border-radius:11px;-webkit-backdrop-filter:none;backdrop-filter:none;transition:color .2s}
 .ed-tabs .btn.tab:hover{background:rgba(255,255,255,.07);color:var(--text)}
 .ed-tabs .btn.tab.on{color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,.08));
   border-color:var(--edge);box-shadow:inset 0 1px 0 var(--edge-hi)}
+/* with the script, the "on" glass is one lens that slides from tab to tab */
+.ed-tabs.lensed .btn.tab.on{background:none;border-color:transparent;box-shadow:none}
+.ed-tabs.lensed .btn.tab.on:hover{background:none}
+.tab-lens{position:absolute;left:0;top:0;z-index:-1;border-radius:11px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,.07));border:1px solid var(--edge);
+  box-shadow:inset 0 1px 0 var(--edge-hi),0 6px 14px -8px rgba(0,0,0,.7)}
+@media (prefers-reduced-motion:no-preference){
+  .ed-tabs:not(.still) .tab-lens{transition:transform .5s var(--spring),width .5s var(--spring),height .3s var(--ease)}
+}
 .ed-main{padding:26px var(--edge-x) 150px}
 /* the tabs are sections, but they sit straight under the bar, not a page's worth below it */
 .ed-main > section{padding:0}
@@ -259,10 +289,19 @@ select.ed-input option{background:#1b1622;color:var(--text)}
 }
 @keyframes toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-/* on a phone the header block would eat the screen, so let it scroll away */
+/* on a phone: the tabs are one row that scrolls sideways, and the whole
+   block stays small enough to keep in view */
 @media(max-width:860px){
-  .ed-sticky{position:static}
-  .ed-server{white-space:normal;flex:1 1 100%}
+  .ed-sticky{top:74px;padding:6px 8px 0}
+  .ed-sticky-in{padding:4px;border-radius:16px}
+  .ed-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .ed-tabs::-webkit-scrollbar{display:none}
+  .ed-tabs .btn.tab{flex:none;padding:7px 12px}
+  .ed-ends{display:none}
+}
+@media(max-width:420px){
+  .ed-pill{font-size:0;gap:0;padding:7px}
+  .ed-pill .sword{width:18px;height:18px}
 }
 
 /* a whole group, where a bot would have its head */
@@ -456,3 +495,10 @@ select.ed-input option{background:#1b1622;color:var(--text)}
 .fm-starts{display:flex;gap:8px;flex-wrap:wrap}
 .fm-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
 .fm-old{max-width:62ch}
+
+/* the time left: in the strip on a wide screen, in the details on a phone */
+.ed-ends-full{padding-top:0;color:var(--text-3)}
+@media(min-width:861px){.ed-ends-full{display:none}}
+
+/* dragging bots about never selects the words round the grid */
+#fmStage,#fmTray,.fm-cell,.fm-bot{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}

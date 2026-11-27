@@ -56,6 +56,9 @@ function mcSwitch({ checked = false, disabled = false, label, id, onChange } = {
     word);
   input.addEventListener("change", () => {
     word.textContent = input.checked ? "ON" : "OFF";
+    word.classList.remove("pop");
+    void word.offsetWidth;            // so the pop plays again on every flick
+    word.classList.add("pop");
     if (onChange) onChange(input.checked);
   });
   wrap.input = input;
@@ -154,6 +157,8 @@ function showEnds() {
   box.textContent = (h ? h + "h " + (mins % 60) + "m" : mins + "m") + " left";
   box.title = "This link stops working at " + new Date(status.endsAt).toLocaleTimeString()
     + (status.idleMinutes ? ", or after " + status.idleMinutes + " minutes unused" : "") + ".";
+  const full = $("endsFull");
+  if (full) full.textContent = box.textContent + ": " + box.title.charAt(0).toLowerCase() + box.title.slice(1);
 }
 
 // ------------------------------------------------------ the owner's lock
@@ -304,6 +309,13 @@ async function openServer(link) {
     status.relayMs ? "relay " + status.relayMs + " ms" + (status.relayMs > 700 ? " (slow)" : "") : null
   ].filter(Boolean).join(" · ");
   $("server").textContent = line;
+  // the short version, always in view; the rest a tap away
+  $("briefText").textContent = [
+    status.bots + (status.bots === 1 ? " bot" : " bots"),
+    status.tps ? status.tps + " TPS" : null,
+    status.relayMs > 700 ? "slow relay" : null
+  ].filter(Boolean).join(" · ");
+  $("brief").hidden = false;
   $("server").title = line
     + (status.openedBy ? "\nOpened by " + status.openedBy : "")
     + (status.relayMs > 700
@@ -602,6 +614,38 @@ async function pickServer(s) {
   drawServers();
 }
 
+/** The top bar's details: the server's whole line, opened and closed by its short one. */
+$("brief").addEventListener("click", () => {
+  const open = $("brief").getAttribute("aria-expanded") !== "true";
+  $("brief").setAttribute("aria-expanded", String(open));
+  $("details").classList.toggle("open", open);
+});
+
+/** The lens of glass behind the tab you're on: it slides to the one you pick. */
+function tabLens() {
+  const nav = $("tabs");
+  if (!nav || nav.hidden) return;
+  let lens = nav.querySelector(".tab-lens");
+  if (!lens) {
+    lens = el("span", { class: "tab-lens", "aria-hidden": "true" });
+    nav.prepend(lens);
+    nav.classList.add("lensed", "still");
+    requestAnimationFrame(() => requestAnimationFrame(() => nav.classList.remove("still")));
+  }
+  const b = nav.querySelector("button.on");
+  if (!b || !b.offsetWidth) return;
+  lens.style.width = b.offsetWidth + "px";
+  lens.style.height = b.offsetHeight + "px";
+  lens.style.transform = "translate(" + b.offsetLeft + "px," + b.offsetTop + "px)";
+  // a row that scrolls sideways (a phone) keeps the tab you're on in view
+  if (nav.scrollWidth > nav.clientWidth + 1) {
+    const left = b.offsetLeft - (nav.clientWidth - b.offsetWidth) / 2;
+    nav.scrollTo({ left: Math.max(0, left), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }
+}
+addEventListener("resize", () => tabLens(), { passive: true });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => tabLens());
+
 function show(name) {
   const leaving = current;
   current = name;
@@ -611,6 +655,7 @@ function show(name) {
     b.setAttribute("aria-selected", on ? "true" : "false");
     b.classList.toggle("on", on);
   }
+  tabLens();
   // FightBot's answers belong to the two tabs that send it commands
   $("cmdCard").hidden = !(["bots", "teams", "emotes"].includes(name) && $("cmdOut").textContent.trim());
 
@@ -2329,9 +2374,9 @@ function liveLines(d) {
    than it has spots form rows behind it.
 
    The rules the grid keeps, and FightBot checks again when it's saved:
-   every bot touches another (side by side or corner to corner), there are
-   always two empty squares round every edge so the shape can grow, and it
-   fits FightBot's limits. */
+   every bot is next to another (side by side or corner to corner) or has
+   one empty square between them, there are always two empty squares round
+   every edge so the shape can grow, and it fits FightBot's limits. */
 
 const FM_TEMPLATES = {
   "Rows": [[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1],[-1,2],[0,2],[1,2]],
@@ -2348,18 +2393,21 @@ const fm = {
   spots: new Set(),    // "across,back"
   rowGap: -1, sideGap: -1,
   dirty: false,
-  limits: { spots: 400, across: 32, back: 64 }
+  limits: { spots: 400, across: 32, back: 64, near: 1 }
 };
+/** How far apart two bots may be: 2 is one empty square between them (FightBot 6.4.11). */
+const fmNear = () => Math.max(1, Math.min(2, Number(fm.limits.near) || 1));
 const fmKey = (a, b) => a + "," + b;
 const fmParse = k => k.split(",").map(Number);
 
-/** Every spot touches another: walk from one to everything it touches. */
+/** One group: walk from one spot to everything near it. */
 function fmConnected(set) {
   if (set.size <= 1) return true;
   const first = set.values().next().value, seen = new Set([first]), todo = [first];
+  const r = fmNear();
   while (todo.length) {
     const [a, b] = fmParse(todo.pop());
-    for (let da = -1; da <= 1; da++) for (let db = -1; db <= 1; db++) {
+    for (let da = -r; da <= r; da++) for (let db = -r; db <= r; db++) {
       const k = fmKey(a + da, b + db);
       if (set.has(k) && !seen.has(k)) { seen.add(k); todo.push(k); }
     }
@@ -2368,7 +2416,8 @@ function fmConnected(set) {
 }
 
 const fmTouches = (set, a, b) => {
-  for (let da = -1; da <= 1; da++) for (let db = -1; db <= 1; db++) {
+  const r = fmNear();
+  for (let da = -r; da <= r; da++) for (let db = -r; db <= r; db++) {
     if ((da || db) && set.has(fmKey(a + da, b + db))) return true;
   }
   return false;
@@ -2399,7 +2448,9 @@ function fmFits(set) {
 
 /** Can this change be made? null if it can, else why not, for people. */
 function fmCheck(next) {
-  if (!fmConnected(next)) return "Bots have to touch - side by side or corner to corner - so that would split the shape.";
+  if (!fmConnected(next)) return fmNear() > 1
+    ? "Bots can have one empty square between them, not more - that would split the shape."
+    : "Bots have to touch - side by side or corner to corner - so that would split the shape.";
   return fmFits(fmNormalise(next));
 }
 
@@ -2491,7 +2542,8 @@ function fmDraw() {
   $("fmSide").value = sideGap; $("fmSide").disabled = fm.sideGap < 0 || readOnly;
   $("fmRowVal").textContent = rowGap + (rowGap === 1 ? " block" : " blocks") + (fm.rowGap < 0 ? " (the server's)" : "");
   $("fmSideVal").textContent = sideGap + (sideGap === 1 ? " block" : " blocks") + (fm.sideGap < 0 ? " (the server's)" : "");
-  const isInUse = saved && same(inUse, saved.name);
+  // the one in use, as it is: with changes on screen, the button saves them instead
+  const isInUse = saved && same(inUse, saved.name) && !fm.dirty;
   $("fmUse").textContent = isInUse ? "Back to plain rows" : fm.dirty || !saved ? "Save and use for marches" : "Use for marches";
   $("fmUse").disabled = readOnly || (!n && !isInUse);
   $("fmDelete").disabled = readOnly || !saved;
@@ -2557,7 +2609,9 @@ async function loadFormations() {
 
 function fmTake(d) {
   fm.data = d;
-  if (d.limits) fm.limits = Object.assign({}, fm.limits, d.limits);
+  // near: 2 from FightBot 6.4.11 on; an older one doesn't say, and wants bots touching
+  if (d.limits) fm.limits = Object.assign({}, fm.limits, { near: 1 }, d.limits);
+  $("fmTrayText").textContent = fmTrayHint();
 }
 
 // ---- dragging -------------------------------------------------------
@@ -2636,7 +2690,7 @@ function fmEnd(e) {
   drag = null;
   if (d.ghost) d.ghost.remove();
   $("fmTray").classList.remove("bin");
-  $("fmTrayText").textContent = "Drag from here onto a lit square. Bots have to touch, side by side or corner to corner.";
+  $("fmTrayText").textContent = fmTrayHint();
   if (!d.moved) {
     // a click: the tray's bot goes in the first free spot behind the shape's middle
     if (d.from === "tray") fmClickAdd();
@@ -2666,7 +2720,7 @@ function fmToggle(a, b) {
   const k = fmKey(a, b);
   if (fm.spots.has(k)) { fmRemove(a, b); return; }
   if (fm.spots.size && !fmTouches(fm.spots, a, b)) {
-    toast("Bots have to touch another bot - pick a square next to the shape.", true);
+    toast(fmNear() > 1 ? "That's too far out - a bot can have one empty square between it and the shape, not more." : "Bots have to touch another bot - pick a square next to the shape.", true);
     return;
   }
   const next = new Set(fm.spots); next.add(k);
@@ -2683,10 +2737,16 @@ function fmRemove(a, b) {
   fmApply(next);
 }
 
+const fmTrayHint = () => fmNear() > 1
+  ? "Drag from here onto a lit square. A bot can touch another or have one empty square between them."
+  : "Drag from here onto a lit square. Bots have to touch, side by side or corner to corner.";
+
 /** Clicking the tray's bot: it goes in the nearest free spot that touches the shape, front and middle first. */
 function fmClickAdd() {
   if (!fm.spots.size) { fmApply(new Set([fmKey(0, 0)])); return; }
-  const free = [...fmAllowed("tray")].map(fmParse).sort((x, y) => x[1] - y[1] || Math.abs(x[0]) - Math.abs(y[0]) || x[0] - y[0]);
+  // touching the shape before a square with a gap, then front row first, the middle first
+  const touching = ([a, b]) => { for (let da = -1; da <= 1; da++) for (let db = -1; db <= 1; db++) if ((da || db) && fm.spots.has(fmKey(a + da, b + db))) return 0; return 1; };
+  const free = [...fmAllowed("tray")].map(fmParse).sort((x, y) => x[1] - y[1] || touching(x) - touching(y) || Math.abs(x[0]) - Math.abs(y[0]) || x[0] - y[0]);
   const pick = free.find(p => p[1] >= 0) || free[0];
   if (!pick) { toast("There's no room for another bot.", true); return; }
   const next = new Set(fm.spots); next.add(fmKey(pick[0], pick[1]));
@@ -2779,7 +2839,7 @@ $("fmSave").addEventListener("click", () => fmSave(false));
 $("fmUse").addEventListener("click", async () => {
   if (readOnly || !fm.data) return;
   const inUse = fm.data.inUse || "";
-  if (fm.name && same(inUse, fm.name)) {
+  if (fm.name && same(inUse, fm.name) && !fm.dirty) {
     try { fmTake(await ed.request("layouts.use", { name: "" })); fmDraw(); toast("Marches are plain rows again."); }
     catch (e) { toast(e.message, true); }
     return;
